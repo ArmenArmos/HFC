@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
-export default function HomePage() {
+export default function HomePage({ params: { locale } }: { params: { locale: string } }) {
   const t = useTranslations()
 
   return (
@@ -13,7 +13,7 @@ export default function HomePage() {
           </div>
           <div className="flex gap-4">
             <Link
-              href="/auth/signin"
+              href={`/${locale}/auth/signin`}
               className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
               {t('nav.signIn')}
@@ -33,13 +33,13 @@ export default function HomePage() {
           </p>
           <div className="flex justify-center gap-4">
             <Link
-              href="/auth/signup"
+              href={`/${locale}/auth/signup`}
               className="rounded-md bg-blue-600 px-8 py-3 text-lg text-white hover:bg-blue-700"
             >
               {t('nav.signUp')}
             </Link>
             <Link
-              href="/about"
+              href={`/${locale}/about`}
               className="rounded-md border border-gray-300 px-8 py-3 text-lg text-gray-700 hover:bg-gray-50"
             >
               {t('nav.about')}
