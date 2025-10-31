@@ -1,0 +1,75 @@
+{
+  "common": {
+    "appName": "Medical Second Opinion",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "howItWorks": "How It Works",
+    "specialists": "Specialists",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithEmail": "Sign in with Email"
+  },
+  "patient": {
+    "dashboard": "Patient Dashboard",
+    "myCases": "My Cases",
+    "newCase": "New Case",
+    "caseDetails": "Case Details",
+    "uploadDocuments": "Upload Documents",
+    "messages": "Messages"
+  },
+  "doctor": {
+    "dashboard": "Doctor Dashboard",
+    "assignedCases": "Assigned Cases",
+    "completedCases": "Completed Cases",
+    "availability": "Availability",
+    "profile": "Profile"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "users": "Users",
+    "cases": "Cases",
+    "doctors": "Doctors",
+    "organizations": "Organizations",
+    "analytics": "Analytics"
+  },
+  "case": {
+    "status": {
+      "DRAFT": "Draft",
+      "PENDING_PAYMENT": "Pending Payment",
+      "ASSIGNED": "Assigned",
+      "IN_REVIEW": "In Review",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "priority": {
+      "STANDARD": "Standard (5-7 days)",
+      "EXPRESS": "Express (1-3 days)"
+    }
+  }
+}

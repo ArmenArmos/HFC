@@ -1,0 +1,648 @@
+// Medical Second Opinion Platform - Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USERS & AUTHENTICATION
+// ============================================
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+  ORG_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+  DEACTIVATED
+}
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  emailVerified     DateTime?
+  passwordHash      String?
+  name              String?
+  phone             String?
+  locale            String      @default("en") // en, hy, ru
+  role              UserRole    @default(PATIENT)
+  status            UserStatus  @default(PENDING_VERIFICATION)
+
+  // Timestamps
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  lastLoginAt       DateTime?
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  patient           Patient?
+  doctor            Doctor?
+  auditLogs         AuditLog[]
+
+  // Organization (for B2B)
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([email])
+  @@index([organizationId])
+  @@map("users")
+}
+
+// NextAuth Account model
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// NextAuth Session model
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// PATIENT PROFILE
+// ============================================
+
+model Patient {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Info (PII - encrypt at application level)
+  dateOfBirth     DateTime?
+  gender          String?
+  country         String?
+  city            String?
+  address         String?   @db.Text
+
+  // Emergency Contact
+  emergencyName   String?
+  emergencyPhone  String?
+
+  // Medical Info
+  bloodType       String?
+  allergies       String?   @db.Text
+  chronicConditions String? @db.Text
+
+  // Consent & Privacy
+  consentVersion  String?
+  consentDate     DateTime?
+  marketingOptIn  Boolean   @default(false)
+
+  // Relations
+  cases           Case[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("patients")
+}
+
+// ============================================
+// DOCTOR PROFILE
+// ============================================
+
+enum DoctorStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  SUSPENDED
+}
+
+model Doctor {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status          DoctorStatus  @default(PENDING_VERIFICATION)
+
+  // Professional Info
+  title           String?       // Dr., Prof., etc.
+  licenseNumber   String?       @unique
+  licenseCountry  String?
+  yearsExperience Int?
+
+  // Credentials
+  medicalSchool   String?
+  residency       String?
+  fellowships     String?       @db.Text
+  boardCertifications String?   @db.Text
+
+  // Profile
+  bio             String?       @db.Text
+  photoUrl        String?
+  languages       String[]      @default([]) // e.g., ["en", "hy", "ru"]
+
+  // Specialties
+  specialties     DoctorSpecialty[]
+
+  // Availability
+  isAvailable     Boolean       @default(true)
+  maxCasesPerWeek Int           @default(10)
+
+  // Stats
+  casesCompleted  Int           @default(0)
+  averageRating   Float?
+
+  // Relations
+  assignedCases   Case[]
+  opinions        Opinion[]
+  availability    DoctorAvailability[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@map("doctors")
+}
+
+model Specialty {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  nameEn      String
+  nameHy      String?
+  nameRu      String?
+  description String?           @db.Text
+
+  doctors     DoctorSpecialty[]
+  cases       Case[]
+
+  @@map("specialties")
+}
+
+model DoctorSpecialty {
+  doctorId    String
+  specialtyId String
+  isPrimary   Boolean   @default(false)
+
+  doctor      Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  specialty   Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, specialtyId])
+  @@map("doctor_specialties")
+}
+
+model DoctorAvailability {
+  id              String   @id @default(cuid())
+  doctorId        String
+  doctor          Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  dayOfWeek       Int      // 0 = Sunday, 6 = Saturday
+  startTime       String   // HH:mm format
+  endTime         String   // HH:mm format
+  timezone        String   @default("Asia/Yerevan")
+
+  @@map("doctor_availability")
+}
+
+// ============================================
+// CASES (PHI - Protected Health Information)
+// ============================================
+
+enum CaseStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAYMENT_PROCESSING
+  ASSIGNED
+  IN_REVIEW
+  AWAITING_INFO
+  COMPLETED
+  CANCELLED
+}
+
+enum CasePriority {
+  STANDARD  // 5-7 days
+  EXPRESS   // 1-3 days
+}
+
+model Case {
+  id              String        @id @default(cuid())
+  caseNumber      String        @unique // Human-readable: MSO-2024-00001
+
+  // Patient
+  patientId       String
+  patient         Patient       @relation(fields: [patientId], references: [id])
+
+  // Assignment
+  doctorId        String?
+  doctor          Doctor?       @relation(fields: [doctorId], references: [id])
+  specialtyId     String
+  specialty       Specialty     @relation(fields: [specialtyId], references: [id])
+
+  // Case Details
+  title           String
+  chiefComplaint  String        @db.Text
+  medicalHistory  String?       @db.Text
+  currentMedications String?    @db.Text
+  allergies       String?       @db.Text
+  questions       String?       @db.Text
+
+  // Status & Priority
+  status          CaseStatus    @default(DRAFT)
+  priority        CasePriority  @default(STANDARD)
+
+  // SLA & Deadlines
+  submittedAt     DateTime?
+  assignedAt      DateTime?
+  dueDate         DateTime?
+  completedAt     DateTime?
+
+  // Payment
+  paymentId       String?
+  paymentStatus   String?       // pending, completed, failed, refunded
+  amount          Float?
+  currency        String        @default("USD")
+
+  // Files
+  files           CaseFile[]
+
+  // Opinion
+  opinion         Opinion?
+
+  // Messages & Notes
+  messages        Message[]
+  internalNotes   InternalNote[]
+
+  // Audit
+  consentVersion  String
+  privacyVersion  String
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([caseNumber])
+  @@map("cases")
+}
+
+// ============================================
+// FILES
+// ============================================
+
+enum FileType {
+  PDF
+  IMAGE
+  DICOM
+  LAB_REPORT
+  OTHER
+}
+
+model CaseFile {
+  id              String    @id @default(cuid())
+  caseId          String
+  case            Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  // File Info
+  fileName        String
+  fileType        FileType
+  mimeType        String
+  fileSize        Int       // bytes
+
+  // Storage
+  s3Key           String    // Encrypted S3 key
+  s3Bucket        String
+  checksum        String    // SHA-256
+
+  // Security
+  isEncrypted     Boolean   @default(true)
+  virusScanStatus String?   // clean, infected, pending
+  virusScanDate   DateTime?
+
+  // Metadata
+  uploadedBy      String
+  description     String?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([caseId])
+  @@map("case_files")
+}
+
+// ============================================
+// OPINIONS
+// ============================================
+
+enum OpinionStatus {
+  DRAFT
+  PENDING_REVIEW
+  COMPLETED
+  REVISED
+}
+
+model Opinion {
+  id              String          @id @default(cuid())
+  caseId          String          @unique
+  case            Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  doctorId        String
+  doctor          Doctor          @relation(fields: [doctorId], references: [id])
+
+  status          OpinionStatus   @default(DRAFT)
+
+  // Opinion Content (structured)
+  diagnosis       String          @db.Text
+  rationale       String          @db.Text
+  recommendations String          @db.Text
+  guidelines      String?         @db.Text
+  references      String?         @db.Text
+
+  // Additional Sections
+  differentialDiagnosis String?   @db.Text
+  additionalTests String?         @db.Text
+  prognosis       String?         @db.Text
+
+  // Versioning
+  version         Int             @default(1)
+  previousVersionId String?
+
+  // Delivery
+  pdfUrl          String?
+  deliveredAt     DateTime?
+
+  // Co-sign (multidisciplinary)
+  cosignedBy      String?
+  cosignedAt      DateTime?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([caseId])
+  @@index([doctorId])
+  @@map("opinions")
+}
+
+// ============================================
+// MESSAGING
+// ============================================
+
+enum MessageSender {
+  PATIENT
+  DOCTOR
+  ADMIN
+  SYSTEM
+}
+
+model Message {
+  id              String        @id @default(cuid())
+  caseId          String
+  case            Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  senderId        String
+  senderType      MessageSender
+
+  content         String        @db.Text
+
+  // Attachments
+  attachments     String[]      @default([])
+
+  // Read status
+  isRead          Boolean       @default(false)
+  readAt          DateTime?
+
+  createdAt       DateTime      @default(now())
+
+  @@index([caseId])
+  @@map("messages")
+}
+
+model InternalNote {
+  id              String    @id @default(cuid())
+  caseId          String
+  case            Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  authorId        String
+  content         String    @db.Text
+
+  createdAt       DateTime  @default(now())
+
+  @@index([caseId])
+  @@map("internal_notes")
+}
+
+// ============================================
+// ORGANIZATIONS (B2B)
+// ============================================
+
+enum OrganizationType {
+  EMPLOYER
+  INSURER
+  BANK
+  HOSPITAL
+}
+
+model Organization {
+  id              String            @id @default(cuid())
+  name            String
+  type            OrganizationType
+
+  // Contact
+  contactEmail    String
+  contactPhone    String?
+  address         String?           @db.Text
+
+  // Settings
+  seatCount       Int               @default(0)
+  allowancePerYear Int?             // Number of cases per employee per year
+
+  // SSO (placeholders)
+  ssoEnabled      Boolean           @default(false)
+  ssoProvider     String?           // SAML, OIDC
+  ssoConfig       Json?
+
+  // Billing
+  billingEmail    String?
+  invoicingMode   Boolean           @default(false) // true = monthly invoicing, false = Stripe
+
+  // Relations
+  users           User[]
+  subscriptions   Subscription[]
+
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("organizations")
+}
+
+// ============================================
+// SUBSCRIPTIONS & PAYMENTS
+// ============================================
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAUSED
+}
+
+model Subscription {
+  id              String              @id @default(cuid())
+
+  // Subscriber (Organization or Individual)
+  organizationId  String?
+  organization    Organization?       @relation(fields: [organizationId], references: [id])
+
+  userId          String?             // For individual subscriptions
+
+  // Stripe
+  stripeSubscriptionId String?        @unique
+  stripePriceId   String?
+  stripeCustomerId String?
+
+  status          SubscriptionStatus  @default(ACTIVE)
+
+  // Plan Details
+  planName        String
+  casesPerMonth   Int
+  price           Float
+  currency        String              @default("USD")
+
+  // Dates
+  startDate       DateTime
+  endDate         DateTime?
+  cancelledAt     DateTime?
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([organizationId])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String    @id @default(cuid())
+
+  userId          String
+  caseId          String?
+
+  // Stripe
+  stripePaymentIntentId String? @unique
+  stripeChargeId  String?
+
+  amount          Float
+  currency        String    @default("USD")
+  status          String    // pending, succeeded, failed, refunded
+
+  // Metadata
+  description     String?
+  metadata        Json?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([caseId])
+  @@map("payments")
+}
+
+// ============================================
+// AUDIT & COMPLIANCE
+// ============================================
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  VIEW_CASE
+  EDIT_CASE
+  UPLOAD_FILE
+  DOWNLOAD_FILE
+  DELETE_FILE
+  SUBMIT_OPINION
+  VIEW_PATIENT_DATA
+  EXPORT_DATA
+  DELETE_DATA
+}
+
+model AuditLog {
+  id              String      @id @default(cuid())
+
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+
+  action          AuditAction
+  resource        String?     // e.g., "case:caseId", "file:fileId"
+
+  ipAddress       String?
+  userAgent       String?     @db.Text
+
+  metadata        Json?
+
+  createdAt       DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// CONTENT MANAGEMENT
+// ============================================
+
+model Content {
+  id              String    @id @default(cuid())
+
+  slug            String    @unique
+  type            String    // faq, tos, privacy, page
+
+  // Multilingual content
+  titleEn         String
+  titleHy         String?
+  titleRu         String?
+
+  contentEn       String    @db.Text
+  contentHy       String?   @db.Text
+  contentRu       String?   @db.Text
+
+  // Versioning
+  version         String    @default("1.0")
+
+  isPublished     Boolean   @default(false)
+  publishedAt     DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("content")
+}

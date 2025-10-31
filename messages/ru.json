@@ -1,0 +1,75 @@
+{
+  "common": {
+    "appName": "Медицинское Второе Мнение",
+    "submit": "Отправить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "back": "Назад",
+    "next": "Далее",
+    "loading": "Загрузка...",
+    "error": "Произошла ошибка",
+    "success": "Успешно"
+  },
+  "nav": {
+    "home": "Главная",
+    "about": "О нас",
+    "howItWorks": "Как это работает",
+    "specialists": "Специалисты",
+    "pricing": "Цены",
+    "contact": "Контакты",
+    "signIn": "Войти",
+    "signUp": "Регистрация",
+    "signOut": "Выйти",
+    "dashboard": "Панель"
+  },
+  "auth": {
+    "signIn": "Войти",
+    "signUp": "Регистрация",
+    "email": "Эл. почта",
+    "password": "Пароль",
+    "forgotPassword": "Забыли пароль?",
+    "noAccount": "Нет аккаунта?",
+    "hasAccount": "Уже есть аккаунт?",
+    "signInWithGoogle": "Войти через Google",
+    "signInWithEmail": "Войти через Email"
+  },
+  "patient": {
+    "dashboard": "Панель пациента",
+    "myCases": "Мои случаи",
+    "newCase": "Новый случай",
+    "caseDetails": "Детали случая",
+    "uploadDocuments": "Загрузить документы",
+    "messages": "Сообщения"
+  },
+  "doctor": {
+    "dashboard": "Панель врача",
+    "assignedCases": "Назначенные случаи",
+    "completedCases": "Завершенные случаи",
+    "availability": "Доступность",
+    "profile": "Профиль"
+  },
+  "admin": {
+    "dashboard": "Панель администратора",
+    "users": "Пользователи",
+    "cases": "Случаи",
+    "doctors": "Врачи",
+    "organizations": "Организации",
+    "analytics": "Аналитика"
+  },
+  "case": {
+    "status": {
+      "DRAFT": "Черновик",
+      "PENDING_PAYMENT": "Ожидание оплаты",
+      "ASSIGNED": "Назначено",
+      "IN_REVIEW": "На рассмотрении",
+      "COMPLETED": "Завершено",
+      "CANCELLED": "Отменено"
+    },
+    "priority": {
+      "STANDARD": "Стандарт (5-7 дней)",
+      "EXPRESS": "Экспресс (1-3 дня)"
+    }
+  }
+}

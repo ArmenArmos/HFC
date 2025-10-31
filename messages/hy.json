@@ -1,0 +1,75 @@
+{
+  "common": {
+    "appName": "Բժշկական Երկրորդ Կարծիք",
+    "submit": "Ուղարկել",
+    "cancel": "Չեղարկել",
+    "save": "Պահպանել",
+    "delete": "Ջնջել",
+    "edit": "Խմբագրել",
+    "back": "Հետ",
+    "next": "Հաջորդ",
+    "loading": "Բեռնում...",
+    "error": "Սխալ է տեղի ունեցել",
+    "success": "Հաջողություն"
+  },
+  "nav": {
+    "home": "Գլխավոր",
+    "about": "Մեր մասին",
+    "howItWorks": "Ինչպես է աշխատում",
+    "specialists": "Մասնագետներ",
+    "pricing": "Գներ",
+    "contact": "Կապ",
+    "signIn": "Մուտք",
+    "signUp": "Գրանցում",
+    "signOut": "Ելք",
+    "dashboard": "Վահանակ"
+  },
+  "auth": {
+    "signIn": "Մուտք",
+    "signUp": "Գրանցում",
+    "email": "Էլ․ հասցե",
+    "password": "Գաղտնաբառ",
+    "forgotPassword": "Մոռացե՞լ եք գաղտնաբառը",
+    "noAccount": "Չունե՞ք հաշիվ",
+    "hasAccount": "Արդեն ունե՞ք հաշիվ",
+    "signInWithGoogle": "Մուտք Google-ով",
+    "signInWithEmail": "Մուտք էլ․ հասցեով"
+  },
+  "patient": {
+    "dashboard": "Հիվանդի վահանակ",
+    "myCases": "Իմ դեպքերը",
+    "newCase": "Նոր դեպք",
+    "caseDetails": "Դեպքի մանրամասներ",
+    "uploadDocuments": "Վերբեռնել փաստաթղթեր",
+    "messages": "Հաղորդագրություններ"
+  },
+  "doctor": {
+    "dashboard": "Բժշկի վահանակ",
+    "assignedCases": "Նշանակված դեպքեր",
+    "completedCases": "Ավարտված դեպքեր",
+    "availability": "Հասանելիություն",
+    "profile": "Պրոֆիլ"
+  },
+  "admin": {
+    "dashboard": "Ադմինի վահանակ",
+    "users": "Օգտատերեր",
+    "cases": "Դեպքեր",
+    "doctors": "Բժիշկներ",
+    "organizations": "Կազմակերպություններ",
+    "analytics": "Վերլուծություն"
+  },
+  "case": {
+    "status": {
+      "DRAFT": "Սևագիր",
+      "PENDING_PAYMENT": "Սպասվում է վճարում",
+      "ASSIGNED": "Նշանակված",
+      "IN_REVIEW": "Վերանայման մեջ",
+      "COMPLETED": "Ավարտված",
+      "CANCELLED": "Չեղարկված"
+    },
+    "priority": {
+      "STANDARD": "Ստանդարտ (5-7 օր)",
+      "EXPRESS": "Արագ (1-3 օր)"
+    }
+  }
+}
