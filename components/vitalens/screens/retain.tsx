@@ -137,7 +137,7 @@ export function J21_RetestReminder() {
             </div>
           </div>
           <div style={{ marginTop: 14, fontSize: 13.5, color: 'var(--t-2)', lineHeight: 1.45 }}>
-            It's been almost 90 days since your last panel. Same Complete panel — same time, same phlebotomist if available.
+            {"It's been almost 90 days since your last panel. Same Complete panel — same time, same phlebotomist if available."}
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
             <button style={{ flex: 1, height: 46, borderRadius: 14, background: '#241814', color: '#FBF4E8', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Confirm</button>
@@ -273,7 +273,7 @@ export function J22_Habits() {
         </div>
 
         <div style={{ padding: '18px 20px 0', textAlign: 'center', fontSize: 14, color: 'var(--t-3)', lineHeight: 1.5, fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>
-          "Small things, repeated. That's the whole game."
+          {'"Small things, repeated. That’s the whole game."'}
         </div>
       </div>
     </Phone>

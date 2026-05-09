@@ -223,7 +223,7 @@ export function J19_ActionPlan() {
         {/* Daily tasks */}
         <div style={{ padding: '0 20px', marginBottom: 14 }}>
           <div className="sect-h">
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-1)' }}>Today's tasks</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-1)' }}>{"Today's tasks"}</span>
             <span className="more">{doneCount} / {tasks.length} done</span>
           </div>
         </div>

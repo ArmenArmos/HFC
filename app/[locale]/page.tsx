@@ -284,7 +284,7 @@ export default function HomePage({
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {TESTIMONIALS.map((t, i) => (
               <div key={i} className="rounded-2xl border bg-white p-6 shadow-sm">
-                <p className="mb-4 text-gray-600 italic">"{t.quote}"</p>
+                <p className="mb-4 text-gray-600 italic">&ldquo;{t.quote}&rdquo;</p>
                 <div>
                   <p className="font-semibold text-gray-900">{t.name}</p>
                   <p className="text-xs text-gray-400">{t.role}</p>
@@ -318,7 +318,7 @@ export default function HomePage({
             Make an Informed Decision About Your Health
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-blue-100">
-            Don't face a major medical decision alone. Get a second opinion from a world-class specialist
+            {"Don't"} face a major medical decision alone. Get a second opinion from a world-class specialist
             — delivered securely to your inbox within days.
           </p>
           <Link

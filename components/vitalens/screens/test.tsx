@@ -190,7 +190,7 @@ export function J9_Payment() {
         {/* Money-back badge */}
         <div style={{ margin: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: 'rgba(125,166,121,0.08)', border: '1px solid rgba(125,166,121,0.2)' }}>
           <span style={{ fontSize: 18 }}>✓</span>
-          <span style={{ fontSize: 12.5, color: '#1F5A2A', fontWeight: 500 }}>14-day money-back guarantee if we can't process your sample</span>
+          <span style={{ fontSize: 12.5, color: '#1F5A2A', fontWeight: 500 }}>{"14-day money-back guarantee if we can't process your sample"}</span>
         </div>
       </div>
 

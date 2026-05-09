@@ -168,7 +168,7 @@ export function PatientProfileForm({ profile }: Props) {
           className="h-4 w-4 rounded border-gray-300"
         />
         <Label htmlFor="marketingOptIn" className="cursor-pointer font-normal text-gray-600">
-          I'd like to receive health tips and platform updates by email
+          {"I'd like to receive health tips and platform updates by email"}
         </Label>
       </div>
 

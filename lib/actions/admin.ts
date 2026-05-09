@@ -402,7 +402,7 @@ export async function getAnalytics() {
       db.case.groupBy({
         by: ['specialtyId'],
         _count: { _all: true },
-        orderBy: { _count: { _all: 'desc' } },
+        orderBy: { _count: { specialtyId: 'desc' } },
         take: 10,
       }),
       db.case.groupBy({ by: ['priority'], _count: { _all: true } }),

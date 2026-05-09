@@ -62,7 +62,7 @@ export function J23_Today() {
         {/* Today's focus hero */}
         <div style={{ margin: '0 16px 16px', borderRadius: 22, padding: '20px 20px', background: 'linear-gradient(135deg, #241814 0%, #2E1F1A 100%)', color: '#FBF4E8', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', right: -30, top: -30, width: 180, height: 180, borderRadius: 99, background: 'radial-gradient(circle, rgba(245,199,160,0.32) 0%, transparent 70%)' }} />
-          <div className="caps caps-ink">TODAY'S FOCUS · DAY 28 OF 90</div>
+          <div className="caps caps-ink">{"TODAY'S FOCUS · DAY 28 OF 90"}</div>
           <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 26, lineHeight: 1.15, letterSpacing: -0.01, marginTop: 8, position: 'relative' }}>
             Get ApoB <span style={{ fontStyle: 'italic', color: '#F5C7A0' }}>under 80.</span>
           </div>
@@ -142,7 +142,7 @@ export function J23_Today() {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--line-bone)', fontSize: 11.5 }}>
-            <span style={{ color: 'var(--t-3)' }}>Today's tasks</span>
+            <span style={{ color: 'var(--t-3)' }}>{"Today's tasks"}</span>
             <span style={{ color: 'var(--t-1)', fontWeight: 600 }}>{doneCount} / {tasks.length} done</span>
           </div>
         </div>
@@ -297,7 +297,7 @@ export function J25_Wearables() {
             Connect your<br /><span style={{ fontStyle: 'italic' }}>wearables.</span>
           </div>
           <div style={{ fontSize: 14, color: 'var(--t-2)', marginTop: 10, lineHeight: 1.45 }}>
-            We'll layer your daily signals on top of your blood markers — sleep next to cortisol, HRV next to inflammation. Your data stays yours.
+            {"We'll layer your daily signals on top of your blood markers — sleep next to cortisol, HRV next to inflammation. Your data stays yours."}
           </div>
         </div>
 
