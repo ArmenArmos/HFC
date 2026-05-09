@@ -20,28 +20,31 @@ const IconList = () => <svg {...S}><line x1="8" y1="6" x2="21" y2="6" /><line x1
 const IconLogout = () => <svg {...S}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
 const IconMenu = () => <svg {...S}><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
 const IconX = () => <svg {...S}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+const IconSettings = () => <svg {...S}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
 
 // ── Nav config ─────────────────────────────────────────────────
 
-type NavItem = { label: string; href: string; icon: React.ReactNode; exact?: boolean }
+type NavItem = { label: string; href: string; icon: React.ReactNode; exact?: boolean; badgeKey?: 'messages' | 'cases' }
 
 function getNavItems(role: string, locale: string): NavItem[] {
   if (role === 'patient') return [
     { label: 'Dashboard', href: `/${locale}/patient/dashboard`, icon: <IconHome />, exact: true },
-    { label: 'My Cases', href: `/${locale}/patient/cases`, icon: <IconFolder /> },
+    { label: 'My Cases', href: `/${locale}/patient/cases`, icon: <IconFolder />, badgeKey: 'messages' },
     { label: 'New Case', href: `/${locale}/patient/cases/new`, icon: <IconPlus />, exact: true },
     { label: 'Profile', href: `/${locale}/patient/profile`, icon: <IconUser />, exact: true },
+    { label: 'Settings', href: `/${locale}/patient/settings`, icon: <IconSettings />, exact: true },
   ]
   if (role === 'doctor') return [
     { label: 'Dashboard', href: `/${locale}/doctor/dashboard`, icon: <IconHome />, exact: true },
-    { label: 'Cases', href: `/${locale}/doctor/cases`, icon: <IconFolder /> },
+    { label: 'Cases', href: `/${locale}/doctor/cases`, icon: <IconFolder />, badgeKey: 'cases' },
     { label: 'Profile', href: `/${locale}/doctor/profile`, icon: <IconUser />, exact: true },
     { label: 'Availability', href: `/${locale}/doctor/availability`, icon: <IconCalendar />, exact: true },
+    { label: 'Settings', href: `/${locale}/doctor/settings`, icon: <IconSettings />, exact: true },
   ]
   return [
     { label: 'Dashboard', href: `/${locale}/admin/dashboard`, icon: <IconHome />, exact: true },
-    { label: 'Cases', href: `/${locale}/admin/cases`, icon: <IconFolder /> },
-    { label: 'Doctors', href: `/${locale}/admin/doctors`, icon: <IconUsers /> },
+    { label: 'Cases', href: `/${locale}/admin/cases`, icon: <IconFolder />, badgeKey: 'messages' },
+    { label: 'Doctors', href: `/${locale}/admin/doctors`, icon: <IconUsers />, badgeKey: 'cases' },
     { label: 'Users', href: `/${locale}/admin/users`, icon: <IconUser /> },
     { label: 'Organizations', href: `/${locale}/admin/organizations`, icon: <IconBuilding /> },
     { label: 'Analytics', href: `/${locale}/admin/analytics`, icon: <IconChart />, exact: true },
@@ -49,12 +52,28 @@ function getNavItems(role: string, locale: string): NavItem[] {
   ]
 }
 
+// ── Badge ──────────────────────────────────────────────────────
+
+function Badge({ n }: { n: number }) {
+  if (n <= 0) return null
+  return (
+    <span style={{
+      marginLeft: 'auto', background: '#ef4444', color: 'white',
+      borderRadius: 999, fontSize: 10.5, fontWeight: 700,
+      padding: '1px 6px', minWidth: 18, textAlign: 'center', lineHeight: '16px',
+    }}>
+      {n > 99 ? '99+' : n}
+    </span>
+  )
+}
+
 // ── Sidebar component ──────────────────────────────────────────
 
-export function AppSidebar({ role, userName, locale }: {
+export function AppSidebar({ role, userName, locale, notifications }: {
   role: 'patient' | 'doctor' | 'admin'
   userName: string
   locale: string
+  notifications?: { messages: number; cases: number }
 }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -62,7 +81,6 @@ export function AppSidebar({ role, userName, locale }: {
 
   function isActive(item: NavItem) {
     if (item.exact) return pathname === item.href
-    // "My Cases" should not activate on /cases/new
     if (item.href.endsWith('/cases')) return pathname.startsWith(item.href) && !pathname.endsWith('/new')
     return pathname.startsWith(item.href)
   }
@@ -77,8 +95,7 @@ export function AppSidebar({ role, userName, locale }: {
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 0 3px rgba(59,130,246,0.2)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M12 3a9 9 0 1 1 0 18A9 9 0 0 1 12 3z" fill="rgba(255,255,255,0.15)" />
-              <path d="M12 7v5l3 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M8 12h8" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              <path d="M8 12h8M12 8v8" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
             </svg>
           </div>
           <div>
@@ -92,6 +109,7 @@ export function AppSidebar({ role, userName, locale }: {
       <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
         {navItems.map(item => {
           const active = isActive(item)
+          const badge = item.badgeKey ? (notifications?.[item.badgeKey] ?? 0) : 0
           return (
             <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }} onClick={() => setMobileOpen(false)}>
               <div style={{
@@ -104,6 +122,7 @@ export function AppSidebar({ role, userName, locale }: {
               }}>
                 {item.icon}
                 {item.label}
+                <Badge n={badge} />
               </div>
             </Link>
           )
@@ -133,20 +152,20 @@ export function AppSidebar({ role, userName, locale }: {
 
   return (
     <>
-      {/* Desktop */}
       <aside className="hidden lg:block" style={{ width: 240, flexShrink: 0, height: '100vh', position: 'sticky', top: 0, overflowY: 'auto' }}>
         {Inner}
       </aside>
-
-      {/* Mobile top bar */}
       <div className="lg:hidden" style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 56, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', zIndex: 50 }}>
         <span style={{ color: '#f8fafc', fontWeight: 700, fontSize: 15 }}>MSO Platform</span>
-        <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.75)', cursor: 'pointer', padding: 4, display: 'flex' }}>
-          {mobileOpen ? <IconX /> : <IconMenu />}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {(notifications?.messages ?? 0) + (notifications?.cases ?? 0) > 0 && (
+            <Badge n={(notifications?.messages ?? 0) + (notifications?.cases ?? 0)} />
+          )}
+          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.75)', cursor: 'pointer', padding: 4, display: 'flex' }}>
+            {mobileOpen ? <IconX /> : <IconMenu />}
+          </button>
+        </div>
       </div>
-
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="lg:hidden" style={{ position: 'fixed', inset: 0, zIndex: 100 }}>
           <div onClick={() => setMobileOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />

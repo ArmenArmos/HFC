@@ -35,6 +35,7 @@ export default async function AdminCasesPage({
 
   return (
     <div className="p-6 lg:p-8">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">Cases</h1>
 {/* Filters */}
         <form method="GET" className="mb-6 flex flex-wrap gap-3">
           <input
@@ -95,15 +96,23 @@ export default async function AdminCasesPage({
                     <td className="px-4 py-3 text-gray-600">{doctor?.name ?? '—'}</td>
                     <td className="px-4 py-3 text-gray-500">{formatDate(c.createdAt, locale)}</td>
                     <td className="px-4 py-3 text-right">
-                      <CaseAssignActions
-                        caseId={c.id}
-                        currentStatus={c.status}
-                        currentDoctorId={c.doctorId}
-                        doctors={doctors.map((d) => ({
-                          id: d.id,
-                          name: (d as any).user?.name ?? d.id,
-                        }))}
-                      />
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/${locale}/admin/cases/${c.id}`}
+                          className="rounded-md border px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                        >
+                          View
+                        </Link>
+                        <CaseAssignActions
+                          caseId={c.id}
+                          currentStatus={c.status}
+                          currentDoctorId={c.doctorId}
+                          doctors={doctors.map((d) => ({
+                            id: d.id,
+                            name: (d as any).user?.name ?? d.id,
+                          }))}
+                        />
+                      </div>
                     </td>
                   </tr>
                 )

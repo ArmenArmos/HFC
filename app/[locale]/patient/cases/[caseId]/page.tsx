@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/utils'
 import { MessageThread } from '@/components/case/message-thread'
+import { CaseTimeline } from '@/components/case/case-timeline'
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'success' | 'warning' | 'destructive' | 'outline'> = {
   DRAFT: 'outline', PENDING_PAYMENT: 'warning', ASSIGNED: 'secondary',
@@ -84,6 +85,21 @@ export default async function CaseDetailPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Timeline */}
+      <Card className="mb-6">
+        <CardHeader><CardTitle className="text-base">Case Timeline</CardTitle></CardHeader>
+        <CardContent>
+          <CaseTimeline
+            status={c.status}
+            createdAt={c.createdAt}
+            submittedAt={(c as any).submittedAt}
+            assignedAt={(c as any).assignedAt}
+            dueDate={c.dueDate}
+            completedAt={(c as any).completedAt}
+          />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Case details */}

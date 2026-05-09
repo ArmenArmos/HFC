@@ -500,7 +500,7 @@ export function J13_Notification() {
           borderRadius: 20, padding: 18, border: '1px solid rgba(244,241,234,0.12)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
         }}>
-          <div style={{ display: 'flex', align: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10,

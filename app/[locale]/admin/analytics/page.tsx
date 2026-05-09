@@ -46,6 +46,7 @@ export default async function AdminAnalyticsPage({
 
   return (
     <div className="p-6 lg:p-8">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">Analytics</h1>
 {/* Top KPIs */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Total Revenue" value={formatCurrency(data.totalRevenue, 'USD', locale)} sub="All time" />

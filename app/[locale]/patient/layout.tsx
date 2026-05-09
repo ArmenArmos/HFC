@@ -1,5 +1,6 @@
 import { requirePatient } from '@/lib/auth-helpers'
 import { AppSidebar } from '@/components/layout/sidebar'
+import { getUnreadCounts } from '@/lib/actions/settings'
 
 export default async function PatientLayout({
   children,
@@ -9,9 +10,10 @@ export default async function PatientLayout({
   params: { locale: string }
 }) {
   const session = await requirePatient(locale)
+  const notifications = await getUnreadCounts()
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
-      <AppSidebar role="patient" userName={session.user.name ?? 'Patient'} locale={locale} />
+      <AppSidebar role="patient" userName={session.user.name ?? 'Patient'} locale={locale} notifications={notifications} />
       <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }} className="pt-14 lg:pt-0">
         {children}
       </div>

@@ -33,6 +33,7 @@ export default async function AdminDoctorsPage({
 
   return (
     <div className="p-6 lg:p-8">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">Doctors</h1>
 {/* Filter tabs */}
         <div className="mb-6 flex gap-2 border-b pb-2">
           {tabs.map((tab) => (

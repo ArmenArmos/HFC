@@ -21,9 +21,10 @@ export default async function AdminOrganizationsPage({
 
   return (
     <div className="p-6 lg:p-8">
-<div className="mb-6 flex items-center justify-between">
-          <p className="text-sm text-gray-500">{orgs.length} organization{orgs.length !== 1 ? 's' : ''}</p>
-        </div>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Organizations</h1>
+        <p className="text-sm text-gray-500">{orgs.length} organization{orgs.length !== 1 ? 's' : ''}</p>
+      </div>
 
         <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
           <table className="w-full text-sm">
