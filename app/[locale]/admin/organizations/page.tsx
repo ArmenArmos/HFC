@@ -20,19 +20,8 @@ export default async function AdminOrganizationsPage({
   const orgs = await getAllOrganizations()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <Link href={`/${locale}/admin/dashboard`} className="text-sm text-blue-600 hover:underline">
-            ← Dashboard
-          </Link>
-          <h1 className="text-lg font-semibold">Organizations (B2B)</h1>
-          <div className="w-28" />
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
+    <div className="p-6 lg:p-8">
+<div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-gray-500">{orgs.length} organization{orgs.length !== 1 ? 's' : ''}</p>
         </div>
 
@@ -88,7 +77,6 @@ export default async function AdminOrganizationsPage({
             <div className="py-12 text-center text-gray-400">No organizations yet.</div>
           )}
         </div>
-      </main>
     </div>
   )
 }

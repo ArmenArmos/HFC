@@ -45,19 +45,8 @@ export default async function AdminAnalyticsPage({
   const totalCases = data.casesByStatus.reduce((sum: number, s: any) => sum + s._count._all, 0)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <Link href={`/${locale}/admin/dashboard`} className="text-sm text-blue-600 hover:underline">
-            ← Dashboard
-          </Link>
-          <h1 className="text-lg font-semibold">Analytics</h1>
-          <div className="w-28" />
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Top KPIs */}
+    <div className="p-6 lg:p-8">
+{/* Top KPIs */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Total Revenue" value={formatCurrency(data.totalRevenue, 'USD', locale)} sub="All time" />
           <StatCard title="Cases (Last 30d)" value={data.last30DayCases.toString()} sub={`${data.last7DayCases} in last 7 days`} />
@@ -111,7 +100,6 @@ export default async function AdminAnalyticsPage({
             </div>
           </CardContent>
         </Card>
-      </main>
     </div>
   )
 }

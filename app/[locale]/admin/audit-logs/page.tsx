@@ -38,19 +38,8 @@ export default async function AdminAuditLogsPage({
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <Link href={`/${locale}/admin/dashboard`} className="text-sm text-blue-600 hover:underline">
-            ← Dashboard
-          </Link>
-          <h1 className="text-lg font-semibold">Audit Logs</h1>
-          <div className="w-28" />
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        {/* Filters */}
+    <div className="p-6 lg:p-8">
+{/* Filters */}
         <form method="GET" className="mb-6 flex flex-wrap gap-3">
           <select name="action" defaultValue={searchParams.action ?? ''} className="rounded-md border border-input bg-white px-3 py-2 text-sm">
             <option value="">All Actions</option>
@@ -107,7 +96,6 @@ export default async function AdminAuditLogsPage({
             <div className="py-12 text-center text-gray-400">No audit logs found.</div>
           )}
         </div>
-      </main>
     </div>
   )
 }

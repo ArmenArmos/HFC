@@ -32,19 +32,8 @@ export default async function AdminDoctorsPage({
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <Link href={`/${locale}/admin/dashboard`} className="text-sm text-blue-600 hover:underline">
-            ← Dashboard
-          </Link>
-          <h1 className="text-lg font-semibold">Doctors Management</h1>
-          <div className="w-28" />
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        {/* Filter tabs */}
+    <div className="p-6 lg:p-8">
+{/* Filter tabs */}
         <div className="mb-6 flex gap-2 border-b pb-2">
           {tabs.map((tab) => (
             <Link key={tab.label} href={tab.value ? `?status=${tab.value}` : '?'}>
@@ -104,7 +93,6 @@ export default async function AdminDoctorsPage({
             <div className="py-12 text-center text-gray-400">No doctors found.</div>
           )}
         </div>
-      </main>
     </div>
   )
 }

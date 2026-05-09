@@ -9,28 +9,15 @@ export default async function AdminDashboard({
 }: {
   params: { locale: string }
 }) {
-  const session = await requireAdmin(locale)
+  await requireAdmin(locale)
   const stats = await getAdminStats()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <h1 className="text-2xl font-bold text-blue-600">Medical Second Opinion — Admin</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">Admin: {session.user.name}</span>
-            <Link href={`/${locale}/auth/signout`}>
-              <Button variant="outline" size="sm">Sign Out</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
-          <p className="mt-2 text-gray-600">Manage users, cases, and platform operations</p>
-        </div>
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500">Manage users, cases, and platform operations</p>
+      </div>
 
         {/* Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -86,7 +73,6 @@ export default async function AdminDashboard({
             href={`/${locale}/admin/audit-logs`}
           />
         </div>
-      </main>
     </div>
   )
 }
