@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+.vl {
+  /* Surfaces */
+  --bone: #F5EBDD;
+  --paper: #FBF4E8;
+  --ink: #241814;
+
+  /* Sunset gradient */
+  --sun-glow: #FFE8C8;
+  --sun-1: #F6D9A8;
+  --sun-2: #F6B15A;
+  --sun-3: #E87A3E;
+  --sun-4: #D14829;
+  --clay: #7A2E1A;
+
+  /* Status */
+  --st-optimal: #7DA679;
+  --st-inrange: #4FB45C;
+  --st-watch: #E8A347;
+  --st-out: #D14829;
+  --st-critical: #A2331A;
+  --st-pending: #7A6253;
+
+  /* Text on bone */
+  --t-1: #241814;
+  --t-2: #4A3328;
+  --t-3: #7A6253;
+
+  /* Lines */
+  --line-bone: rgba(36, 24, 20, 0.1);
+  --line-bone-2: rgba(36, 24, 20, 0.08);
+
+  /* Fonts */
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter Tight', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
+
+  /* Radii */
+  --r-pill: 999px;
+  --r-card: 22px;
+  --r-card-sm: 14px;
+
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Typography utilities ── */
+.vl .caps {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t-3);
+}
+.vl .caps-ink {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 234, 0.55);
+}
+.vl .num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Section header ── */
+.vl .sect-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.vl .sect-h .more {
+  font-size: 12px;
+  color: var(--t-3);
+  font-weight: 500;
+}
+
+/* ── Buttons ── */
+.vl .btn-prim {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 54px;
+  padding: 0 28px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, var(--sun-3) 0%, var(--sun-4) 100%);
+  color: #fff;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: opacity 0.12s;
+}
+.vl .btn-prim:hover { opacity: 0.9; }
+
+.vl .btn-ink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 54px;
+  padding: 0 28px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.vl .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
+  padding: 0 28px;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--t-1);
+  border: 1.5px solid var(--line-bone);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.vl .btn-warm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 54px;
+  padding: 0 28px;
+  border-radius: var(--r-pill);
+  background: rgba(232, 122, 62, 0.1);
+  color: var(--clay);
+  border: 1px solid rgba(232, 122, 62, 0.25);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Cards ── */
+.vl .hero-card {
+  border-radius: var(--r-card);
+  overflow: hidden;
+  position: relative;
+}
+.vl .card-bone {
+  background: var(--paper);
+  border-radius: var(--r-card);
+  border: 1px solid var(--line-bone-2);
+}
+.vl .card-ink {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--r-card);
+}
+
+/* ── Chips ── */
+.vl .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  background: rgba(36, 24, 20, 0.05);
+  border: 1px solid var(--line-bone-2);
+  color: var(--t-1);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.vl .chip-sel {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* ── Gradient backgrounds ── */
+.vl .sunrise {
+  background: radial-gradient(ellipse 100% 80% at 50% 100%, var(--sun-3) 0%, var(--sun-4) 35%, var(--clay) 100%);
+}
+.vl .dawn {
+  background: linear-gradient(180deg, #C9C2D5 0%, #B8B0CC 18%, #D9C5C2 38%, #F5C7A0 60%, var(--sun-3) 82%, #A2331A 100%);
+}
+.vl .dusk {
+  background: linear-gradient(180deg, var(--ink) 0%, #2E1F1A 50%, #1A0F0A 100%);
+}
+.vl .bloom {
+  background: radial-gradient(circle at 50% 60%, var(--sun-glow) 0%, var(--sun-2) 35%, var(--sun-3) 65%, var(--sun-4) 100%);
+}
+
+/* ── Grain overlay ── */
+.vl .grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E");
+}
+.vl .grain-soft::after { opacity: 0.2; }
+
+/* ── Chladni rings (ElevenLabs-inspired) ── */
+.vl .chladni-rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Scrollbar hide ── */
+.vl .phone-scroll { scrollbar-width: none; overflow-y: auto; }
+.vl .phone-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Glow effects ── */
+.vl .glow-ember { box-shadow: 0 0 60px rgba(232, 122, 62, 0.45); }
+
+/* ── Progress bar ── */
+.vl .progress-bar {
+  height: 3px;
+  background: var(--line-bone-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.vl .progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--ink);
+  transition: width 0.3s ease;
+}
