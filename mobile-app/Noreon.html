@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Noreon — A new era of preventive health</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-cream:#F4F1ED;
+      --bg-cream-soft:#FAF8F4;
+      --surface-card:#FFFFFF;
+      --surface-elevated:#FBF9F5;
+      --ink:#1A1A1A;
+      --ink-soft:#3A3733;
+      --ink-muted:#6B6661;
+      --ink-faint:#A39E97;
+      --hairline:#E8E3DC;
+      --hairline-strong:#D9D3CA;
+      --signal-watch:#C89B4F;
+      --signal-attention:#C4634A;
+      --signal-affirm:#7A8F5A;
+      --signal-doctor:#B8924F;
+      --orb-coral-1:#F8D5CC; --orb-coral-2:#FF8A6F; --orb-coral-3:#E85A4F;
+      --orb-twilight-1:#B8A8E0; --orb-twilight-2:#9B7FD4; --orb-twilight-3:#F5A3A0;
+      --orb-sage-1:#C8D5B9; --orb-sage-2:#8FA876; --orb-sage-3:#5F7A50;
+      --orb-blush-1:#FFF1EC; --orb-blush-2:#F5C4B8;
+      --orb-lilac-1:#E0D4F0; --orb-lilac-2:#B5A3D8;
+
+      --font-serif: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Helvetica Neue", system-ui, sans-serif;
+    }
+    *,*::before,*::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; background: #1A1A1A;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: "ss01","ss02";
+    }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(60% 50% at 80% 10%, rgba(255,138,111,0.10) 0%, transparent 70%),
+        radial-gradient(60% 50% at 15% 90%, rgba(143,168,118,0.10) 0%, transparent 70%),
+        #0e0e0e;
+    }
+    .stage {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .phone-shell {
+      position: relative;
+      width: 402px; height: 874px;
+      border-radius: 48px;
+      overflow: hidden;
+      background: var(--bg-cream);
+      box-shadow:
+        0 50px 100px rgba(0,0,0,0.45),
+        0 0 0 1px rgba(0,0,0,0.5),
+        inset 0 0 0 6px #0a0a0a,
+        inset 0 0 0 8px #2a2a2a;
+    }
+    .screen {
+      position: absolute; inset: 0;
+      background: var(--bg-cream);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .screen-body {
+      flex: 1; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .screen-body::-webkit-scrollbar { width: 0; }
+    .dynamic-island {
+      position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+      width: 126px; height: 37px; border-radius: 24px;
+      background: #000; z-index: 60; pointer-events: none;
+    }
+    .home-indicator {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 70;
+      height: 28px; display: flex; justify-content: center; align-items: flex-end;
+      padding-bottom: 8px; pointer-events: none;
+    }
+    .home-indicator-bar {
+      width: 139px; height: 5px; border-radius: 100px;
+      background: rgba(26,26,26,0.35);
+    }
+    .status-bar {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 55;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 32px 0 32px;
+      font-family: -apple-system, "SF Pro", system-ui;
+      font-weight: 600; font-size: 16px; color: var(--ink);
+      pointer-events: none;
+    }
+
+    h1,h2,h3,h4 { font-family: var(--font-serif); font-weight: 400; letter-spacing: -0.02em; line-height: 1.08; margin: 0; }
+    h1 { font-size: 48px; line-height: 1.04; }
+    h2 { font-size: 36px; line-height: 1.05; }
+    h3 { font-size: 28px; line-height: 1.08; }
+    h4 { font-size: 22px; line-height: 1.18; }
+    p { margin: 0; line-height: 1.55; color: var(--ink-soft); }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; padding: 0; color: inherit; }
+    .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+    .serif { font-family: var(--font-serif); font-weight: 400; }
+    .serif-i { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
+    .uppercase-eyebrow {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--ink-muted);
+    }
+    @keyframes orbBreathe {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 0.92; }
+    }
+    @keyframes fadeUp {
+      0%   { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { opacity: 1; }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%),
+                  var(--surface-elevated);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+
+    /* admin shell */
+    .admin-page {
+      min-height: 100vh; background: var(--bg-cream);
+      color: var(--ink); font-family: var(--font-sans);
+    }
+
+    @media (max-width: 480px) {
+      .stage { padding: 0; align-items: stretch; }
+      .phone-shell {
+        width: 100vw; height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .dynamic-island, .home-indicator, .status-bar { display: none; }
+      body { background: var(--bg-cream); }
+    }
+  </style>
+
+  <!-- React -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="app/data.js"></script>
+  <script type="text/babel" src="app/atoms.jsx"></script>
+  <script type="text/babel" src="app/icons.jsx"></script>
+  <script type="text/babel" src="app/zoe.jsx"></script>
+  <script type="text/babel" src="app/onboarding.jsx"></script>
+  <script type="text/babel" src="app/today.jsx"></script>
+  <script type="text/babel" src="app/missions.jsx"></script>
+  <script type="text/babel" src="app/food.jsx"></script>
+  <script type="text/babel" src="app/test.jsx"></script>
+  <script type="text/babel" src="app/packages.jsx"></script>
+  <script type="text/babel" src="app/report.jsx"></script>
+  <script type="text/babel" src="app/profile.jsx"></script>
+  <script type="text/babel" src="app/exercise.jsx"></script>
+  <script type="text/babel" src="app/extras.jsx"></script>
+  <script type="text/babel" src="app/admin.jsx"></script>
+  <script type="text/babel" src="app/shell.jsx"></script>
+  <script type="text/babel" src="app/app.jsx"></script>
+</body>
+</html>

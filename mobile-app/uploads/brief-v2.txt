@@ -1,0 +1,413 @@
+Noreon MVP Product Experience Brief
+Upload-ready instructions for an AI builder / vibe-coding service
+Field 	Instruction
+Product name 	Noreon
+Website/domain 	noreonhealth.com or noreon.health, depending final choice
+AI assistant temporary name 	Zoe
+MVP purpose 	Create an internal MVP for the founding team to try the full
+product experience on themselves before external launch.
+Primary experience 	A caring chat-first preventive health coach that guides
+onboarding, daily routine, biomarker test booking simulation,
+food-photo guidance, daily missions, weekly missions, and
+doctor-reviewed report simulation.
+Important positioning 	Doctor-monitored preventive health platform. Zoe supports
+and explains, but does not replace doctors.
+1. Instruction to the AI Builder
+Build a clickable and functional internal MVP of Noreon focused on the complete user experience. The MVP does
+not need full production medical operations. It should simulate or manually support complex parts where needed,
+but the user journey should feel real enough for the founding team to test daily.
+Do not over-focus on technical architecture. Focus on screens, flows, user behavior, coaching mechanics, daily
+routines, mission systems, and the emotional experience of using the product.
+2. Product Concept
+Noreon is a doctor-monitored preventive medicine and longevity platform. It helps users create a biological and
+lifestyle profile, schedule a biomarker blood test, receive a doctor-reviewed insight report, and stay active daily
+through Zoe, a caring professional health coach.
+3. Core MVP Experience
+1. User opens Noreon and understands the promise: a new era of preventive health.
+2. User creates a health profile through smooth conversational onboarding.
+3. User receives temporary access to Zoe before payment or full biomarker testing.
+4. Zoe creates a starter daily routine from user inputs.
+5. User sees daily missions, weekly missions, streaks/rhythm tracking, and food-photo guidance.
+6. User can simulate booking a biomarker blood test at their location.
+7. User can see a sample doctor-reviewed biomarker report.
+8. Zoe explains report insights and turns them into daily actions.
+9. User continues using the app daily for walking, sleep, food, exercise, and stress habits.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 1 of 9 --
+
+4. Experience Principles
+● Start with value, not payment. The user should receive a starter routine and temporary Zoe access before the
+biomarker booking conversion.
+● Make the app feel caring, scientific, premium, and non-judgmental.
+● The interface should be built around Zoe chat, not around a static dashboard.
+● Health goals should feel achievable. Avoid overwhelming the user with too many actions.
+● Gamification should build momentum without shame. Missed days should trigger recovery coaching, not
+punishment.
+● Biomarker insights should be described as doctor-reviewed. Zoe should not diagnose disease.
+● Sensitive wellbeing, hormonal balance, reproductive health, energy, mood, libido, and fertility should be treated
+as part of overall health, not as a separate product vertical.
+5. Main MVP Screens
+Screen 	Purpose 	Key elements
+Welcome 	Introducing Noreon. 	Headline, promise, Start button, How it
+works.
+How It Works 	Set expectations. 	1) Build profile, 2) Get starter routine, 3)
+Book biomarker test, 4)
+Doctor-reviewed insights.
+Onboarding Chat 	Collect user data smoothly. 	Zoe asks short questions using cards,
+sliders, multi-select, and optional free
+text.
+Data Completeness 	Show progress. 	Profile % complete, missing data,
+biomarker test unlock explanation.
+Starter Routine 	Give value before payment. 	Morning, food, walking, exercise, sleep,
+stress plan.
+Zoe Chat Home 	Main daily interface. 	Conversation, daily briefing, Ask Zoe
+input, daily missions.
+Daily Missions 	Drive daily action. 	Food, walk, sleep, exercise, hydration,
+stress missions.
+Weekly Missions 	Create a weekly progress loop. 	Weekly focus, progress bars, mission
+checklist.
+Food Photo 	Enable meal guidance. 	Camera/upload, meal interpretation,
+what to eat/reduce/add.
+Exercise Plan 	Provide movement guidance. 	Beginner-friendly plans, walking,
+mobility, strength, recovery.
+Biomarker Test 	Show test package and booking flow. 	Recommended package, included
+markers, schedule, location,
+preparation.
+Test Tracker 	Simulate operations. 	Scheduled, collector assigned,
+collected, lab processing, doctor
+review, report ready.
+Report 	Show doctor-reviewed insights. 	Summary, risk signals, biomarker
+categories, lifestyle recommendations.
+Profile 	User controls. 	Health profile, goals, privacy,
+notification preferences.
+6. Smooth Onboarding Flow
+The onboarding must collect a lot of information, but it should feel conversational and useful. Zoe should explain
+why each section matters.
+Step 	Experience
+1. Welcome 	Show Noreon promise and start button.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 2 of 9 --
+
+2. Goals 	User selects 3-5 goals: energy, sleep, metabolism, longevity,
+weight, stress, heart health, hormonal balance, reproductive
+goals, food habits.
+3. Basic profile 	Age, sex assigned at birth, height, weight, city, work
+schedule.
+4. Medical background 	Known conditions, medications, allergies, current
+supplements, previous diagnoses.
+5. Family history 	Diabetes, heart disease, cancer, thyroid, autoimmune,
+fertility/hormonal issues.
+6. Lifestyle rhythm 	Wake time, bedtime, work hours, sitting time, meal timing,
+activity baseline.
+7. Nutrition 	Diet style, restrictions, allergies, cravings, eating out,
+snacking, main nutrition challenge.
+8. Sleep and recovery 	Sleep duration, quality, consistency, caffeine timing, screen
+use, night awakenings.
+9. Movement 	Current exercise, step baseline, limitations, preferred
+activities, gym/home access.
+10. Stress and motivation 	Stress level, main barrier, preferred coaching style, reminder
+preferences.
+11. Sensitive wellbeing optional 	Energy, mood, hormones, libido, fertility,
+cycle/menopause/performance concerns as optional
+overall-health inputs.
+12. Data completeness 	Show what is complete and what biomarker testing will
+improve.
+13. Starter routine 	Zoe generates first routine from current inputs.
+14. Temporary Zoe access 	Allow limited chat and sample food-photo guidance before
+payment.
+15. Biomarker test recommendation 	Show recommended package and booking CTA.
+7. Temporary Zoe Access Before Payment
+The user should feel the product value before being asked to pay or book biomarker testing.
+● Give user a starter daily routine immediately after onboarding.
+● Allow 3-5 free Zoe questions.
+● Allow 1-2 food photo tests.
+● Show basic daily missions.
+● Explain that full personalization and doctor-reviewed insights require biomarker testing.
+● Do not show medical risk conclusions before biomarker test and doctor review.
+8. Zoe Personality and Chat Instructions
+Dimension 	Instruction
+Role 	Zoe is a caring professional health coach inside a
+doctor-monitored platform. Zoe supports, explains,
+motivates, and helps the user stay consistent.
+Tone 	Warm, calm, respectful, intelligent, practical, non-judgmental.
+Never do 	Do not diagnose disease. Do not frighten users. Do not
+shame users. Do not pretend to be a doctor. Do not give
+strong medical conclusions without doctor-reviewed report.
+Always do 	Acknowledge the user, explain briefly, recommend one
+achievable action, and reduce psychological pressure.
+Daily style 	Short, supportive, specific. Zoe should give one or two
+priorities, not ten.
+Missed goals 	Frame as recovery, not failure.
+Biomarkers 	Explain doctor-reviewed findings in plain language and
+connect to daily actions.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 3 of 9 --
+
+Sensitive topics 	Handle energy, hormones, reproductive health, libido, cycle,
+fertility, and performance as part of overall health, with
+privacy and maturity.
+9. Zoe Response Mechanics
+Use this response structure for most Zoe coaching replies:
+1. Acknowledge: recognize the user’s situation or emotion.
+2. Personalize: refer to their goals, habits, or available profile data.
+3. Explain: give a short reason why it matters.
+4. Action: recommend one clear next step.
+5. Encourage: reduce guilt and create momentum.
+Example after missed walk:
+“You missed yesterday’s walk, but that does not erase your progress. Since your goal is better metabolic rhythm,
+let’s make today easier: take a 12-minute walk after lunch. Small recovery actions matter.”
+Example after poor meal:
+“This meal is higher in refined carbohydrates than ideal for your current goals. No need to compensate harshly. For
+your next meal, add protein and vegetables first, and take a short walk afterward.”
+10. Daily Home Experience
+The home screen should be chat-first. It should feel like Zoe is checking in and guiding the user’s day.
+● Top: friendly Zoe greeting and daily focus.
+● Main: chat panel with “Ask Zoe anything about today’s routine.”
+● Daily missions card with 2-4 tasks.
+● Food photo button.
+● Walking/sleep/exercise progress cards.
+● Weekly mission progress.
+● Biomarker test CTA if not booked.
+● Report CTA if report is ready.
+11. Daily Mission System
+Daily missions should be small, achievable, and personalized. The user should feel progress every day.
+Mission type 	Examples 	Zoe guidance
+Food 	Photograph lunch; add protein to
+breakfast; reduce sugary drink; add
+vegetables to dinner.
+“Let’s make one meal more balanced
+today, not your whole diet perfect.”
+Walking 	Walk 15 minutes after lunch; reach
+6,000 steps; take 5-minute work break
+walk.
+“A short walk after meals can support
+metabolic health.”
+Sleep 	Start wind-down 30 minutes before
+bed; avoid caffeine after 3 PM; put
+phone away 20 minutes before sleep.
+“Tonight’s goal is consistency, not
+perfect sleep.”
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 4 of 9 --
+
+Exercise 	10-minute mobility; beginner strength
+session; 2 sets of squats and push
+movements.
+“We will build strength gently. Stop if
+you feel pain.”
+Hydration 	Drink water after waking; replace one
+sweet drink; 6 glasses target.
+“Hydration supports energy and
+appetite regulation.”
+Stress 	3-minute breathing; screen-free break;
+short walk outside.
+“Reducing pressure is part of health,
+not a luxury.”
+Test preparation 	Confirm appointment; fasting reminder;
+hydration reminder; prepare
+address/contact.
+“Your test is tomorrow. I’ll help you
+prepare clearly.”
+12. Weekly Mission System
+● Each week has one main focus such as Metabolic Rhythm, Better Sleep, Energy Reset, Movement
+Foundation, Stress Recovery, or Biomarker Readiness.
+● Weekly missions should include 3-5 goals, not more.
+● Completion target should be 60-80%, not 100%, to avoid perfection pressure.
+● Zoe should summarize weekly progress every Sunday or chosen review day.
+Weekly focus 	Weekly missions
+Metabolic Rhythm 	4 food photos, 5 after-meal walks, 3 protein-based
+breakfasts, reduce sugary drinks 4 days.
+Sleep Consistency 	4 nights of planned bedtime, 3 wind-down sessions, no
+caffeine after 3 PM on 4 days.
+Movement Foundation 	2 strength sessions, 4 walking goals, 2 mobility sessions.
+Stress Recovery 	4 breathing exercises, 2 outdoor walks, 1 screen-free
+evening block.
+Biomarker Readiness 	Complete profile, confirm appointment, follow fasting rules,
+review preparation tips.
+13. Streaks and Rhythm Mechanics
+Use “rhythm” language if “streak” feels too playful. The goal is consistency without shame.
+● Track daily check-in rhythm.
+● Track food-photo rhythm.
+● Track walking rhythm.
+● Track sleep wind-down rhythm.
+● Allow one grace day per week.
+● If a streak is missed, show “Recovery Win” when the user returns.
+● Do not show harsh failure states.
+Mechanic 	Rule
+Grace day 	One missed day per week does not break the rhythm.
+Recovery win 	If user returns after missed day, celebrate restart.
+Weekly consistency 	Show percentage completion instead of only streak count.
+Gentle badges 	Use mature badges: Routine Started, Sleep Rhythm, Food
+Awareness, Biomarker Ready, Recovery Win.
+14. Exercise Plan Mechanics
+Exercise plans should be simple, safe, and adjustable based on user baseline. The MVP should include beginner,
+intermediate, and low-energy options.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 5 of 9 --
+
+Plan level 	Weekly structure 	Example sessions
+Beginner 	2 strength/mobility sessions + 4 walking
+missions.
+10 min mobility; 15 min walk after
+meals; simple bodyweight routine.
+Intermediate 	2-3 strength sessions + 2 cardio
+sessions + walking.
+30 min strength; 20 min zone 2 cardio;
+mobility recovery.
+Low-energy / stressed 	Very small recovery actions. 	5 min walk; breathing; stretching;
+earlier bedtime.
+Metabolic focus 	After-meal walks + strength twice
+weekly.
+10-20 min post-meal walk; lower-body
+strength; light cardio.
+Sleep focus 	Movement earlier in day, calming
+routine evening.
+Morning walk; light mobility; no intense
+late exercise.
+15. Example Exercise Sessions
+Session 	Structure
+10-minute mobility 	Neck rolls, shoulder circles, hip circles, hamstring stretch,
+cat-cow, gentle breathing.
+Beginner strength 1 	Bodyweight squats 2x8, wall pushups 2x8, glute bridges
+2x10, plank 2x20 sec.
+Beginner strength 2 	Step-ups 2x8 each side, incline pushups 2x8, dead bug 2x8,
+side plank 2x15 sec.
+Metabolic walk 	10-20 minutes after lunch or dinner, comfortable pace.
+Recovery evening 	5 minutes slow breathing, 5 minutes stretching, screen
+reduction.
+Zoe safety wording: “This is general wellness guidance. If you have pain, dizziness, chest discomfort, or medical
+restrictions, stop and consult a doctor.”
+16. Food Photo Experience
+Food photo guidance is one of the strongest daily engagement mechanics. It should be fast and supportive.
+1. User taps “Photograph meal.”
+2. User uploads or captures image.
+3. App identifies likely foods and asks user to confirm if needed.
+4. Zoe gives meal feedback based on user profile.
+5. Zoe explains what is good, what to reduce, and what to add.
+6. Meal contributes to daily nutrition mission and weekly pattern.
+Feedback category 	Example
+Good in this meal 	Good protein source; vegetables included; moderate portion.
+Watch area 	High refined carbohydrates; low fiber; sugary drink included.
+Suggested improvement 	Add protein, reduce bread/rice portion, add salad, replace
+soda with water.
+Personalized reason 	Because your goal is better metabolic rhythm, this meal may
+be improved by balancing carbohydrates with protein and
+fiber.
+17. Helpful Tips Library
+The MVP should include a library of short helpful tips that Zoe can use in chat, missions, and daily briefings.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 6 of 9 --
+
+Category 	Helpful tips
+Food 	Start with protein at breakfast; add fiber to
+carbohydrate-heavy meals; avoid drinking calories daily; do
+not skip meals to punish yourself; use smaller portions rather
+than total restriction.
+Walking 	After-meal walks are useful; 10 minutes is enough to start;
+walking during calls counts; consistency beats intensity.
+Sleep 	Consistent bedtime matters; caffeine timing affects sleep;
+phone light and work stress delay recovery; wind-down
+rituals help.
+Exercise 	Strength supports metabolic health; mobility protects
+consistency; low-energy days still count if you move gently.
+Stress 	Stress affects appetite, sleep, and recovery; short breaks
+matter; breathing exercises are not magic but can lower
+pressure.
+Biomarkers 	Biomarkers are signals, not identity; one result rarely tells the
+whole story; trends matter; doctor review matters.
+Motivation 	Missed days are normal; restart is a skill; smaller goals are
+better than abandoned perfect plans.
+18. Biomarker Test Experience
+1. Noreon recommends a first biomarker package based on onboarding.
+2. User reviews what is included and why it matters.
+3. User selects date, time, and location for blood collection.
+4. Zoe sends preparation instructions and reminders.
+5. App shows test tracker status.
+6. Report is marked as doctor-reviewed before sensitive insights are shown.
+7. Zoe explains the report and maps findings to daily actions.
+19. Sample Biomarker Report Experience
+● Show “Doctor-reviewed” badge clearly.
+● Use calm risk wording: low, watch, medium risk pattern, doctor follow-up recommended.
+● Avoid broad cancer-risk claims unless validated and reviewed. Use “additional evaluation may be
+recommended” wording.
+● Connect each insight to daily behavior: food, walking, sleep, exercise, stress, retest timeline.
+Report section 	Content
+Executive summary 	Plain-language overview of current health signals.
+Key insights 	Doctor-reviewed findings, not too many at once.
+Risk signals 	Metabolic, cardiovascular, inflammation, hormonal/nutritional,
+kidney/liver where relevant.
+What is strong 	Positive markers to reinforce progress.
+What needs attention 	Watch areas and next steps.
+Daily plan 	Actions tied to findings.
+Follow-up 	Retest timing or doctor/specialist consultation when needed.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 7 of 9 --
+
+20. Integrated Sensitive Wellbeing
+Do not create a separate “sexual health product.” Treat intimate wellbeing, libido, fertility, reproductive health,
+menopause, performance, hormones, energy, mood, and recovery as part of whole-person preventive health.
+● This section is optional in onboarding.
+● Use discreet, mature language.
+● Allow users to skip without penalty.
+● Do not diagnose infertility, STI, hormonal disorder, or sexual dysfunction.
+● Zoe may explain that sleep, stress, metabolic health, medications, hormones, and emotional pressure can all
+affect intimate wellbeing.
+● Doctor review is required for sensitive risk interpretations.
+21. Payment and Booking Conversion
+For the internal MVP, payment can be simulated. The experience should still show where payment will happen
+later.
+● Do not ask for payment before onboarding and starter routine.
+● Ask after user understands what biomarker testing unlocks.
+● Conversion CTA: “Book my biomarker test.”
+● Secondary CTA: “Continue with starter routine.”
+● Show value included: at-home blood collection, lab processing, doctor-reviewed report, Zoe guidance based
+on biomarkers.
+22. Internal MVP Admin/Doctor Experience
+Because this MVP is for internal testing, complex operations can be manual or simulated, but the experience
+should exist.
+● Admin can see users and onboarding completion.
+● Admin can mark biomarker test as scheduled, collected, lab processing, doctor review, report ready.
+● Admin/doctor can enter sample biomarker values.
+● Doctor reviewer can approve or edit report insights.
+● User sees report only after doctor-reviewed status is marked.
+23. MVP Acceptance Criteria
+● A user can complete onboarding without feeling like they are filling a long medical form.
+● A user receives a personalized starter routine before payment.
+● A user can chat with Zoe and receive helpful, emotionally intelligent coaching.
+● A user can see daily missions, weekly missions, rhythm/streak status, and progress.
+● A user can photograph or upload food and receive supportive meal feedback.
+● A user can view exercise plans and complete daily movement missions.
+● A user can simulate booking a biomarker test at their location.
+● A user can see test status progress through report ready.
+● A user can view a sample doctor-reviewed biomarker report.
+● Zoe can explain report insights in plain language and map them to daily actions.
+● Missed goals trigger supportive recovery messages, not failure messages.
+● Sensitive wellbeing is integrated into overall health and remains optional/private.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 8 of 9 --
+
+24. Recommended Build Order for AI Builder
+1. Create visual design direction and main navigation.
+2. Build welcome and onboarding flow.
+3. Build Zoe chat-first home screen.
+4. Build starter daily routine generation screen.
+5. Build daily missions, weekly missions, and rhythm/streak cards.
+6. Build food photo upload and feedback flow.
+7. Build exercise plan and walking/sleep goal screens.
+8. Build biomarker test package and booking simulation.
+9. Build test status tracker.
+10. Build sample doctor-reviewed report.
+11. Build admin/doctor review simulation.
+12. Connect flows so founding team can test the full journey end to end.
+Noreon MVP Product Experience Brief - for AI builder / vibe-coding service
+
+-- 9 of 9 --
+
