@@ -49,3 +49,4 @@ playwright-report/
 
 # Zoe conversation suite runs (real transcripts of fictional members, kept outside git)
 .zoe-conversation-runs/
+.merge-briefs/
