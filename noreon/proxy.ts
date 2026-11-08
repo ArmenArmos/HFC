@@ -93,7 +93,8 @@ function routeRequest(request: NextRequest) {
       return new NextResponse("Not found", { status: 404 });
     }
     // Public script, member-host rules still apply. Its directory limits scope to /patient/.
-    if (path === "/patient/sw.js") return NextResponse.next({ request });
+    // The static offline page (WP R) the worker stores at install: no session, no member data.
+    if (path === "/patient/sw.js" || path === "/patient/offline.html") return NextResponse.next({ request });
     return updateSession(request);
   }
   return NextResponse.redirect(new URL("/", request.url));

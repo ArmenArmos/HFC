@@ -70,6 +70,7 @@ const {patientChatPage}=load('components/doctor-chat-v2/patient-chat-page.tsx',{
  '@/lib/staff/chat-member-identity-read':{readChatMemberIdentities},'@/lib/staff/real-coordination/schema':coordination,
  '@/lib/ldl/runtime':{readDoctorLdl:async()=>null},'@/lib/doctor-completion/document-runtime':{readDoctorPlanVersions:async()=>[]},
  '@/lib/gp-report/config':{resultsReportEnabled:()=>false},
+ '@/lib/clinical-review/header-read':{readStaffClinicalHeader:async()=>null},
 }) as typeof import('@/components/doctor-chat-v2/patient-chat-page');
 async function visit(member:string){
  assert.equal((await patientChatPage(member)).type,PatientView);

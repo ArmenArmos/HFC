@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { UsersRound } from "lucide-react";
 import { SignInEnded } from "@/components/patient/sign-in-ended";
 import { inviteCaregiverFromCard, revokeCaregiverFromCard, updateCaregiverScopesFromCard } from "@/lib/caregivers/actions";
@@ -54,6 +54,17 @@ function Statement({ l, name, scopes }: { l: CardLocale; name: string; scopes: C
   </div>;
 }
 
+/** WP V: announces the choice a spoken yes would confirm on this card; the server binds it to the card and its revision. */
+function useVoicePending(cardId: string, action: Record<string, unknown> | null) {
+  const key = action ? JSON.stringify(action) : "";
+  useEffect(() => {
+    if (!key) return;
+    window.dispatchEvent(new CustomEvent("cv2-voice-pending", { detail: { cardId, action: JSON.parse(key) } }));
+    return () => { window.dispatchEvent(new CustomEvent("cv2-voice-pending-clear", { detail: { cardId } })); };
+  }, [cardId, key]);
+}
+const SAY_YES = { en: "Say yes to save", hy: "Ասեք «այո»՝ պահպանելու համար", ru: "Скажите «да», чтобы сохранить" };
+
 function LinkRow({ card, link, locale: l, onCard, onAct }: Props & { link: Card["snapshot"]["links"][number] }) {
   const [mode, setMode] = useState<"idle" | "scopes" | "revoke">("idle");
   const [scopes, setScopes] = useState<CaregiverScope[]>(link.scopes);
@@ -64,6 +75,8 @@ function LinkRow({ card, link, locale: l, onCard, onAct }: Props & { link: Card[
   const scopesDone = card.outcome[caregiverItem.scopes(link.id)] as CaregiverReceipt | undefined;
   const revoked = card.outcome[caregiverItem.revoke(link.id)] as CaregiverReceipt | undefined;
   const live = (link.status === "pending" || link.status === "active") && !revoked;
+  useVoicePending(card.id, !live || card.state !== "open" ? null : mode === "revoke" ? { kind: "caregiver_revoke", linkId: link.id, revision: link.revision }
+    : mode === "scopes" && scopes.length > 0 ? { kind: "caregiver_scopes", linkId: link.id, revision: link.revision, scopes, locale: l } : null);
   const act = (run: () => Promise<Result>) => {
     if (sending.current) return;
     sending.current = true; onAct(card.id, true);
@@ -91,12 +104,14 @@ function LinkRow({ card, link, locale: l, onCard, onAct }: Props & { link: Card[
       <button type="button" className="cv2-reading-save" disabled={busy || scopes.length === 0} aria-busy={busy}
         onClick={() => act(() => updateCaregiverScopesFromCard({ cardId: card.id, opId, linkId: link.id, revision: link.revision, scopes, locale: l }))}>{say(l, CAREGIVER.saveScopes)}</button>
       <button type="button" className="cv2-link" disabled={busy} onClick={() => setMode("idle")}>{say(l, CAREGIVER.back)}</button>
+      {scopes.length > 0 && <p className="cv2-voice-hint">{say(l, SAY_YES)}</p>}
     </div>}
     {live && mode === "revoke" && <div className="cv2-block">
       <p>{say(l, CAREGIVER.revokeConfirm)}</p>
       <button type="button" className="cv2-reading-save" disabled={busy} aria-busy={busy}
         onClick={() => act(() => revokeCaregiverFromCard({ cardId: card.id, opId, linkId: link.id, revision: link.revision }))}>{say(l, CAREGIVER.revokeYes)}</button>
       <button type="button" className="cv2-link" disabled={busy} onClick={() => setMode("idle")}>{say(l, CAREGIVER.back)}</button>
+      <p className="cv2-voice-hint">{say(l, SAY_YES)}</p>
     </div>}
     {problem === "signed_out" ? <SignInEnded locale={l} /> : problem && <p role="alert">{problem}</p>}
   </li>;
@@ -115,6 +130,7 @@ export function CaregiverCard({ card, locale: l, onCard, onAct }: Props) {
   const invited = card.outcome[caregiverItem.invite] as CaregiverReceipt | undefined;
   const live = card.snapshot.links.filter(link => link.status === "pending" || link.status === "active").length;
   const canInvite = !invited && card.state === "open" && live < card.snapshot.limit;
+  useVoicePending(card.id, canInvite && step === "review" && relationship ? { kind: "caregiver_invite", name: name.trim(), relationship, phone: normalizePhone(phone.trim()), scopes, locale: l } : null);
   const review = () => {
     const number = normalizePhone(phone.trim());
     const problemField = !name.trim() ? "name" : !E164.test(number) ? "phone" : scopes.length === 0 || !relationship ? "scopes" : null;
@@ -159,6 +175,7 @@ export function CaregiverCard({ card, locale: l, onCard, onAct }: Props) {
         <Statement l={l} name={name.trim()} scopes={scopes} />
         <button type="button" className="cv2-reading-save" disabled={busy} aria-busy={busy} onClick={confirm}>{say(l, CAREGIVER.confirmInvite)}</button>
         <button type="button" className="cv2-link" disabled={busy} onClick={() => setStep("form")}>{say(l, CAREGIVER.back)}</button>
+        <p className="cv2-voice-hint">{say(l, SAY_YES)}</p>
       </div>}
       {problem === "signed_out" ? <SignInEnded locale={l} /> : problem && <p role="alert">{problem}</p>}
     </section>

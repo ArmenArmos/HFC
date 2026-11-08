@@ -29,7 +29,8 @@ const decisionClaim=z.object({granted:z.boolean(),method:z.enum(['tap','voice'])
  * One explicit decision on the consents card: grant or withdraw one statement. The claim holds the decision, so a
  * retry repeats it and a second tab cannot record a different one for the same statement on this card.
  */
-export async function runConsentDecision(actor:MemberActor,ports:ConsentCardPorts,raw:ConsentCardInput):Promise<CardResult>{
+/** method: the browser input is always a tap; 'voice' is set only by the server after a spoken yes bound to this card (WP V). */
+export async function runConsentDecision(actor:MemberActor,ports:ConsentCardPorts,raw:ConsentCardInput,method:'tap'|'voice'='tap'):Promise<CardResult>{
  if(actor.channel!=='app')return {status:'disabled'};
  const v=consentCardInputSchema.parse(raw);
  const card=await ownCard(ports,v.cardId,'consents');
@@ -38,7 +39,7 @@ export async function runConsentDecision(actor:MemberActor,ports:ConsentCardPort
  // The card shows the version it was posted with; a newer wording needs a fresh card.
  if(card.snapshot.version!==MEMBER_CONSENT_VERSION)return {status:'stale',card};
  const item=consentItem(v.kind);
- const c=await claim(actor,ports,card,item,v.opId,{granted:v.granted,method:v.method,locale:v.locale});
+ const c=await claim(actor,ports,card,item,v.opId,{granted:v.granted,method,locale:v.locale});
  if(!c.ok)return c.result;
  const held=decisionClaim.safeParse(c.claim.payload);
  if(!held.success)return {status:'invalid',card};

@@ -61,7 +61,7 @@ export default async function MemberChatPage() {
   // WP F (dark): the member settings cards, and invitations to help someone else, shown at the top of the conversation.
   const settings = v3 ? { caregivers: caregiversEnabled(), consents: memberConsentsEnabled() } : undefined;
   const invitations = settings?.caregivers ? await readCaregiverInvitations(await sessionCaregiverRpc()) : null;
-  return <MemberChat settings={settings} caregiverInvitations={invitations?.ok ? invitations.data.invitations : []} bpPhoto={bpPhotoEnabled()} voice={access.kind === "chat" && v3 ? { microphone: voiceOn, conversation: voiceOn } : undefined} {...(stepOn ? { nextStep, refreshOnComplete: true } : {})} cards={cards} onboarding={onboarding} overview={zoeAppV3Enabled()} locale={profile.locale} memberName={profile.name} revision={assessment.revision}
+  return <MemberChat settings={settings} caregiverInvitations={invitations?.ok ? invitations.data.invitations : []} bpPhoto={bpPhotoEnabled()} voice={access.kind === "chat" && v3 ? { microphone: voiceOn, conversation: voiceOn, live: voiceOn && await (await import("@/lib/zoe-chat-actions/voice-live")).liveAvailable(), stream: voiceOn } : undefined} {...(stepOn ? { nextStep, refreshOnComplete: true } : {})} cards={cards} onboarding={onboarding} overview={zoeAppV3Enabled()} locale={profile.locale} memberName={profile.name} revision={assessment.revision}
     assessment={assessment} emergencyCard={emergencyCard}
     memberPush={push && access.kind === "chat" ? { publicKey: push.publicKey } : null}
     initial={access.kind === "chat" ? access.thread : null} emergencyCheck={emergencyCheck}

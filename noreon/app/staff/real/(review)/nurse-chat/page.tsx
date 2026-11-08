@@ -1,4 +1,6 @@
-import {staffVoiceAvailable} from '@/lib/staff-zoe/voice';
+import {staffLiveAvailable,staffVoiceAvailable} from '@/lib/staff-zoe/voice';
+/** WP V: voice for this role, and Gemini Live only when voice itself is on. */
+const staffVoiceProps=async(role:'NURSE'|'DOCTOR')=>{const voiceAvailable=await staffVoiceAvailable(role);return voiceAvailable&&await staffLiveAvailable(role)?{voiceAvailable,voiceLive:true}:{voiceAvailable};};
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
 import {z} from 'zod';
@@ -24,6 +26,7 @@ import '../doctor-workspace/workspace.css';
 import {NurseChatV2} from '@/components/nurse-chat-v2/nurse-chat';
 import '@/components/chat-v2/chat.css';
 import '@/components/nurse-chat-v2/nurse-chat.css';
+import {riskTiersEnabled} from '@/lib/clinical-review/config';
 
 export const dynamic='force-dynamic';
 export default async function NurseChatPage({searchParams}:{searchParams:Promise<{member?:string|string[];view?:string|string[];q?:string|string[];card?:string|string[]}&NurseVisitSelection>}){
@@ -32,7 +35,7 @@ export default async function NurseChatPage({searchParams}:{searchParams:Promise
  const locale=await staffLocale(identity.role),t=(en:string,hy:string,ru:string)=>st(locale,en,hy,ru);
  if(identity.role!=='nurse')return <p role="alert">{t('Access denied. This workspace is for assigned nurses.','Հասանելիությունը մերժված է։ Այս աշխատատարածքը կցված բուժքույրերի համար է։','Доступ запрещён. Это рабочее пространство для назначенных медсестёр.')}</p>;
  const params=await searchParams;
- if(nurseChatNewScreen(params))return <NurseChatV2 locale={locale} voiceAvailable={await staffVoiceAvailable('NURSE')} nurseName={identity.name} nurseId={identity.id}/>;
+ if(nurseChatNewScreen(params))return <NurseChatV2 locale={locale} {...await staffVoiceProps('NURSE')} nurseName={identity.name} nurseId={identity.id} {...(riskTiersEnabled()?{worklist:true}:{})}/>;
  const {member,source,visit,evidence,memberEvidence,view,q,card}=params;
  const query=typeof q==='string'?q.trim().slice(0,100):'';
  const selection={source,visit,evidence,memberEvidence};

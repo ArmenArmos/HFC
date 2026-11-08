@@ -1,5 +1,5 @@
 'use client';
-import {useRef,useState,useTransition,type ReactNode} from 'react';
+import {lazy,Suspense,useRef,useState,useTransition,type ReactNode} from 'react';
 import {st,type StaffLocale} from '@/lib/staff/staff-locale-copy';
 import {resolutionLabel,type CareAlert} from '@/lib/care-alerts/contracts';
 import {changeCareAlert} from '@/lib/care-alerts/actions';
@@ -7,6 +7,8 @@ import {yerevanStamp} from '@/lib/staff/yerevan-time';
 import {AlertCardLines} from './alert-card';
 import {CareAlertResolve} from './care-alert-resolve';
 import type {NurseAlert,NurseAlertRead} from '@/lib/care-alerts/nurse';
+/** WP V: loaded only where voice acknowledgement is switched on. */
+const VoiceAck=lazy(()=>import('./voice-ack').then(m=>({default:m.VoiceAck})));
 
 export function NurseAlertReadFailure({read,locale:l}:{read:NurseAlertRead|undefined;locale:StaffLocale}){
  if(read?.kind!=='unavailable')return null;
@@ -14,7 +16,8 @@ export function NurseAlertReadFailure({read,locale:l}:{read:NurseAlertRead|undef
 }
 
 /** The existing alert commands, inline in every nurse queue. Only confirmed responses change the row. */
-export function NurseUrgentAlertRow({alert,locale:l,nurseName,member,onChanged,onPendingChange}:{alert:NurseAlert;locale:StaffLocale;nurseName?:string;member?:(alert:NurseAlert)=>ReactNode;onChanged?:(alert:CareAlert)=>void;onPendingChange?:(key:string,pending:boolean)=>void}){
+export function NurseUrgentAlertRow({alert,locale:l,nurseName,member,onChanged,onPendingChange,voice=false}:{alert:NurseAlert;locale:StaffLocale;nurseName?:string;member?:(alert:NurseAlert)=>ReactNode;onChanged?:(alert:CareAlert)=>void;onPendingChange?:(key:string,pending:boolean)=>void;
+ /** WP V: acknowledge by a spoken yes, bound to this alert and its sequence. */voice?:boolean}){
  const t=(en:string,hy:string,ru:string)=>st(l,en,hy,ru);
  const [source,setSource]=useState(alert),[current,setCurrent]=useState(alert),[notice,setNotice]=useState(''),[stale,setStale]=useState(false);
  if(source!==alert){setSource(alert);setCurrent(alert);setNotice('');setStale(false);}
@@ -40,6 +43,7 @@ export function NurseUrgentAlertRow({alert,locale:l,nurseName,member,onChanged,o
   {a.state==='resolved'&&<p>{a.resolution&&resolutionLabel(a.resolution,l)} · {a.resolvedBy} · {a.resolvedAt&&yerevanStamp(a.resolvedAt,l)}{a.resolutionNote?`: ${a.resolutionNote}`:''}</p>}
   {a.state!=='resolved'&&<fieldset disabled={busy||stale} className="min-w-0 space-y-2">
    {a.state==='open'&&<button type="button" className="dw-pill" onClick={()=>save('acknowledge')}>{t('Acknowledge','Հաստատել','Подтвердить')}</button>}
+   {voice&&a.state==='open'&&<Suspense fallback={null}><VoiceAck alert={a} locale={l} disabled={busy||stale} onDone={next=>{if(next){setCurrent(next as typeof a);onChanged?.(next);}else setStale(true);}}/></Suspense>}
    <details><summary className="min-h-11 cursor-pointer content-center">{t('Next action','Հաջորդ գործողություն','Следующее действие')}</summary>
     <form onChange={event=>{const form=new FormData(event.currentTarget);pending('next_action',String(form.get('text')??'')!==(a.nextAction??'')||String(form.get('dueAt')??'')!==savedDue.current);}} onSubmit={event=>{event.preventDefault();save('next_action',new FormData(event.currentTarget));}} className="space-y-2">
      <label className="block">{t('Next action (required)','Հաջորդ գործողություն (պարտադիր)','Следующее действие (обязательно)')}<textarea name="text" required minLength={1} maxLength={300} defaultValue={a.nextAction??''} rows={3} className="block w-full rounded-md border bg-background p-2"/></label>
@@ -55,7 +59,7 @@ export function NurseUrgentAlertRow({alert,locale:l,nurseName,member,onChanged,o
 }
 
 /** One reader and the same row controls across Alerts, Tasks and the nurse queues. */
-export function NurseUrgentAlerts({read,locale:l,member}:{read:NurseAlertRead|undefined;locale:StaffLocale;member?:(alert:NurseAlert)=>ReactNode}){
+export function NurseUrgentAlerts({read,locale:l,member,voice=false}:{read:NurseAlertRead|undefined;locale:StaffLocale;member?:(alert:NurseAlert)=>ReactNode;voice?:boolean}){
  const [source,setSource]=useState(read),[updates,setUpdates]=useState<Record<string,CareAlert>>({});
  if(source!==read){setSource(read);setUpdates({});}
  if(!read||read.kind==='off')return null;
@@ -64,7 +68,7 @@ export function NurseUrgentAlerts({read,locale:l,member}:{read:NurseAlertRead|un
  if(!alerts.length)return null;
  return <section data-urgent-alerts="ready" aria-label={st(l,'Urgent alerts','Շտապ ահազանգեր','Срочные оповещения')} className="space-y-2 rounded-lg border-2 border-destructive p-3">
   <p><strong>{read.total-Object.values(updates).filter(a=>a.state==='resolved').length} {st(l,'urgent','շտապ','срочно')}</strong></p>
-  <ul className="space-y-3">{alerts.map(alert=><li key={alert.id}><NurseUrgentAlertRow alert={alert} locale={l} member={member} onChanged={a=>setUpdates(prev=>({...prev,[a.id]:a}))}/></li>)}</ul>
+  <ul className="space-y-3">{alerts.map(alert=><li key={alert.id}><NurseUrgentAlertRow alert={alert} locale={l} member={member} voice={voice} onChanged={a=>setUpdates(prev=>({...prev,[a.id]:a}))}/></li>)}</ul>
   {read.total>read.alerts.length&&<p>{st(l,'More urgent alerts exist. Reload after reviewing this list to read the rest.','Կան այլ շտապ ահազանգեր։ Այս ցանկը դիտելուց հետո թարմացրեք՝ մնացածը կարդալու համար։','Есть другие срочные оповещения. После проверки этого списка обновите его, чтобы прочитать остальные.')}</p>}
  </section>;
 }

@@ -6,6 +6,8 @@ import { HeartPulse, Mic } from "lucide-react";
 import { BP_ROWS, useBpCard, type ReadingFormCard } from "@/components/patient/use-bp-card";
 import { bpSummary, readBp } from "@/components/patient/bp-entry-values";
 import { SignInEnded } from "@/components/patient/sign-in-ended";
+import { Call103 } from "@/components/patient/use-hydrated";
+import { offlineText } from "@/lib/offline/copy";
 import { BP, COMMON, FLOW, bpText, say, type CardLocale } from "@/lib/zoe-chat-actions/copy";
 import {unverifiedBpLabel} from "@/lib/patient/bp-provenance";
 import { flowOf } from "@/lib/zoe-chat-actions/bp-flow";
@@ -21,9 +23,10 @@ const REPEAT_WAIT_S = 60;
 export function SavedReading({ card, reading, said, locale: l, time, tasks }: { card: ReadingFormCard; reading: BpReading; said: boolean; locale: CardLocale; time: string; tasks?: ZoeCards["tasks"] }) {
   const week = card.kind === "bp" ? card.snapshot.week : null;
   const flow = flowOf(card);
-  const entrySource=reading.entrySource??(reading.photoConfirmed?'patient_photo_confirmed':card.kind==='bp'&&card.snapshot.typed?.entrySource==='patient_voice_confirmed'?'patient_voice_confirmed':'patient_text_entry');
+  const voice=card.kind==='bp'?card.snapshot.typed?.entrySource:undefined;
+  const entrySource=reading.entrySource??(reading.photoConfirmed?'patient_photo_confirmed':voice==='patient_voice_confirmed'||voice==='patient_voice_live_confirmed'?voice:'patient_text_entry');
   return <DialogTurn locale={l} action={said ? null : bpText(l, {...reading,entrySource})} time={time}>
-    {entrySource==='patient_text_entry'&&<p data-bp-provenance>{unverifiedBpLabel(l)}</p>}
+    {(entrySource==='patient_text_entry'||entrySource==='patient_voice_live_confirmed')&&<p data-bp-provenance>{unverifiedBpLabel(l)}</p>}
     {week && <p className="cv2-reading-week">{say(l, BP.week(week.day, week.days, week.slot === "evening"))}. {say(l, BP.weekProgress(Math.min(week.saved + 1, week.expected), week.expected))}</p>}
     {flow ? <><FlowZone flow={flow} locale={l} /><FlowWords flow={flow} locale={l} tasks={tasks} /></> : <>
       <p data-zoe-bp-saved>{say(l, BP.saved(bpText(l, {...reading,entrySource})))}</p>
@@ -59,7 +62,7 @@ export function ReadingCard({ card, locale: l, focus, canFocus, superseded, onCa
   photoEnabled?: boolean;
   card: ReadingFormCard; locale: CardLocale; focus: boolean; canFocus: () => boolean; superseded: boolean; onCard: (card: ZoeCard) => void; onAct: (id: string, acting: boolean) => void;
 }) {
-  const { values, setValues, fillFromPhoto, photoConfirmed, check, error, busy, submitted, setSubmitted, save } = useBpCard(card, l, onCard, () => onAct(card.id, false));
+  const { values, setValues, fillFromPhoto, photoConfirmed, check, error, busy, submitted, setSubmitted, save, queued } = useBpCard(card, l, onCard, () => onAct(card.id, false));
   const [photoBusy, setPhotoBusy] = useState(false);
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
@@ -70,6 +73,13 @@ export function ReadingCard({ card, locale: l, focus, canFocus, superseded, onCa
   const week = repeat ? null : card.snapshot.week;
   const typed = repeat ? undefined : card.snapshot.typed;
   const [waited, setWaited] = useState(!repeat);
+  // WP V: a dictated reading waits for a yes; a spoken yes confirms exactly these numbers (the server binds it to this card).
+  const dictated = card.state === "open" && (typed?.entrySource === "patient_voice_confirmed" || typed?.entrySource === "patient_voice_live_confirmed");
+  useEffect(() => {
+    if (!dictated) return;
+    window.dispatchEvent(new CustomEvent("cv2-voice-pending", { detail: { cardId: card.id, action: { kind: "bp" } } }));
+    return () => { window.dispatchEvent(new CustomEvent("cv2-voice-pending-clear", { detail: { cardId: card.id } })); };
+  }, [dictated, card.id]);
   const untouched = !photoConfirmed && values.systolic === (typed ? String(typed.systolic) : "") && values.diastolic === (typed ? String(typed.diastolic) : "") && values.pulse === (typed?.pulse ? String(typed.pulse) : "");
   // Stays mounted while hidden, so nothing the member typed is ever lost.
   if (superseded && card.state === "open" && untouched && !error && !photoBusy) return null;
@@ -77,8 +87,10 @@ export function ReadingCard({ card, locale: l, focus, canFocus, superseded, onCa
   return <article className="cv2-msg cv2-zoe" data-zoe-card={card.kind} data-chat-card-id={card.id} data-state={card.state === "done" ? "done" : "open"} onClick={event => event.stopPropagation()}>
     <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
     <section className="cv2-reading" aria-label={say(l, {en:"Blood pressure reading",hy:"Ճնշման չափում",ru:"Измерение давления"})}>
-      <h3>{typed?.entrySource === "patient_voice_confirmed" ? <Mic size={18} role="img" aria-label={say(l, {en:"From your recording",hy:"Ձեր ձայնագրությունից",ru:"Из вашей записи"})} /> : <HeartPulse size={18} aria-hidden />}{repeat ? say(l, FLOW.enterSecond) : say(l, {en:"Enter your reading",hy:"Մուտքագրեք ձեր չափումը",ru:"Введите ваше измерение"})}</h3>
+      <h3>{typed?.entrySource === "patient_voice_confirmed" || typed?.entrySource === "patient_voice_live_confirmed" ? <Mic size={18} role="img" aria-label={say(l, {en:"From your recording",hy:"Ձեր ձայնագրությունից",ru:"Из вашей записи"})} /> : <HeartPulse size={18} aria-hidden />}{repeat ? say(l, FLOW.enterSecond) : say(l, {en:"Enter your reading",hy:"Մուտքագրեք ձեր չափումը",ru:"Введите ваше измерение"})}</h3>
       {typed&&typed.entrySource!=="patient_voice_confirmed"&&<p data-bp-provenance>{unverifiedBpLabel(l)}</p>}
+      {/* WP V: a dictated reading waits for an explicit yes: spoken (bound to this card on the server) or this button. Shown only where voice is on. */}
+      {card.state !== "done" && (typed?.entrySource === "patient_voice_confirmed" || typed?.entrySource === "patient_voice_live_confirmed") && <p className="cv2-voice-hint">{say(l, {en:"Say yes to save",hy:"Ասեք «այո»՝ պահպանելու համար",ru:"Скажите «да», чтобы сохранить"})}</p>}
       {week && <p className="cv2-reading-week">{say(l, BP.week(week.day, week.days, week.slot === "evening"))}. {say(l, BP.weekProgress(week.saved, week.expected))}</p>}
       {repeat && card.state !== "done" && <>
         <p>{say(l, FLOW.repeatWhy)}</p>
@@ -115,6 +127,9 @@ export function ReadingCard({ card, locale: l, focus, canFocus, superseded, onCa
           <button type="submit" className="cv2-reading-save" disabled={busy || photoBusy} aria-busy={busy}>{say(l, {en:"Save reading",hy:"Պահել չափումը",ru:"Сохранить измерение"})}</button>
         </form>
       </>}
+      {/* WP R: confirmed offline, waiting in the outbox; a very high reading says at once that it has not reached the team. */}
+      {queued && <p role="status" data-bp-queued>{offlineText(l, "queued")}</p>}
+      {queued?.veryHigh && <div role="alert" data-bp-queued-urgent><p>{offlineText(l, "veryHighQueued")}</p><Call103 size="call" className="emergency-call flex min-h-14 items-center justify-center rounded-md px-5 py-3">{offlineText(l, "call103")}</Call103></div>}
       {error === "signed_out" ? <SignInEnded locale={l} /> : error && <p role="alert">{error}</p>}
     </section>
     <Speaker locale={l} text={`${say(l, repeat ? FLOW.enterSecond : BP.guide)} ${check.ok ? bpSummary(l, values, check) : ""}`} />

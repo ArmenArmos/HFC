@@ -54,7 +54,7 @@ export const doseSnapshot=z.strictObject({v:z.literal(1),v3:z.literal(true).opti
   status:z.enum(['taken','skipped','due','upcoming']),revision:z.number().int().min(0),
   // A dose from the published plan, with its plan; absent on a self-reported medicine and on cards from before plan doses.
   planId:z.uuid().optional()})).max(24)});
-const bpReading=z.strictObject({systolic:z.number().int(),diastolic:z.number().int(),pulse:z.number().int().nullable(),measuredAt:iso,entrySource:z.enum(['patient_text_entry','patient_voice_confirmed','patient_photo_confirmed','caregiver_reported']).nullable().optional()});
+const bpReading=z.strictObject({systolic:z.number().int(),diastolic:z.number().int(),pulse:z.number().int().nullable(),measuredAt:iso,entrySource:z.enum(['patient_text_entry','patient_voice_confirmed','patient_voice_live_confirmed','patient_photo_confirmed','caregiver_reported']).nullable().optional()});
 export const bpWeekSlot=z.strictObject({weekId:z.uuid(),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),slot:z.enum(['morning','evening']),time:z.string().regex(/^\d{2}:\d{2}$/),day:z.number().int().min(1),days:z.number().int().min(1),saved:z.number().int().min(0),expected:z.number().int().min(0)});
 const follows=z.strictObject({cardId:z.uuid(),item:z.string().min(1).max(100)});
 /** Persisted provenance for follow-up forms, read identically on every device. */

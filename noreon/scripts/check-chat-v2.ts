@@ -11,6 +11,8 @@ import * as bpFlowModule from '@/lib/zoe-chat-actions/bp-flow';
 import type {ZoeThread} from '@/lib/zoe/app-chat-contracts';
 import {STAGE_CLASSES, STAGE_LINKS, type JourneyStage} from '@/lib/patient/journey-stage';
 import {memberJourneyStep, type JourneyInput} from '@/lib/patient-care/journey-step';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 
 const initial:ZoeThread={ok:true,version:2,ack:null,zoeReplies:false,settledSeq:1,messages:[{seq:1,text:'Synthetic question',at:'2026-11-01T10:00:00Z',channel:'app',requestId:null}],replies:[],answers:[]};
 const profile={locale:'hy' as const,name:'Synthetic Member'};
@@ -31,7 +33,7 @@ let journeyFails=false;
 let journey: {stage:JourneyStage;input:JourneyInput}|null=null;
 const routeSource=readFileSync('app/patient/chat/page.tsx','utf8');
 const code=ts.transpileModule(routeSource,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
-new vm.Script(code,{filename:'app/patient/chat/page.tsx'}).runInNewContext({exports,process:{env},require(name:string){
+new vm.Script(code,{filename:'app/patient/chat/page.tsx'}).runInNewContext({exports,process:{env},require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='react/jsx-runtime')return jsx;
  if(name==='@/lib/patient/page-title')return {memberPageMetadata:async()=>({title:'Synthetic'})};
  if(name==='@/lib/bp-photo/config')return {bpPhotoEnabled:()=>false};
@@ -188,7 +190,7 @@ console.log('Chat v2: exact true gate before data, registered and urgent guards,
  new vm.Script(ts.transpileModule(readFileSync('components/chat-v2/use-thread-scroll.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText).runInNewContext({
   exports:hook,window:browser,document:doc,requestAnimationFrame:(fn:()=>void)=>{fn();return 1;},
   ResizeObserver:class{constructor(fn:()=>void){resize=fn;}observe(){}disconnect(){}},
-  require(name:string){assert.equal(name,'react');return React;},
+  require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];assert.equal(name,'react');return React;},
  });
  const useScroll=hook.useThreadScroll as typeof import('../components/chat-v2/use-thread-scroll').useThreadScroll;
  let current!:ReturnType<typeof useScroll>;
@@ -291,6 +293,7 @@ console.log('Chat v2 scroll: actual hook preserves older history across identica
   '@/lib/patient/bp-provenance':await import('@/lib/patient/bp-provenance'),
   react:React,'react/jsx-runtime':jsx,'lucide-react':{Phone:()=>null,ArrowUp:()=>null,HeartPulse:()=>null},
   '@/lib/zoe-chat-actions/voice-contract':await import('@/lib/zoe-chat-actions/voice-contract'),
+  '@/lib/voice-core/chunk':await import('@/lib/voice-core/chunk'),
   '@/lib/zoe-chat-actions/registry':registry,'@/lib/zoe-chat-actions/thread':{...cardThread,fetchZoeCards:async()=>serverCards},
   '@/lib/zoe/app-chat-contracts':{...contracts,fetchZoeThread:async()=>serverThread},
   '@/lib/zoe-chat-actions/copy':cardCopy,'@/lib/zoe-chat-actions/bp-flow':bpFlowModule,'@/lib/zoe/member-screen':screen,
@@ -340,7 +343,7 @@ console.log('Chat v2 scroll: actual hook preserves older history across identica
    exports:out,crypto,Date,Intl,Event,window:browser,document:doc,
    fetch:async()=>Response.json(photoResult),AbortSignal,
    getComputedStyle:()=>({lineHeight:'22px'}),requestAnimationFrame:(fn:()=>void)=>{fn();return 1;},ResizeObserver:class{observe(){}disconnect(){}},
-   setTimeout,clearTimeout,require(name:string){if(files[name]&&!modules[name])modules[name]=load(files[name]);if(!(name in modules))throw Error(`Missing isolated boundary ${name}`);return modules[name];},
+   setTimeout,clearTimeout,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];if(files[name]&&!modules[name])modules[name]=load(files[name]);if(!(name in modules))throw Error(`Missing isolated boundary ${name}`);return modules[name];},
   });return out;
  };
  let photoResult:unknown={status:'read',systolic:142,diastolic:91,pulse:78};
@@ -593,7 +596,7 @@ console.log('Chat v2 integration: actual screen and hooks send visible task text
  let reads=0;
  const pollEnv:{NOREON_MEMBER_CHAT_V2?:string}={NOREON_MEMBER_CHAT_V2:'true'};
  let pollV3=true;
- new vm.Script(ts.transpileModule(readFileSync('app/api/patient/zoe/thread/route.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText).runInNewContext({exports:out,process:{env:pollEnv},Response,require(name:string){
+ new vm.Script(ts.transpileModule(readFileSync('app/api/patient/zoe/thread/route.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText).runInNewContext({exports:out,process:{env:pollEnv},Response,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
   if(name==='@/lib/patient/member-chat-config')return {memberChatOnlyEnabled:()=>false};
   if(name==='@/lib/zoe-chat-actions/voice')return {voiceAvailable:()=>false};
  if(name==='@/lib/patient/zoe-app-v3')return {zoeAppV3Enabled:()=>pollV3};

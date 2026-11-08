@@ -180,6 +180,10 @@ export function auditSqlVocabulary(sql:string){
  // are exempt. Legacy function-definition patches are pinned as whole blocks
  // so changing their generated SQL requires reviewing the exemption again.
  const schemaPatches:Record<string,string>={
+  '618f8499f4b182d410e7a230099595851c5a59e8f3531998aca35ea63ef72216':'Schema-only pg_get_functiondef append: public._audit_source_rows gains voice_settings_events (WP V: 20261108081234_voice_live_settings_provenance)',
+  '7216caf07c4715927c0d0d6ab50e10e3e2d97a2bddb840b3859a81b829725aba':'Schema-only pg_get_functiondef patch: public._rate_limit_policy(text,text) gains member_live and staff_live (WP V)',
+  'd2a58c11d45bb4c5e0384f748fb416c3c2a571b82421b55681bd108b70902414':'Schema-only pg_get_functiondef patches: measured-BP aggregates, _typed_bp_task and save_patient_assessment_sourced accept patient_voice_live_confirmed (WP V)',
+  '771ed9835fba580103f8fac986c4974a8183232d5b7ed14aa975575a5db0f3ba':'Schema-only pg_get_functiondef patch: public.zoe_run_claim(integer) marks voice turns (WP V)',
   'c41881cdf4de9261b26d64464c8f0433f74cf0e9bdf207d1249e3620fd219178':'Schema-only queued exact-text function patches (WP F: 20261108063420_rbac_roles_foundation, 20261108063720_member_caregivers_consents)',
   'fbcda5a97004f745c54279c2802899921dc5da4e2f97fae41dccddf4e6340796':'Schema-only pg_get_functiondef append: public._audit_source_rows gains member_consents and member_caregiver_events (WP F)',
   'b15b794fe2f07ab3db6b676001538ad3bf1f7ac4ff80748be206cfe0099d7fe7':'Schema-only pg_get_functiondef patch: public.zoe_chat_card_post(uuid,uuid,text,text,bigint,jsonb)',
@@ -201,6 +205,7 @@ export function auditSqlVocabulary(sql:string){
   '5b478cd63b3059a570d22eaca443835ec614413eba0210ccc3ce9777c912acee':'Schema-only pg_get_functiondef patch: public.lab_ai_call_reserve(uuid,uuid,text,text,text,boolean,numeric)',
   'da34117df97426762630ff07641b480c58e6fa68eaf2b783c8af51e045854822':'Schema-only pg_get_functiondef patch: public._rate_limit_policy(text,text)',
   '2c79ce5d8131085e8e30fdfc7b4851a0691a098dcef98bc7d3b735a46006aca2':'Schema-only pg_get_functiondef patch: public._rate_limit_policy(text,text)',
+  '990ad03529c989adf85647ee22a946f30645ddd56813da641d79cf60e4eee900':'Schema-only pg_get_functiondef patch: public._rate_limit_policy(text,text) (WP R realtime_token)',
   '908888e148e62d5fd2a3d3d7c272b00336722c49f2b7c81ec0fad1d75a75aec7':'Schema-only pg_get_functiondef patch: Zoe BP context functions',
   'f327774381d1182591cca29aca76a79c303c25bdd897661a116d603ca76088ee':'Schema-only pg_get_functiondef patch: public.care_alert_resolve(uuid,bigint,text,text)',
   '0c56ecf6c9d1e1d3737eed31989807650801e122bb92419a8857cac1b96c1ebd':'Schema-only pg_get_functiondef patch: public._care_alert_json(public.care_alerts)',

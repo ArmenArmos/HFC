@@ -16,6 +16,7 @@ import {smallTalk,smallTalkLines} from '@/lib/staff-zoe/small-talk';
 import {workspaceIntent} from '@/lib/staff-zoe/home-intent';
 import {mergeUrgent} from '@/lib/doctor-inbox/urgent-windows';
 import type {PanelMember,DoctorPanel} from '@/lib/staff-zoe/panel';
+import {realtimeStubs} from './realtime-test-stubs';
 (globalThis as {IS_REACT_ACT_ENVIRONMENT?:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
 const a='d0000000-0000-4000-8000-000000000001',b='d0000000-0000-4000-8000-000000000002';
 const rows:PanelMember[]=[{identity:{id:a,name:'Anna Example',birthDate:'1980-01-01',sex:'female',clinic:'North clinic',phoneLast4:'1234',shortId:'NRN-0001'},risk:'low',attention:'urgent',bp:{systolic:122,diastolic:78,at:'2026-11-06T20:30:00Z',unverified:true},ldl:{value:2,on:'2026-11-05',counted:false},unavailable:false},{identity:{id:b,name:'Anna Example',birthDate:'1990-02-03',sex:'female',clinic:'South clinic',phone:'+37499123456',shortId:'NRN-0002'},risk:null,attention:'none',bp:null,ldl:null,unavailable:true}];
@@ -26,6 +27,7 @@ const modules:Record<string,unknown>={'@/lib/bp-unit':bpUnit,'@/lib/brand':await
  '@/lib/staff/chat-member-identity-actions':{readStaffChatMemberIdentities:()=>{throw Error('Complete server identities need no extra read');}},
 };
 function load(file:string){const exports:Record<string,unknown>={};vm.runInNewContext(ts.transpileModule(readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,Date,Intl,crypto,document:{hidden:false,addEventListener(){},removeEventListener(){}},setInterval:()=>1,clearInterval(){},require:(name:string)=>{assert.ok(name in modules,`Unmocked ${name}`);return modules[name];}});return exports;}
+Object.assign(modules,await realtimeStubs());
 modules['./member-identity']=load('components/staff/member-identity.tsx');
 modules['@/components/staff/chat-member-identity']=load('components/staff/chat-member-identity.tsx');
 modules['./panel-copy']=load('components/doctor-chat-v2/panel-copy.ts');
@@ -75,7 +77,7 @@ Object.assign(modules,{
  '@/components/staff/voice-reply':await import('@/components/staff/voice-reply'),
  'next/navigation':{useRouter:()=>({push:(url:string)=>navigations.push(url)})},'lucide-react':{ArrowUp:()=>null},
  '@/components/patient/use-chat-viewport':{useChatViewport(){}},'@/components/chat-v2/use-thread-scroll':{useThreadScroll:()=>({threadRef:{current:null},contentRef:{current:null},unread:false,newest(){}})},
- '@/components/chat-v2/staff-menu':{StaffChatMenu:()=>null},'./telegram-menu':{DoctorTelegramMenu:()=>null},
+ '@/components/chat-v2/staff-menu':{StaffChatMenu:()=>null},'@/components/staff/clinical-review-cards':{WorklistCard:()=>null},'./telegram-menu':{DoctorTelegramMenu:()=>null},
  '@/lib/staff-zoe/typed-language':{typedLanguage},'@/lib/staff-zoe/typed-boundary':{typedBoundary},'@/lib/staff-zoe/outcome-copy':{notDone},
  '@/lib/staff-zoe/small-talk':{smallTalk,smallTalkLines},'@/lib/staff-zoe/home-intent':{workspaceIntent},'@/lib/doctor-inbox/urgent-windows':{mergeUrgent},
  './patients-card':{PatientsCard:Patients},'./panel-graphs':{PanelGraphs:Graphs},'./open-patient-chat-choice':{OpenPatientChatChoice:Choice},

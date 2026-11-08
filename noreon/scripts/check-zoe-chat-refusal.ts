@@ -23,6 +23,8 @@ import {tx} from '@/lib/patient/copy';
 import * as screen from '@/lib/zoe/member-screen';
 import * as contracts from '@/lib/zoe/app-chat-contracts';
 import type {ZoeThread} from '@/lib/zoe/app-chat-contracts';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 
 (globalThis as {IS_REACT_ACT_ENVIRONMENT?:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
 const transpile=(path:string)=>ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -58,7 +60,7 @@ function noPinnedEmergency(tree:ReactTestRenderer){
  assert.ok(tree.root.findByType('form').props.className.includes('sticky'),'Composer stays available after an emergency');
 }
 const quick:Record<string,unknown>={};
-new vm.Script(transpile('components/patient/zoe-quick-actions.tsx')).runInNewContext({exports:quick,require(name:string){
+new vm.Script(transpile('components/patient/zoe-quick-actions.tsx')).runInNewContext({exports:quick,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/lib/patient/date-format')return memberDates;
  if(name==='react/jsx-runtime')return jsx;
  if(name==='next/link')return {default:({children,...props}:{children:React.ReactNode})=>React.createElement('a',props,children)};
@@ -67,7 +69,7 @@ new vm.Script(transpile('components/patient/zoe-quick-actions.tsx')).runInNewCon
  throw Error(`Unexpected boundary: ${name}`);
 }});
 const chat:Record<string,unknown>={};
-runChatView('components/patient/zoe-chat.tsx',{exports:chat,crypto,window:fakeWindow,document:fakeDocument,setTimeout,clearTimeout,require(name:string){
+runChatView('components/patient/zoe-chat.tsx',{exports:chat,crypto,window:fakeWindow,document:fakeDocument,setTimeout,clearTimeout,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/components/chat-v2/reported-bp-label')return bpLabel;
  if(name==='@/lib/patient/date-format')return memberDates;
  if(name==='@/lib/member-staff-name.mjs')return memberStaffNames;

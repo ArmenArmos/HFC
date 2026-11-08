@@ -68,6 +68,7 @@ export const toolResultSchema=z.strictObject({identityChecks:z.array(doctorUploa
  /** Named gaps inside an ok result ("no LDL value after the baseline"), in the reader's language. */missing:z.array(z.string().min(1).max(200)).max(8),
  href:z.string().startsWith('/staff/real/').max(200),
  /** Older saved cards have no chart. */bpSeries:z.array(bpPointSchema).optional(),
+ /** The physician-set home BP target drawn on the chart (WP T); absent with none on file or on older saved cards. */bpTarget:z.strictObject({systolic:z.number().int(),diastolic:z.number().int()}).optional(),
  /** All the member's messages read, beyond the quotes kept. Old saved cards have neither. */messageCount:z.number().int().nonnegative().optional(),flaggedCount:z.number().int().nonnegative().optional()});
 export type ToolResult=z.infer<typeof toolResultSchema>;
 

@@ -17,6 +17,8 @@ import * as threadHelpers from "@/lib/zoe-chat-actions/thread";
 import * as everydayContract from "@/lib/zoe-chat-actions/everyday-contract";
 import { tx } from "@/lib/patient/copy";
 import { zoeName } from "@/lib/brand";
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 
 // Run the real chat effects with supplied DOM geometry and IO. No network or mutations.
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -35,7 +37,7 @@ const noop = () => null;
 const chatContext = { exports, crypto, Date, setTimeout, clearTimeout, requestAnimationFrame: (f:()=>void) => {f();return 1;}, cancelAnimationFrame: noop,
   document: { visibilityState: "visible", querySelector: (query: string) => query === "[data-zoe-thread]" ? log : selected, addEventListener: noop, removeEventListener: noop },
   window: { setInterval: () => 1, clearInterval: noop, addEventListener: (name: string, handler: () => void) => { listeners[name] = handler; }, removeEventListener: noop },
-  require(name: string):unknown {
+  require(name: string):unknown {if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/lib/patient/date-format')return memberDates;
     if (name === "react") return React;
     if (name === "react/jsx-runtime") return jsx;

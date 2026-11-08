@@ -1,6 +1,8 @@
 'use client';
 import {ChatMemberIdentity} from '@/components/staff/chat-member-identity';
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import {useRealtimeSignals} from '@/components/realtime/use-realtime-signals';
+import {liveDue} from '@/lib/realtime/contracts';
 import {sendDoctorChatHandover,readDoctorChatHandover} from '@/lib/staff-zoe/chat-v2-actions';
 import {doctorHandoverCopy,type DoctorHandover,type HandoverTarget} from '@/lib/staff-zoe/handover';
 import type {StaffLocale} from '@/lib/staff/staff-locale-copy';
@@ -12,6 +14,13 @@ export function DoctorHandoverCard({target,note,doctorId,locale}:{target:Handove
  const [command]=useState<DoctorHandover>(()=>({memberId:target.memberId,nurseId:target.nurseId,conversationId:target.conversationId,locale,note,taskId:crypto.randomUUID(),requestId:crypto.randomUUID()}));
  const [state,setState]=useState<'confirm'|'sending'|'failed'|'cancelled'|'sent'|'working'|'done'|'closed'|'reassign'>('confirm');
  const [refreshFailed,setRefreshFailed]=useState(false);
+ // WP R: the nurse's work on this task arrives as a worklist signal for its id; the 60 s poll is the fallback.
+ const following=state==='sent'||state==='working'||state==='reassign';
+ const pollNow=useRef<()=>void>(()=>{});
+ const realtime=useRealtimeSignals({plane:'staff',enabled:following,onSignal:useCallback((kind:string,ref:string|null)=>{
+  if(kind==='worklist'&&ref===command.taskId)pollNow.current();
+ },[command.taskId]),onResync:useCallback(()=>pollNow.current(),[])});
+ const liveHealthy=realtime.healthyRef;
  useEffect(()=>{
   if(state!=='sent'&&state!=='working'&&state!=='reassign')return;
   let active=true,running=false;
@@ -19,11 +28,13 @@ export function DoctorHandoverCard({target,note,doctorId,locale}:{target:Handove
    if(document.hidden||running)return;running=true;
    try{const r=await readDoctorChatHandover(command.taskId,command.memberId,command.nurseId,doctorId);if(active){setRefreshFailed(r.kind!=='state');if(r.kind==='state')setState(r.state);}}catch{if(active)setRefreshFailed(true);}finally{running=false;}
   }
-  const timer=setInterval(()=>void poll(),60_000);
+  let last=Date.now();
+  const timer=setInterval(()=>{if(liveDue(last,Date.now(),60_000,liveHealthy.current)){last=Date.now();void poll();}},60_000);
+  pollNow.current=()=>{last=Date.now();void poll();};
   const visible=()=>{if(!document.hidden)void poll();};
   document.addEventListener('visibilitychange',visible);
-  return()=>{active=false;clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
- },[state,command,doctorId]);
+  return()=>{active=false;clearInterval(timer);pollNow.current=()=>{};document.removeEventListener('visibilitychange',visible);};
+ },[state,command,doctorId,liveHealthy]);
  async function send(){
   if(locked.current)return;locked.current=true;setState('sending');
   try{const r=await sendDoctorChatHandover(command,doctorId);setState(r.kind==='sent'?'sent':'failed');}catch{setState('failed');}finally{locked.current=false;}

@@ -48,7 +48,7 @@ export function snapshotBp(snapshot:ClinicalSnapshot):{bp:TrendPoint[];pulse:Tre
  }
  return {bp,pulse,weight};
 }
-export function buildPatientGraphs(memberId:string,snapshot:ClinicalSnapshot,week:BpWeekRead|null,labs:PatientLabValue[]|null,history:ReportedValue[]|null,ldl:DoctorLdl|null,now:Date):PatientGraphs|null{
+export function buildPatientGraphs(memberId:string,snapshot:ClinicalSnapshot,week:BpWeekRead|null,labs:PatientLabValue[]|null,history:ReportedValue[]|null,ldl:DoctorLdl|null,now:Date,bpTarget:{systolic:number;diastolic:number}|null=null):PatientGraphs|null{
  if(snapshot.id!==memberId)return null;
  const from=snapshotBp(snapshot),series=Object.fromEntries(GRAPH_IDS.map(id=>[id,{points:[]}])) as unknown as PatientGraphs['series'];
  series.bp.points=from.bp;series.pulse.points=from.pulse;series.weight.points=from.weight;
@@ -77,7 +77,8 @@ export function buildPatientGraphs(memberId:string,snapshot:ClinicalSnapshot,wee
   series.ldl.points.push(point(id,dayAt(r.on),[r.mmol],r.counts?'reviewed':'unreviewed',true));
  }
  series.ldl.target=registryLdlTarget(ldl);
- // BP cut points classify readings, but the authorized read has no per-member BP target. Do not invent one.
+ // The physician-set home target (member_bp_targets, WP T) when one is on file; never an invented or default one.
+ if(bpTarget)series.bp.references=[{value:bpTarget.systolic,series:0},{value:bpTarget.diastolic,series:1}];
  const today=yerevanDate(now),start=addDays(today,-27);
  const verified=series.bp.points.filter(p=>p.source!=='member'&&p.source!=='unreviewed');
  if(verified.length)for(let i=0;i<4;i++){

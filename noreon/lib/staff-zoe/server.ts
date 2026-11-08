@@ -5,6 +5,8 @@ import {zoeRunsSchema,type ZoeRunView} from '@/lib/zoe/contracts';
 import {st} from '@/lib/staff/staff-locale-copy';
 import {snapshotSchema,type ClinicalSnapshot} from '@/lib/patient-care/clinical-case-repository';
 import {readStaffBpWeek,type BpWeekRpc} from '@/lib/bp-week/server';
+import {readDoctorBpTarget,type BpTargetRpc} from '@/lib/bp-target/runtime';
+import {bpTargetsEnabled} from '@/lib/clinical-review/config';
 import {readStaffLabResults} from '@/lib/lab-ai/staff-results-server';
 import {readDoctorLdl,type LdlRpc} from '@/lib/ldl/runtime';
 import {readDoctorLdlResponses} from '@/lib/ldl/response-runtime';
@@ -66,7 +68,10 @@ export function staffRecordReader(client:Rpc,locale:L,now:Date){
   switch(tool){
    case 'overview':{const s=await readSnapshot(memberId);return s?overviewResult(s,c):none('unavailable');}
    case 'bp':{const [w,s]=await Promise.all([readStaffBpWeek(client as unknown as BpWeekRpc,memberId).catch(e=>{if((e as {code?:string}).code==='42501')throw new AccessLost();return null;}),readSnapshot(memberId)]);
-    return w||s?bpResult(w,s,c):none('unavailable');}
+    if(!w&&!s)return none('unavailable');
+    // WP T: the physician-set home target for the chart's reference lines; display only, never a model fact.
+    const target=bpTargetsEnabled()?(await readDoctorBpTarget(client as unknown as BpTargetRpc,memberId))?.current??null:null;
+    return {...bpResult(w,s,c),...(target?{bpTarget:{systolic:target.homeSystolicTarget,diastolic:target.homeDiastolicTarget}}:{})};}
    case 'labs':{if(!doctor)return none('not_permitted');const r=await readStaffLabResults(client,memberId);const checks=await readDoctorUploadOverrides(client,memberId);if(checks===null)return none('unavailable');return r?.enabled?labsResult(r,c,checks):checks.length?{...none('off'),state:'ok',identityChecks:checks}:r===undefined||r?.enabled===false?none('off'):none('unavailable');}
    case 'ldl':{if(!doctor)return none('not_permitted');const [d,responses]=await Promise.all([readDoctorLdl(client as unknown as LdlRpc,memberId),readDoctorLdlResponses(client as unknown as LdlRpc)]);
     return !d?none('unavailable'):!d.enabled?none('off'):ldlResult(d,responses,c);}

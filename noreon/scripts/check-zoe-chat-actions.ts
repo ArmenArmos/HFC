@@ -32,6 +32,8 @@ import {CARD_KINDS,CARD_PAGE,SNAPSHOTS,cardSchema,type ZoeCard,type ZoeCards} fr
 import {CHIP,TITLE,SIDE_EFFECTS,allCopy,sideEffectMessage,type CardLocale} from '@/lib/zoe-chat-actions/copy';
 import {cardOffer,mergeCards,upsertCard,withCards} from '@/lib/zoe-chat-actions/thread';
 import type {ChatItem} from '@/lib/zoe/app-chat-contracts';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 
 const LOCALES:CardLocale[]=['hy','en','ru'];
 const read=(p:string)=>readFileSync(p,'utf8');
@@ -181,10 +183,10 @@ assert.ok(!/\bpatient\b|\buser\b/i.test(allCopy().map(c=>c.en).join(' ')),'never
  // The action now sits behind the shared hook. Supply the same isolated action boundary there.
  const bpHook:Record<string,unknown>={};
  const bpCode=ts.transpileModule(read('components/patient/use-bp-card.ts'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- new vm.Script(bpCode).runInNewContext({exports:bpHook,crypto,Intl,Date,require:(n:string)=>n==='./bp-entry-values'?modules['@/components/patient/bp-entry-values']:n==='@/lib/zoe-chat-actions/thread-events'?{CARD_REPLY_LOST:'noreon:card-reply-lost'}:modules[n]});
+ new vm.Script(bpCode).runInNewContext({exports:bpHook,crypto,Intl,Date,require:(n:string)=>n in realtimeBoundaries?realtimeBoundaries[n]:n==='./bp-entry-values'?modules['@/components/patient/bp-entry-values']:n==='@/lib/zoe-chat-actions/thread-events'?{CARD_REPLY_LOST:'noreon:card-reply-lost'}:modules[n]});
  modules['./use-bp-card']=bpHook;
  const exports:Record<string,unknown>={};
- new vm.Script(code).runInNewContext({exports,crypto,Intl,Date,require:(n:string)=>modules[n]});
+ new vm.Script(code).runInNewContext({exports,crypto,Intl,Date,require:(n:string)=>n in realtimeBoundaries?realtimeBoundaries[n]:modules[n]});
  const View=exports.ZoeCardView as typeof import('@/components/patient/zoe-cards').ZoeCardView;
  const measuredAt='2026-10-30T04:00:00.000Z';
  const c=cardSchema.parse({...base,kind:'bp',snapshot:{v:1,week:null,typed:{systolic:128,diastolic:82,pulse:72,measuredAt}}});
@@ -244,7 +246,7 @@ function harness(kind:'message'|'side_effect'|'bp',sendResults:(string|(()=>Prom
  const cardNow=()=>cardSchema.parse({...base,id:cardId,kind,snapshot:kind==='bp'?{v:1,week:null}:{v:1},state:db.state,outcome:{...db.outcome},claims:{...db.claims}});
  const exports:Record<string,unknown>={};
  const code=ts.transpileModule(read('lib/zoe-chat-actions/actions.ts'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- new vm.Script(code).runInNewContext({exports,FormData,process:{env:{NOREON_MEMBER_CHAT_V2:"false"}},require(name:string){
+ new vm.Script(code).runInNewContext({exports,FormData,process:{env:{NOREON_MEMBER_CHAT_V2:"false"}},require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
   if(name==='node:crypto')return {createHash};
   if(name==='zod')return zod;
   if(name==='@/lib/observability/with-logging')return {loggedAction:(_n:string,fn:unknown)=>fn};

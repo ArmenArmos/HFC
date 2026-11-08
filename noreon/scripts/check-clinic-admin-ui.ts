@@ -4,6 +4,7 @@ import {create,act,type ReactTestRenderer,type ReactTestInstance} from 'react-te
 import {ClinicAccessManager} from '@/components/clinic-portal/admin-memberships';
 import type {ClinicAdminPage,ClinicAdminPorts} from '@/lib/clinic-portal/admin-ports';
 import type {ClinicAdminCommand} from '@/lib/clinic-portal/admin-schema';
+import {realtimeStubs} from './realtime-test-stubs';
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
 const id=(n:number)=>`c4710000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const clinic=id(1),user=id(2),membership=id(3);
@@ -157,6 +158,7 @@ const chatDependencies:Record<string,unknown>={
  './member-record-forms':{MemberRecordsList},'./pdf-viewer':{ClinicPdfViewer:()=>null},
  '@/components/staff/chat-menu-items':{ChatMenuItems:()=>null},'@/lib/clinic-portal/display-time':clinicDisplay,
  '@/lib/clinic-chat/receipt':{bookingActionReceipt:()=>null},'@/components/staff/empty-chat':{EmptyStaffChat:()=>null},
+ ...await realtimeStubs(),
 };
 new vm.Script(ts.transpileModule(readFileSync('components/clinic-portal/chat.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText).runInNewContext({exports:chatExports,require:(name:string)=>{assert.ok(name in chatDependencies,name);return chatDependencies[name];}});
 const Chat=chatExports.ClinicChat as typeof import('@/components/clinic-portal/chat').ClinicChat;

@@ -11,6 +11,8 @@ import {markCareQueueTask} from '@/lib/care-queue/actions';
 import type {Locale} from '@/lib/locale';
 import {readNurseAlerts} from '@/lib/care-alerts/nurse';
 import {NurseUrgentAlerts,NurseUrgentAlertRow,NurseAlertReadFailure} from '@/components/staff/nurse-urgent-alerts';
+import {CoordinatorVoice} from '@/components/staff/coordinator-voice';
+import {staffLiveAvailable,staffVoiceAvailable} from '@/lib/staff-zoe/voice';
 export const dynamic='force-dynamic';
 
 const notices:Record<string,[string,string,string]>={
@@ -59,7 +61,7 @@ export default async function CareQueuePage({searchParams}:{searchParams:Promise
  const {view:rawView,notice}=await searchParams,view=rawView==='sandbox'?'sandbox':'live';
  // A nurse's urgent alerts come first: an urgent alert on her member must never read as "No open tasks".
  const alerts=queue==='nurse'&&view==='live'?await readNurseAlerts(client):undefined;
- const urgent=<NurseUrgentAlerts read={alerts} locale={l}/>;
+ const urgent=<NurseUrgentAlerts read={alerts} locale={l} voice={identity.role==='nurse'&&await staffVoiceAvailable('NURSE')}/>;
  let inbox:ReturnType<typeof careQueueInboxSchema.parse>;
  try{const {data,error}=await client.rpc('care_queue_inbox',{p_queue:queue,p_view:view});if(error)throw Error('unavailable');inbox=careQueueInboxSchema.parse(data);}
  catch(error){unstable_rethrow(error);return <div className="space-y-6">{urgent}<CareSection title={t('Tasks unavailable','Առաջադրանքները հասանելի չեն','Задачи недоступны')}><p className="text-body2">{t('The list could not be loaded. Reload to try again.','Ցանկը չբեռնվեց։ Թարմացրեք էջը։','Не удалось загрузить список. Обновите страницу, чтобы повторить попытку.')}</p></CareSection></div>;}
@@ -67,6 +69,7 @@ export default async function CareQueuePage({searchParams}:{searchParams:Promise
  const listTitle=view==='live'?(queue==='nurse'?t('Open work','Բաց աշխատանք','Открытая работа'):t('Open tasks','Բաց առաջադրանքներ','Открытые задачи')):t('Test accounts','Թեստային հաշիվներ','Тестовые аккаунты');
  return <div className="space-y-6">
   <header className="max-w-3xl space-y-2"><h1 className="text-h1">{t('Care queue','Խնամքի հերթ','Очередь задач')}</h1>
+   {identity.role==='coordinator'&&await staffVoiceAvailable('COORDINATOR')&&<CoordinatorVoice locale={l} available live={await staffLiveAvailable('COORDINATOR')}/>}
    <p className="text-body2 text-muted-foreground">{queue==='admin'
     ?t('Booking and logistics work to arrange. Each task says what to do next.','Կազմակերպման և ամրագրման աշխատանք։ Յուրաքանչյուր առաջադրանք ասում է հաջորդ քայլը։','Записи и организационные задачи. В каждой задаче указан следующий шаг.')
     :queue==='nurse'?t('Urgent alerts come first, followed by work for your members.','Շտապ ազդանշանները սկզբում են, ապա՝ ձեր անդամների աշխատանքը։','Сначала срочные оповещения, затем работа для ваших участников.'):t('Members who were told this is with you. The nearest deadline comes first.','Անդամներ, որոնց ասվել է, որ սա ձեզ մոտ է։ Ամենամոտ ժամկետը առաջինն է։','Участники, которым сообщили, что вопрос у вас. Сначала идёт самый ранний срок.')}</p></header>

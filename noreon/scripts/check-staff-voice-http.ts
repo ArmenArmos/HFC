@@ -7,6 +7,11 @@ import {signStaffVoiceReceipt,verifyStaffVoiceReceipt} from '@/lib/staff-zoe/voi
 import {verifyVoiceReceipt} from '@/lib/zoe-chat-actions/voice-receipt';
 const env={NODE_ENV:'test',NOREON_NURSE_CHAT:'true',NOREON_NURSE_CHAT_V2:'true',NOREON_DOCTOR_WORKSPACE:'true',NOREON_DOCTOR_CHAT_HOME:'true',NOREON_DOCTOR_CHAT_V2:'true',NOREON_ZOE_VOICE_PROVIDER:'fake'};
 for(const role of ['NURSE','DOCTOR'] as const)assert.equal(await staffVoiceAvailable(role,env),true);
+// WP V: the new roles follow their own surface switch.
+assert.equal(await staffVoiceAvailable('ADMIN',env),false);assert.equal(await staffVoiceAvailable('ADMIN',{...env,NOREON_ADMIN_CHAT:'true'}),true);
+assert.equal(await staffVoiceAvailable('COORDINATOR',env),false);assert.equal(await staffVoiceAvailable('COORDINATOR',{...env,NOREON_ZOE_APP_V3:'true'}),true);
+assert.equal(await staffVoiceAvailable('CLINIC_ADMIN',{...env,NOREON_CLINIC_CHAT:'true',NOREON_CLINIC_SCHEDULING_ENABLED:'true',NOREON_CLINIC_PORTAL_ENABLED:'true'}),true);
+assert.equal(await staffVoiceAvailable('CLINIC_ADMIN',env),false);
 assert.equal(await staffVoiceAvailable('NURSE',{...env,NOREON_NURSE_CHAT:'false'}),false);
 assert.equal(await staffVoiceAvailable('DOCTOR',{...env,NOREON_DOCTOR_CHAT_HOME:'false'}),false);
 assert.equal(await staffVoiceAvailable('NURSE',{...env,NODE_ENV:'production'}),false);
@@ -37,9 +42,10 @@ const seenKinds=new Set<string>();
 const handlers=createStaffVoiceHandlers({actor:async()=>identity,available:async()=>available,limit:async(_request,id,kind)=>{seenKinds.add(kind);claims++;assert.equal(id,'staff-1');if(limitFails)throw Error('synthetic');return admitted?{ok:true}:{ok:false,retryAfter:30};},transcribe:async()=>{calls++;return {status:'ok',text:'Hello',transcripts:{primary:'Hello',urgent:null}};},speech:async()=>{calls++;return {status:'ok',audioBase64:'UklGRg==',mime:'audio/wav'};},sign:(id,text,transcripts)=>signStaffVoiceReceipt(id,text,secret,now,transcripts)});
 const voice=(headers:Record<string,string>={},body:BodyInit='audio')=>new Request('http://localhost/api/staff/zoe/voice',{method:'POST',headers:{origin:'http://localhost','content-type':'audio/mp4','x-voice-duration-ms':'1000','x-voice-locale':'hy',...headers},body});
 const speech=(body:unknown={text:'Hello',locale:'hy'})=>new Request('http://localhost/api/staff/zoe/speech',{method:'POST',headers:{origin:'http://localhost'},body:JSON.stringify(body)});
-for(const role of ['nurse','doctor']){identity={id:'staff-1',role};const response=await handlers.voice(voice());assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');const body=await response.json();assert.equal(body.urgent,undefined);assert.equal(body.transcripts,undefined);assert.equal(verifyStaffVoiceReceipt(body.receipt,'staff-1',body.text,now,secret),true);assert.equal((await handlers.speech(speech())).status,200);}
+// WP V: every staff role from lib/rbac has voice (nurse, both physician specialties, coordinator, Noreon and clinic administrators).
+for(const role of ['nurse','doctor','coordinator','admin','clinic_admin']){identity={id:'staff-1',role};const response=await handlers.voice(voice());assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');const body=await response.json();assert.equal(body.urgent,undefined);assert.equal(body.transcripts,undefined);assert.equal(verifyStaffVoiceReceipt(body.receipt,'staff-1',body.text,now,secret),true);assert.equal((await handlers.speech(speech())).status,200);}
 const before=calls,beforeClaims=claims;
-for(const role of ['member','admin']){identity={id:'staff-1',role};assert.equal((await handlers.voice(voice())).status,401);assert.equal((await handlers.speech(speech())).status,401);}
+for(const role of ['member','caregiver','patient','qa']){identity={id:'staff-1',role};assert.equal((await handlers.voice(voice())).status,401);assert.equal((await handlers.speech(speech())).status,401);}
 identity=null;assert.equal((await handlers.voice(voice())).status,401);identity={id:'staff-1',role:'nurse'};
 assert.equal((await handlers.voice(voice({origin:'https://elsewhere.invalid'}))).status,403);
 available=false;assert.equal((await handlers.voice(voice())).status,503);assert.equal((await handlers.speech(speech())).status,503);available=true;

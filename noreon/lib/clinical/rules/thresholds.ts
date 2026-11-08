@@ -82,4 +82,51 @@ export const THRESHOLD = {
   /** Lab protocol v2 section 3: eGFR G3a starts below 60; uACR A2 starts at 3 mg/mmol. Doctor draft notes only, never a diagnosis. */
   labProtocolEgfrG3: 60,
   labProtocolUacrA2: 3,
+  /**
+   * Personal home BP target and clinician-set alert thresholds (WP T, lib/clinical/rules/personal-bp.ts). DEFAULTS ONLY,
+   * pending clinical sign-off: the physician confirms or changes them per member (member_bp_targets), and the version
+   * PERSONAL_BP_DEFAULTS_VERSION is stored with each confirmation. The default target equals the home yellow band above;
+   * a reading below both numbers is at target. Emergency cuts (crisis and doctor-today above) always win.
+   */
+  personalBpTargetSystolic: 135,
+  personalBpTargetDiastolic: 85,
+  /** Default alert: this many consecutive home readings at or above grade 2 raise the same-day nurse task. */
+  personalBpAlertHighSystolic: 160,
+  personalBpAlertHighDiastolic: 100,
+  personalBpAlertHighConsecutive: 2,
+  /** Default low alert, only with symptoms: systolic at or below, or a pulse at or below. */
+  personalBpAlertLowSystolic: 90,
+  personalBpAlertLowPulse: 50,
+  /** Risk tier (lib/clinical/rules/risk-tier.ts). Draft points and cuts, pending clinical sign-off. */
+  riskTierWindowDays: 7,
+  riskTierPointsOpenUrgent: 60,
+  riskTierPointsRedFlag: 40,
+  riskTierPointsSecondaryPrevention: 40,
+  riskTierPointsBpAlertRange: 25,
+  riskTierPointsBpAboveTarget: 15,
+  riskTierPointsLdlAboveGoal: 15,
+  riskTierPointsAdherenceLow: 10,
+  riskTierPointsUnknown: 5,
+  riskTierPointsContactStale: 5,
+  riskTierAdherenceLowPct: 80,
+  riskTierContactStaleDays: 30,
+  riskTierVeryHighScore: 60,
+  riskTierHighScore: 35,
+  riskTierModerateScore: 15,
+  /** BP anomalies (lib/clinical/rules/bp-anomaly.ts). Draft, pending clinical sign-off. */
+  bpAnomalySustainedWindowDays: 7,
+  bpAnomalySustainedDays: 4,
+  bpAnomalyRiseRecentDays: 3,
+  bpAnomalyRiseBaselineDays: 14,
+  bpAnomalyRiseSystolic: 15,
+  bpAnomalyRiseMinRecent: 2,
+  bpAnomalyRiseMinBaseline: 4,
+  bpAnomalyVariabilityDays: 14,
+  bpAnomalyVariabilityMinReadings: 6,
+  bpAnomalyVariabilitySdSystolic: 15,
+  bpAnomalyLowWindowDays: 7,
+  bpAnomalyLowReadings: 2,
+  /** LDL trend (lib/clinical/rules/lab-trend.ts), mmol/L and weeks. Draft, pending clinical sign-off. */
+  labTrendLdlRiseMmol: 0.3,
+  labTrendLdlNotAtGoalWeeks: 12,
 } as const;

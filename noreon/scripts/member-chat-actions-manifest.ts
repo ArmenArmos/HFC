@@ -42,6 +42,7 @@ export const dependencyRegions:Record<string,readonly string[]|null>={
  'lib/ldl/runtime.ts':['readMemberLdl'],
  'lib/pilot-commerce/runtime.ts':['readMemberCatalog','readMemberPayments'],
  'lib/care-queue/server.ts':['raiseCareQueueTasks'],
+ 'lib/bp-target/runtime.ts':['readBpPersonalContext'],
  'lib/care-alerts/server.ts':['recordScreen','screenPendingMessages'],
  'lib/zoe/app-chat.ts':['readZoeThreadState','readZoeThread','readIntakeState','storeNewTopic','storeZoeMessage','screenNewMessages','utf16Length'],
  'lib/conversation-persistence/repository.ts':['ConversationRepository.call','ConversationRepository.receive'],

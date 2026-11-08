@@ -12,7 +12,8 @@ const clean=(capture:Capture)=>{
   void capture.context?.close().catch(()=>{});
 };
 /** Permission is requested only inside the member's hold gesture. Release before permission resolves discards it. */
-export function Microphone({locale:l,disabled,onTranscript,onBusy}:{locale:PatientLocale;disabled:boolean;onTranscript:(text:string,receipt?:string)=>void;onBusy:(busy:boolean)=>void}) {
+/** endpoint: the member route by default; staff composers pass '/api/staff/zoe/voice' (WP V, push-to-talk for every role). */
+export function Microphone({locale:l,disabled,onTranscript,onBusy,endpoint='/api/patient/zoe/voice'}:{locale:PatientLocale;disabled:boolean;onTranscript:(text:string,receipt?:string)=>void;onBusy:(busy:boolean)=>void;endpoint?:string}) {
   const hydrated=useHydrated();
   const [phase,setPhase]=useState<'idle'|'recording'|'transcribing'>('idle');
   const [cancelled,setCancelled]=useState(false),[level,setLevel]=useState(0),[error,setError]=useState(false);
@@ -69,7 +70,7 @@ export function Microphone({locale:l,disabled,onTranscript,onBusy}:{locale:Patie
         const controller=new AbortController();upload.current=controller;setPhase('transcribing');
         const timer=setTimeout(()=>{if(mounted.current)setError(true);controller.abort();},20_000);
         try{
-          const response=await fetch('/api/patient/zoe/voice',{method:'POST',body:new Blob(current.chunks,{type:recorder.mimeType||mimeType}),headers:{'Content-Type':recorder.mimeType||mimeType,'X-Voice-Locale':l,'X-Voice-Duration-Ms':String(Math.min(VOICE_MAX_MS,Math.max(1,Math.round(performance.now()-current.start))))},cache:'no-store',signal:controller.signal});
+          const response=await fetch(endpoint,{method:'POST',body:new Blob(current.chunks,{type:recorder.mimeType||mimeType}),headers:{'Content-Type':recorder.mimeType||mimeType,'X-Voice-Locale':l,'X-Voice-Duration-Ms':String(Math.min(VOICE_MAX_MS,Math.max(1,Math.round(performance.now()-current.start))))},cache:'no-store',signal:controller.signal});
           const result:VoiceResult=await response.json();
           if(!mounted.current||controller.signal.aborted)return;
           if(result.status==='ok'&&typeof result.text==='string')callbacks.current.onTranscript(result.text,result.receipt);

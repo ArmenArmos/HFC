@@ -435,6 +435,8 @@ do $$declare reason text;begin
 end$$;
 -- covers: rpc:zoe_v3_adherence_context
 select pg_temp.ok(pg_temp.chat_call('dose / adherence context',$q$select public.zoe_v3_adherence_context(p_member=>pg_temp.id(1))$q$)?&array['episodes','stops'],'adherence context returned');
+-- covers: rpc:bp_personal_context
+select pg_temp.ok((pg_temp.chat_call('bp / personal target context',$q$select public.bp_personal_context(p_member=>pg_temp.id(1),p_days=>14)$q$))->>'version'='bp-personal-context-v1','personal BP target context returned (WP T)');
 -- covers: rpc:zoe_chat_action_trace
 select pg_temp.chat_call('visit request / unavailable-step trace',$q$select public.zoe_chat_action_trace(p_member=>pg_temp.id(1),p_name=>'zoe.visit_request',p_outcome=>'block',p_reason=>'task_unavailable',p_rule=>'zoe.visit_request',p_rule_version=>'visit-request-2026-11-04',p_attributes=>jsonb_build_object('noreon.card_id',pg_temp.id(90),'noreon.operation_id',pg_temp.id(91),'step','task'))$q$,'{"ok":true}');
 select pg_temp.as_fixture();

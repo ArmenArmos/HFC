@@ -5,6 +5,8 @@ import {nurseWorkspaceSchema,nurseSendResultSchema,type NurseWorkspace,type Nurs
 import {readNurseHandoffs} from '@/lib/nurse-chat/handoff-actions';
 import {handoffPageSchema,type HandoffPage} from '@/lib/nurse-chat/handoffs';
 import {useNurseHandoff} from './use-nurse-handoff';
+import {useRealtimeSignals} from '@/components/realtime/use-realtime-signals';
+import {liveDue,type SignalKind} from '@/lib/realtime/contracts';
 import type {MemberChoice} from './messages';
 
 type Session={key:string;member:MemberChoice;data:NurseWorkspace|null};
@@ -12,7 +14,8 @@ type Optimistic={request:NurseReply;at:string;state:'saving'|'uncertain'|'sent';
 export type ConversationNotice='unknown'|'stale'|'unconfirmed'|'savedUnread'|'';
 
 /** One open member; a pending request survives every retry unchanged. */
-export function useNurseConversation(restoreDraft:(body:string)=>void,atEnd:RefObject<()=>boolean>,workHeld?:RefObject<boolean>,onClosed?:()=>void){
+/** onSignal (WP R): every realtime signal of the nurse's staff plane, for the chat's in-chat notices. */
+export function useNurseConversation(restoreDraft:(body:string)=>void,atEnd:RefObject<()=>boolean>,workHeld?:RefObject<boolean>,onClosed?:()=>void,onSignal?:(kind:SignalKind,ref:string|null)=>void){
  const handoff=useNurseHandoff(restoreDraft);
  const {receive:receiveHandoffs,reset:resetHandoffs,held:handoffHeld}=handoff;
  const lastHandoffs=useRef<HandoffPage|null>(null);
@@ -101,19 +104,31 @@ export function useNurseConversation(restoreDraft:(body:string)=>void,atEnd:RefO
    setOptimistic(previous=>previous.map(reply=>reply.request.requestId===request.requestId?{...reply,state:'uncertain'}:reply));setNotice('unknown');
   }finally{locked.current=false;setSending(false);}
  }
+ // WP R: a staff_thread signal for the open member re-reads it now (the same guarded poll read); the 30 s poll is the
+ // fallback and runs every relaxedInterval(30 s) while the socket is healthy.
+ const pollNow=useRef<()=>void>(()=>{});
+ const signalsOut=useRef(onSignal);
+ useEffect(()=>{signalsOut.current=onSignal;},[onSignal]);
+ const realtime=useRealtimeSignals({plane:'staff',onSignal:useCallback((kind:SignalKind,ref:string|null)=>{
+  if(kind==='staff_thread'&&ref===current.current?.member.id)pollNow.current();
+  signalsOut.current?.(kind,ref);
+ },[]),onResync:useCallback(()=>pollNow.current(),[])});
+ const liveHealthy=realtime.healthyRef;
  useEffect(()=>{
   if(!open)return;
+  let last=Date.now();
   const refresh=()=>{
    const target=current.current;
    if(workHeld?.current||document.hidden||locked.current||handoffHeld.current||pending.current||polling.current||!target?.data?.ok)return;
-   polling.current=true;
+   polling.current=true;last=Date.now();
    void read(target,true).finally(()=>{polling.current=false;});
   };
-  const interval=window.setInterval(refresh,30_000);
+  pollNow.current=refresh;
+  const interval=window.setInterval(()=>{if(liveDue(last,Date.now(),30_000,liveHealthy.current))refresh();},30_000);
   window.addEventListener('focus',refresh);window.addEventListener('pageshow',refresh);
   document.addEventListener('visibilitychange',refresh);
-  return ()=>{window.clearInterval(interval);window.removeEventListener('focus',refresh);window.removeEventListener('pageshow',refresh);document.removeEventListener('visibilitychange',refresh);};
- },[open,read,handoffHeld,workHeld,onClosed]);
+  return ()=>{pollNow.current=()=>{};window.clearInterval(interval);window.removeEventListener('focus',refresh);window.removeEventListener('pageshow',refresh);document.removeEventListener('visibilitychange',refresh);};
+ },[open,read,handoffHeld,workHeld,onClosed,liveHealthy]);
  useEffect(()=>()=>{current.current=null;},[]);
  const caughtUp=useCallback(()=>{const data=current.current?.data;if(data?.ok)reviewed.current=data.version;},[]);
  async function refresh(){const target=current.current;if(!target)return null;lastHandoffs.current=null;await read(target,false,true);return lastHandoffs.current;}

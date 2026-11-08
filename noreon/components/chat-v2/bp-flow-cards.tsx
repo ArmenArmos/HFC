@@ -7,7 +7,7 @@ import { SignInEnded } from "@/components/patient/sign-in-ended";
 import { ZoeEmergencyCard } from "@/components/patient/zoe-emergency-card";
 import { answerRedFlagFromCard } from "@/lib/zoe-chat-actions/actions";
 import { answersOn, chipState, nextQuestion, redOutcome, RED_FLAG_QUESTIONS, type BpFlow, type ContextStrip, type RedFlagQuestion } from "@/lib/zoe-chat-actions/bp-flow";
-import { BP, FLAG_QUESTION, FLOW, say, type CardLocale } from "@/lib/zoe-chat-actions/copy";
+import { BP, FLAG_QUESTION, FLOW, PERSONAL_BP, say, type CardLocale } from "@/lib/zoe-chat-actions/copy";
 import type { ValidCard, ZoeCard, ZoeCards } from "@/lib/zoe-chat-actions/registry";
 import { DialogTurn } from "./dialog-turn";
 import { Speaker } from "./speaker";
@@ -38,10 +38,21 @@ export function FlowWords({ flow, locale: l, tasks }: { flow: BpFlow; locale: Ca
   const word = state === "answered" ? FLOW.answered : state === "seen_nurse" ? FLOW.seenNurse : state === "seen_doctor" ? FLOW.seenDoctor : FLOW.sent;
   return <>
     {lines.map(line)}
+    {zone !== "red" && flow.personal && <PersonalWords personal={flow.personal} locale={l} />}
     {zone === "orange" && line(FLOW.noDouble)}
     {flow.outOfHours && <p data-zoe-out-of-hours>{say(l, flow.nurseTask ? FLOW.outOfHours : FLOW.clinicClosed)}</p>}
     {state && <p className="cv2-chip" data-zoe-chip={state}>{say(l, word)}{state !== "answered" && flow.slaHours ? ` · ${say(l, FLOW.within(flow.slaHours))}` : ""}</p>}
   </>;
+}
+
+/** WP T: the reading against the member's own target. The rules decided the status; this only names it, with the target. */
+function PersonalWords({ personal: p, locale: l }: { personal: NonNullable<BpFlow["personal"]>; locale: CardLocale }) {
+  const target = `${p.target.systolic}/${p.target.diastolic}`;
+  const text = p.status === "at_target" ? (p.usedPersonalTarget ? PERSONAL_BP.below(target) : PERSONAL_BP.belowUsual(target))
+    : p.status === "above_target" ? (p.usedPersonalTarget ? PERSONAL_BP.above(target) : PERSONAL_BP.aboveUsual(target))
+    : p.status === "alert_high" || p.status === "alert_low" ? (p.ruleId === "personal_bp.crisis_band" ? null : p.raised ? PERSONAL_BP.alertSent : PERSONAL_BP.alertNotSent)
+    : p.ruleId === "personal_bp.low_symptoms_unknown" ? PERSONAL_BP.lowAsk : null;
+  return text ? <p data-zoe-personal-bp={p.status}>{say(l, text)}</p> : null;
 }
 
 /** The zone beside a reading's reply, for yellow and orange. */

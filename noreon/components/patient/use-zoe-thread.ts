@@ -12,16 +12,28 @@ import { CHIP_KINDS, NO_CARDS, type CardKind, type ZoeCards } from "@/lib/zoe-ch
 import { cardOffer, fetchZoeCards, mergeCards, upsertCard, withCards } from "@/lib/zoe-chat-actions/thread";
 import { couldBeZoeEmergency, isZoeEmergency, type ZoeEmergencyCheck } from "@/lib/zoe/member-screen";
 import { sendZoeChatMessage, startNewZoeQuestion } from "@/app/patient/zoe/chat-actions";
-import { answeredCount, keepThreadNotices, canStartNewQuestion, chatItems, fetchZoeThread, pollAfterRead, pollAfterSend, pollDue, pollMayReplace, pollOnReturn, readWithin, ZOE_POLL, ZOE_POLL_IDLE, type ZoeRefusal, type ZoeThread } from "@/lib/zoe/app-chat-contracts";
+import { useRealtimeSignals } from "@/components/realtime/use-realtime-signals";
+import { memberPollDue } from "@/lib/realtime/poll";
+import { memberOutbox } from "@/components/patient/member-outbox";
+import { offlineFailure, offlineSendPlan, type Outbox, type ReplayOutcome } from "@/lib/offline/outbox";
+import { answeredCount, keepThreadNotices, canStartNewQuestion, chatItems, fetchZoeThread, pollAfterRead, pollAfterSend, pollMayReplace, pollOnReturn, readWithin, ZOE_POLL, ZOE_POLL_IDLE, type ZoeRefusal, type ZoeThread } from "@/lib/zoe/app-chat-contracts";
 /** A stable empty list: no member settings card is offered unless the chat switches it on. */
 const NO_SETTINGS_KINDS: readonly CardKind[] = [];
-type Pending = { requestId: string; text: string; toDoctor: boolean; state: "sending" | "failed"; voiceReceipt?: string; voiceDraft?: boolean; voiceUrgent?: boolean };
+type Pending = { requestId: string; text: string; toDoctor: boolean; state: "sending" | "failed" | "queued"; voiceReceipt?: string; voiceDraft?: boolean; voiceUrgent?: boolean };
+/** What an offline message keeps in the outbox (WP R): its words, recipient and voice provenance, under its request id. */
+type QueuedMessage = { text: string; toDoctor: boolean; voiceReceipt?: string; voiceUrgent?: boolean };
+const queuedMessage = (value: unknown): QueuedMessage | null => {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.text !== "string" || !v.text.trim() || typeof v.toDoctor !== "boolean") return null;
+  return { text: v.text, toDoctor: v.toDoctor, ...(typeof v.voiceReceipt === "string" ? { voiceReceipt: v.voiceReceipt } : {}), ...(v.voiceUrgent === true ? { voiceUrgent: true } : {}) };
+};
 type Emergency = { request: string | null; text: string; toDoctor: boolean };
 // A stale context gets one second for an authoritative send reply, then local guidance wins.
 const EMERGENCY_WAIT_MS = 1_000;
 export type Notice = "empty" | "too_long" | "rate_limited" | "unavailable" | ZoeRefusal | "doctor_sent" | null;
 
-export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElement = HTMLTextAreaElement>({ initial, emergencyCheck = null, cards: initialCards = NO_CARDS, chatOnly = false, bpOnly = false, onboarding = false, cardKey, accountSection, fillOpenQuestion, settingsKinds = NO_SETTINGS_KINDS }: {
+export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElement = HTMLTextAreaElement>({ initial, emergencyCheck = null, cards: initialCards = NO_CARDS, chatOnly = false, bpOnly = false, onboarding = false, cardKey, accountSection, fillOpenQuestion, settingsKinds = NO_SETTINGS_KINDS, realtime = false, offline = false }: {
   initial: ZoeThread;
   emergencyCheck?: ZoeEmergencyCheck | null;
   cards?: ZoeCards;
@@ -35,6 +47,10 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
   fillOpenQuestion?: (text: string) => boolean;
   /** WP F: the member settings cards (caregiver, consents) this chat has switched on; only these are offered or opened. */
   settingsKinds?: readonly CardKind[];
+  /** WP R: wake the read on realtime signals (member plane) and relax the fallback poll while the socket is healthy. */
+  realtime?: boolean;
+  /** WP R: queue sends made offline (IndexedDB outbox, same request id) and replay them in order when back online. */
+  offline?: boolean;
 }) {
   const [localEmergencies, setEmergencies] = useState<Record<string, Emergency>>({});
   const [thread, setThread] = useState(initial);
@@ -140,8 +156,11 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
   const inFlight = useRef(false);
   // Sends that finished: a poll started before one of them carries an older thread and is dropped.
   const sends = useRef(0);
+  // A signal during a read asks for one more read after it (the change may be newer than that read).
+  const rerun = useRef(false);
+  const refreshRef = useRef<() => void>(() => {});
   const refresh = useCallback(() => {
-    if (inFlight.current) return;
+    if (inFlight.current) { rerun.current = true; return; }
     inFlight.current = true;
     lastRefresh.current = Date.now();
     const sendsAtStart = sends.current;
@@ -159,13 +178,22 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
         if (sendsAtStart === sends.current) fast.current = pollAfterRead(fast.current, answeredCount(next));
       } finally {
         inFlight.current = false;
+        if (rerun.current) { rerun.current = false; setTimeout(() => refreshRef.current(), 0); }
       }
     });
   }, [initialCards.enabled, emergencyCheck, onboarding]);
+  useEffect(() => { refreshRef.current = refresh; }, [refresh]);
+  // WP R: a member_thread or member_cards signal re-reads now; versions and pollMayReplace still decide what is shown.
+  const onLiveSignal = useCallback((kind: string) => {
+    if (kind === "member_thread" || kind === "member_cards") refreshRef.current();
+  }, []);
+  const onLiveResync = useCallback(() => refreshRef.current(), []);
+  const live = useRealtimeSignals({ plane: "member", enabled: realtime, onSignal: onLiveSignal, onResync: onLiveResync });
+  const liveHealthy = live.healthyRef;
   useEffect(() => {
     const tick = () => {
       if (document.visibilityState !== "visible") return;
-      if (pollDue(fast.current, Date.now(), lastRefresh.current)) refresh();
+      if (memberPollDue(fast.current, Date.now(), lastRefresh.current, liveHealthy.current)) refresh();
     };
     // Back on the screen (tab shown, page restored from the back-forward cache, window focused):
     // read now, and poll fast again if a recent send is still unanswered.
@@ -186,14 +214,22 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
       window.removeEventListener("focus", back);
       window.removeEventListener(CARD_REPLY_LOST, back);
     };
-  }, [refresh]);
+  }, [refresh, liveHealthy]);
 
   const emergencyTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
   useEffect(() => {
     const timers = emergencyTimers.current;
     return () => { for (const timer of timers) clearTimeout(timer); };
   }, []);
-  const deliver = (p: Pending) => {
+  // WP R: the offline outbox, bound to the account this page was rendered for.
+  const [outbox, setOutbox] = useState<Outbox | null>(null);
+  useEffect(() => {
+    if (!offline) return;
+    let active = true;
+    void memberOutbox().then((ready) => { if (active) setOutbox(ready); });
+    return () => { active = false; };
+  }, [offline]);
+  const deliver = (p: Pending, done?: (outcome: ReplayOutcome) => void) => {
     sending.current.add(p.text);
     // These are the server's existing rules with its public matcher switches and intake state.
     // Set the safety UI outside the send transition: IO, a refusal or a lost reply cannot delay 103.
@@ -203,24 +239,45 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
     const showEmergency = () => {
       setEmergencies((all) => ({...all, [p.requestId]: all[p.requestId] ?? {request:null,text:p.text,toDoctor:p.toDoctor}}));
     };
+    // Offline there is no server answer to wait for: anything the screen could read as urgent shows 103 now.
+    const queueOffline = () => {
+      if (offlineSendPlan(p.text, check, !!p.voiceUrgent).emergency) showEmergency();
+      setPending((all) => [...all.filter((x) => x.requestId !== p.requestId), { ...p, state: "queued" }]);
+      const kept: QueuedMessage = { text: p.text, toDoctor: p.toDoctor, ...(p.voiceReceipt ? { voiceReceipt: p.voiceReceipt } : {}), ...(p.voiceUrgent ? { voiceUrgent: true } : {}) };
+      void outbox!.queue("zoe_message", p.requestId, kept).then((ok) => {
+        if (!ok) setPending((all) => all.map((x) => (x.requestId === p.requestId ? { ...x, state: "failed" } : x)));
+      });
+    };
+    if (outbox && typeof navigator !== "undefined" && navigator.onLine === false) {
+      sending.current.delete(p.text);
+      queueOffline();
+      done?.("retry");
+      return;
+    }
     if (urgent || (possibleUrgent && !screening?.intake)) showEmergency();
     const timer = possibleUrgent && !urgent ? setTimeout(showEmergency, EMERGENCY_WAIT_MS) : undefined;
     if (timer) emergencyTimers.current.add(timer);
     setPending((all) => [...all.filter((x) => x.requestId !== p.requestId), { ...p, state: "sending" }]);
     startTransition(async () => {
       let result;
+      let lostNetwork = false;
       try {
         result = await sendZoeChatMessage(p.requestId, p.text, p.toDoctor, !!emergencyCheck, p.voiceReceipt);
-      } catch {
+      } catch (error) {
+        // No network: queue it with the same request id (a send that did arrive is replayed as itself, never twice).
+        lostNetwork = !!outbox && offlineFailure(error);
         // The reply is lost, not necessarily the message: the read shows it if it was stored.
-        refresh();
+        if (!lostNetwork) refresh();
         result = { status: "failed" as const };
       } finally {
         sending.current.delete(p.text);
         if (timer) { clearTimeout(timer); emergencyTimers.current.delete(timer); }
       }
+      if (lostNetwork) { queueOffline(); done?.("retry"); return; }
+      const settle = (outcome: ReplayOutcome) => { if (outcome !== "retry") void outbox?.remove(p.requestId); done?.(outcome); };
       // Flag off or an older client: the action redirects and the router is already navigating.
-      if (!result) return;
+      if (!result) { settle("drop"); return; }
+      settle(result.status === "urgent" ? (result.request ? "sent" : "retry") : result.status === "sent" ? "sent" : result.status === "failed" || result.status === "rate_limited" || result.status === "unavailable" ? "retry" : "drop");
       if (result.status === "urgent") {
         setEmergencies((all) => ({...all, [p.requestId]: {request:result.request,text:p.text,toDoctor:p.toDoctor}}));
         setPending((all) => all.map((x) => x.requestId===p.requestId ? {...x,state:result.request ? "sending" : "failed"} : x));
@@ -256,6 +313,35 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
       setNotice(result.status);
     });
   };
+
+  // WP R: replay the outbox in order when the browser is online again (and once on open), each with its request id.
+  const deliverRef = useRef(deliver);
+  useEffect(() => { deliverRef.current = deliver; });
+  const replayOutbox = useCallback(async () => {
+    if (!outbox || (typeof navigator !== "undefined" && navigator.onLine === false)) return;
+    await outbox.replay((item) => new Promise<ReplayOutcome>((resolve) => {
+      const message = queuedMessage(item.payload);
+      if (!message) { resolve("drop"); return; }
+      deliverRef.current({ requestId: item.id, ...message, state: "sending" }, resolve);
+    }), "zoe_message");
+  }, [outbox]);
+  useEffect(() => {
+    if (!outbox || !draftRead) return;
+    let active = true;
+    // After a reload the queued bubbles come back from the outbox, unless the thread already has them.
+    void outbox.pending("zoe_message").then((items) => {
+      if (!active) return;
+      setPending((all) => [...all, ...items.flatMap((item) => {
+        const message = queuedMessage(item.payload);
+        return message && !all.some((x) => x.requestId === item.id) && !initial.messages.some((m) => m.requestId === item.id) ? [{ requestId: item.id, ...message, state: "queued" as const }] : [];
+      })]);
+      void replayOutbox();
+    });
+    const online = () => { void replayOutbox(); };
+    window.addEventListener("online", online);
+    return () => { active = false; window.removeEventListener("online", online); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the restore reads the thread the page opened with
+  }, [outbox, draftRead, replayOutbox]);
 
   // "New question": a divider after the newest message, so Zoe answers the next one on its own (no model call here).
   const [dividing, setDividing] = useState(false);
@@ -407,8 +493,10 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
     deliver({ requestId, text: value, toDoctor: writingDoctor, state: "sending", ...(voiceDraft ? {voiceDraft:true,voiceReceipt,voiceUrgent:urgent} : {}) });
   };
 
+  // WP R: how many messages wait in the offline outbox (the banner says they will go when back online).
+  const queuedCount = useMemo(() => pending.filter((item) => item.state === "queued" && !stored.has(item.requestId)).length, [pending, stored]);
   return { thread, emergencies, localEmergencies, shown, text, setText: (value:string) => {setText(value);setVoiceUrgent(false);if(!value){setVoiceDraft(false);setVoiceReceipt(undefined);}},
     setVoiceText: (value:string,receipt?:string,urgent=false) => {setVoiceDraft(true);setVoiceReceipt(receipt);setVoiceUrgent(urgent);setText(value);}, writingDoctor, setWritingDoctor,
-    notice, setNotice, input, items, cards, setCards, entries, offer, focusCard, setFocusCard, focusVersion,
-    accountTab, attachments, setAttachments, opening, openCard, dividing, newQuestion, deliver, submit };
+    notice, setNotice, input, items, cards, setCards, entries, offer, focusCard, setFocusCard, focusVersion, liveHealthy: live.healthy,
+    accountTab, attachments, setAttachments, opening, openCard, dividing, newQuestion, deliver, submit, queuedCount };
 }

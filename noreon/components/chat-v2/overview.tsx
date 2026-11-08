@@ -94,7 +94,7 @@ function BloodPressure({ data, l }: { data: OverviewData; l: PatientLocale }) {
       <Row l={l} label={tx(l, "7 օրվա ստուգված միջինը", "7-day verified average", "Среднее проверенных за 7 дней")}>{mean ? `${mean.systolic}/${mean.diastolic} ${bpUnit(l)}` : undefined}</Row>
       <Row l={l} label={tx(l, "Չափումների շաբաթ", "Measurement week", "Неделя измерений")}>{week ? tx(l, `Օր ${week.day}՝ ${week.days}-ից`, `Day ${week.day} of ${week.days}`, `День ${week.day} из ${week.days}`) : undefined}</Row>
     </dl>
-    {hasChart && <OverviewBpChart locale={l} ranges={ranges} />}
+    {hasChart && <OverviewBpChart locale={l} ranges={ranges} target={data.bp.target} />}
   </Card>;
 }
 

@@ -53,7 +53,7 @@ export function staffPathAllowed(host: string, path: string, env: Environment = 
   const portal = staffPortalForHost(host);
   const staffPath = path === "/staff" || path.startsWith("/staff/");
   if (portal) {
-    if (path === "/" || path === "/api/health" || path.startsWith("/_next/") || path === "/favicon.ico" || path === "/manifest.webmanifest" || /^\/icons\/icon-(192|512)\.png$/.test(path)) return true;
+    if (path === "/" || path === "/api/health" || path === "/api/realtime/token" || path.startsWith("/_next/") || path === "/favicon.ico" || path === "/manifest.webmanifest" || /^\/icons\/icon-(192|512)\.png$/.test(path)) return true;
     if (isRealStaffPath(path)) return realReviewEnabled(env);
     if (!staffPath || !demoStaffHostAllowed(host, undefined, env)) return false;
     if (path === "/staff/backoffice" || path.startsWith("/staff/backoffice/")) return portal === "admin";

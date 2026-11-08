@@ -125,12 +125,22 @@ export function reasonLabel(reason:string,l:Locale){
   case 'missing_baseline_labs':return t(l,'First lab results missing','Առաջին լաբորատոր արդյունքները բացակայում են','Нет исходных анализов');
   case 'followup_labs_due':return t(l,'Follow-up labs due','Հաջորդ անալիզների ժամկետն է','Пора сдать контрольные анализы');
   case 'medicine_access_help':return t(l,'Needs help getting the medicine','Օգնություն է պետք դեղը ձեռք բերելու համար','Нужна помощь с получением лекарства');
+  // WP T: the physician-set alert thresholds (lib/clinical/rules/personal-bp.ts) and the trend sweep (bp-anomaly.ts, lab-trend.ts).
+  case 'bp_personal_alert_high':return t(l,'Home readings at the alert level the physician set','Տնային չափումները բժշկի սահմանած ահազանգի մակարդակում են','Домашние измерения на уровне оповещения, заданном врачом');
+  case 'bp_personal_alert_low':return t(l,'Low reading with symptoms, below the level the physician set','Ցածր չափում՝ ախտանիշներով, բժշկի սահմանած մակարդակից ցածր','Низкое измерение с симптомами, ниже уровня, заданного врачом');
+  case 'bp_anomaly.sustained_above_target':return t(l,'Home blood pressure above target on most days','Տնային ճնշումը շատ օրերին թիրախից բարձր է','Домашнее давление выше цели большинство дней');
+  case 'bp_anomaly.sudden_rise':return t(l,'Sudden rise against the member’s usual readings','Կտրուկ բարձրացում՝ անդամի սովորական չափումների համեմատ','Резкий рост по сравнению с обычными измерениями участника');
+  case 'bp_anomaly.high_variability':return t(l,'Home readings vary a lot','Տնային չափումները շատ են տատանվում','Домашние измерения сильно колеблются');
+  case 'bp_anomaly.low_with_symptoms':return t(l,'Low readings with symptoms','Ցածր չափումներ՝ ախտանիշներով','Низкие измерения с симптомами');
+  case 'bp_anomaly.low_symptoms_unknown':return t(l,'Low readings, symptoms to ask about','Ցածր չափումներ, պետք է ճշտել ախտանիշները','Низкие измерения, нужно уточнить симптомы');
+  case 'lab_trend.ldl_rising':return t(l,'LDL rising since the last result','LDL-ն բարձրացել է նախորդ արդյունքից հետո','ЛПНП растёт с прошлого результата');
+  case 'lab_trend.ldl_not_at_goal':return t(l,'LDL still above goal weeks after the goal was set','LDL-ն դեռ նպատակից բարձր է նպատակը սահմանելուց շաբաթներ անց','ЛПНП всё ещё выше цели спустя недели после её установки');
   default:return words(reason);
  }
 }
 /** Every reason the zone rule gave, falling back to the task's own reason code. */
 export function taskReasons(task:Pick<CareQueueTask,'reason'|'summary'>,l:Locale){
- if(task.reason==='bp_member_reported_high'&&(task.summary.entrySource==='patient_text_entry'||task.summary.entrySource==='caregiver_reported')&&typeof task.summary.systolic==='number'&&typeof task.summary.diastolic==='number')
+ if(task.reason==='bp_member_reported_high'&&(task.summary.entrySource==='patient_text_entry'||task.summary.entrySource==='caregiver_reported'||task.summary.entrySource==='patient_voice_live_confirmed')&&typeof task.summary.systolic==='number'&&typeof task.summary.diastolic==='number')
   return `${task.summary.systolic}/${task.summary.diastolic} ${bpUnit(l)} · ${task.summary.entrySource==='caregiver_reported'?caregiverReportedBpLabel(l):unverifiedBpLabel(l)}`;
  const parsed=z.array(z.string()).safeParse(task.summary.reasons);
  const reasons=parsed.success&&parsed.data.length?parsed.data:[task.reason];

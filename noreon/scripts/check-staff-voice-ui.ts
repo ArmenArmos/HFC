@@ -8,6 +8,7 @@ import React from 'react';
 import {act,create,type ReactTestRenderer} from 'react-test-renderer';
 import * as copy from '@/lib/staff/staff-locale-copy';
 import * as boundary from '@/lib/staff-zoe/typed-boundary';
+import {realtimeStubs} from './realtime-test-stubs';
 const require=createRequire(import.meta.url);
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
 type Options=Parameters<typeof import('../components/chat-v2/conversation').useConversation>[0];
@@ -49,7 +50,7 @@ const common:Record<string,unknown>={react:React,'react/jsx-runtime':require('re
  '@/lib/brand':await import('@/lib/brand'),
  '@/components/patient/use-chat-viewport':{useChatViewport:nothing},
  '@/components/chat-v2/use-thread-scroll':{useThreadScroll:()=>({threadRef:{current:null},contentRef:{current:null},unread:false,newest:nothing,stopFollowing:nothing})},
- '@/components/chat-v2/conversation':{useConversation:(value:Options)=>{options=value;return conversation;},ConversationToggle:()=>React.createElement('button',{'data-fixture-voice':true})},
+ '@/components/chat-v2/conversation':{useConversation:(value:Options)=>{options=value;return conversation;},VoiceMicrophone:()=>null,ConversationToggle:()=>React.createElement('button',{'data-fixture-voice':true})},
  '@/components/staff/voice-reply':{staffConversationReply:()=>null,renderedStaffReply:()=>''},
  '@/lib/staff-zoe/chat-v2-actions':actions,
  '@/lib/nurse-chat/v2-zoe-actions':{readNurseChatZoeHistory:action('nurse-history',{kind:'history',conversations:[],turns:[]}),findNurseChatQuestionMember:action('nurse-resolve',{kind:'member',memberId:member,memberName:'Example member'}),openNurseChatZoe:action('nurse-open',{ok:true,conversationId:member})},
@@ -65,6 +66,7 @@ for(const name of [
  'nurse-chat/zoe-events','nurse-chat/boundary','nurse-chat/handoff-copy','nurse-chat/sent-handoffs','nurse-chat/intent','nurse-chat/draft-intent','nurse-chat/action-intent','nurse-chat/measurement-intent','nurse-chat/today','nurse-visit/copy','staff/real-coordination/task-copy','care-alerts/contracts',
 ])common[`@/lib/${name}`]=await import(`../lib/${name}.ts`);
 common['@/components/staff/nurse-urgent-guidance']=await import('@/components/staff/nurse-urgent-guidance');
+Object.assign(common,await realtimeStubs());
 function component(file:string,exportName:string){
  const deps={...common};
  const source=readFileSync(file,'utf8');
@@ -139,7 +141,7 @@ const hookModule=load('components/chat-v2/conversation.tsx',{
  '@/lib/patient/copy':await import('@/lib/patient/copy'),'@/lib/staff-zoe/typed-boundary':boundary,
  '@/lib/zoe/symptoms/intake':{URGENT_TEXT:{en:'member emergency',hy:'member emergency',ru:'member emergency'}},
  '@/components/patient/use-hydrated':{useHydrated:()=>true},
- './conversation-controller':{ConversationController:Controller},
+ './conversation-controller':{ConversationController:Controller},'./microphone':{Microphone:()=>null},
  './conversation-browser':{captureConversation:nothing,conversationSupported:()=>true,
  transcribeConversation:(...args:unknown[])=>{routes.push(String(args[4]));return Promise.resolve({status:'ok',text:'hello'});},
  playConversation:(...args:unknown[])=>{routes.push(String(args[3]));return Promise.resolve();}},

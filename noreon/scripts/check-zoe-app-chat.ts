@@ -38,6 +38,8 @@ import {runZoeJob,type ZoePorts,type ZoeRouting} from '@/lib/zoe/pipeline';
 import {createFakeProvider,type ZoeProvider} from '@/lib/zoe/provider';
 import {job} from '@/lib/zoe/eval/harness';
 import {DEFAULT_ROUTE_CONFIG} from '@/lib/zoe/eval/routing-cases';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 
 // 1. Thread layout.
 const thread:ZoeThread={ok:true,version:4,ack:'Approved acknowledgement.',zoeReplies:false,settledSeq:0,
@@ -120,7 +122,7 @@ type Store={ok:true}|{ok:false;code:string};
 const loadAction=(store:(rid:string,text:string,toDoctor?:boolean)=>Promise<Store>,chatOn=true,threadState?:string,intake:{enabled:boolean;active:boolean}|null={enabled:false,active:false},enrols=false)=>{
  const state={auth:0,stored:[] as string[],after:0,reads:0,enrolled:0,signedOut:false,work:[] as (()=>Promise<void>)[],screened:0,sweeps:0};
  const exports:Record<string,unknown>={};
- new vm.Script(transpile('app/patient/zoe/chat-actions.ts')).runInNewContext({exports,process,setTimeout,Promise,require(name:string){
+ new vm.Script(transpile('app/patient/zoe/chat-actions.ts')).runInNewContext({exports,process,setTimeout,Promise,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/lib/patient/date-format')return memberDates;if(name==='@/lib/observability/with-logging')return {loggedAction:(_action:string,run:unknown)=>run,withRouteLogging:(handler:unknown)=>handler,logSweep:()=>{}};
   if(name==='next/server')return {after:(run:()=>Promise<void>)=>{state.after++;state.work.push(run);}};
   if(name==='next/navigation')return {redirect:(to:string)=>{throw Error(`redirect:${to}`);}};
@@ -258,7 +260,7 @@ try{
 
 // 4. The chat renders in EN and HY.
 const quickActions:Record<string,unknown>={};
-new vm.Script(transpile('components/patient/zoe-quick-actions.tsx')).runInNewContext({exports:quickActions,require(name:string){
+new vm.Script(transpile('components/patient/zoe-quick-actions.tsx')).runInNewContext({exports:quickActions,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/lib/patient/date-format')return memberDates;
  if(name==='react/jsx-runtime')return jsx;
  if(name==='next/link')return {default:({children,...props}:{children:React.ReactNode})=>React.createElement('a',props,children)};
@@ -267,7 +269,7 @@ new vm.Script(transpile('components/patient/zoe-quick-actions.tsx')).runInNewCon
  throw Error(`Unexpected boundary: ${name}`);
 }});
 const chatExports:Record<string,unknown>={};
-runChatView('components/patient/zoe-chat.tsx',{exports:chatExports,crypto,require(name:string){
+runChatView('components/patient/zoe-chat.tsx',{exports:chatExports,crypto,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/components/chat-v2/reported-bp-label')return bpLabel;
  if(name==='@/lib/patient/date-format')return memberDates;if(name==='@/lib/observability/with-logging')return {loggedAction:(_action:string,run:unknown)=>run,withRouteLogging:(handler:unknown)=>handler,logSweep:()=>{}};
  if(name==='@/lib/member-staff-name.mjs')return memberStaffNames;
@@ -426,7 +428,7 @@ console.log("Emergency action: 5 flag values, save success/refusal/throw/timeout
  let suggestionState:suggestions.SuggestionState|null=null;
  let intake:{enabled:boolean;active:boolean}|null={enabled:true,active:false};
  const exports:Record<string,unknown>={};
- new vm.Script(transpile('app/api/patient/zoe/thread/route.ts')).runInNewContext({exports,Response,require(name:string){
+ new vm.Script(transpile('app/api/patient/zoe/thread/route.ts')).runInNewContext({exports,Response,require(name:string){if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='@/lib/patient/date-format')return memberDates;
   if(name==='@/lib/observability/with-logging')return {withRouteLogging:(run:unknown)=>run};
   if(name==='@/lib/patient/auth')return {patientIdentity:async()=>({userId:'fictional'})};

@@ -14,6 +14,12 @@ import type {ZoeSendResult} from '@/lib/zoe/app-chat-contracts';
 import {cardSchema,type BpFlowContext,type ZoeCards} from './registry';
 import {zoeAppV3Enabled} from '@/lib/patient/zoe-app-v3';
 import type {Rpc,postCard} from './server';
+import {bpTargetsEnabled} from '@/lib/clinical-review/config';
+import {readBpPersonalContext} from '@/lib/bp-target/runtime';
+import {personalTarget} from '@/lib/bp-target/schema';
+import {DEFAULT_PERSONAL_BP_TARGET,evaluatePersonalBp,personalAlertRaises,PERSONAL_BP_VERSION} from '@/lib/clinical/rules/personal-bp';
+import {slaDeadline} from '@/lib/clinical/zones/evaluate';
+import type {PersonalBpFlow} from './bp-flow';
 
 /** One reading saved by the card, and what the flow needs to reach. All service-role calls; injected so checks need no database. */
 export type FlowPorts={rpc:Rpc|null;post:typeof postCard;readCards():Promise<ZoeCards>};
@@ -80,6 +86,14 @@ async function follow(ports:FlowPorts,memberId:string,v:{episodeId:string;readin
   base.slaDeadline=null;
   base.outOfHours=false;
  }
+ // WP T: the reading against the member's own target. Red belongs to the emergency rules alone; a reading alert already sent stays the only message.
+ if(rpc&&bpTargetsEnabled()&&result.zone!=='red'){
+  const personal=await personalCompare(rpc,memberId,v,!!alert);
+  if(personal){
+   base.personal=personal.flow;
+   if(personal.flow.raised){base.taskIds=[...new Set([...base.taskIds,...personal.taskIds])];}
+  }
+ }
  if(next){
   const context={...(v.follows?{follows:v.follows}:{}),...(v.week?{week:v.week}:{})};
   const snapshot=next==='repeat'?{v:1,episodeId:v.episodeId,first:{systolic:v.first.sbp,diastolic:v.first.dbp},...context}:{v:1,episodeId:v.episodeId,readingId:v.readingId,readings:v.readings.map(({sbp,dbp})=>({sbp,dbp})),...context};
@@ -87,6 +101,39 @@ async function follow(ports:FlowPorts,memberId:string,v:{episodeId:string;readin
   return {flow:{...base,next:posted.ok?next:null},next:posted.ok?posted.card:null};
  }
  return {flow:base,next:null};
+}
+
+/**
+ * The member's target (or the THRESHOLD defaults) against the newest reading of the episode, with the member's earlier home
+ * readings for the consecutive rule. A clinician-set alert raises the same-day nurse task through care_queue_raise, once per
+ * episode (source ref). Null when the target cannot be read: no comparison is better than one against the wrong numbers.
+ * Member-typed and caregiver-reported readings stay unverified: the task carries the entry source for the nurse.
+ */
+async function personalCompare(rpc:Rpc,memberId:string,v:{episodeId:string;readingId:string|null;readings:Reading[];symptoms:BpSymptoms},alerted:boolean):Promise<{flow:PersonalBpFlow;taskIds:string[]}|null>{
+ const ctx=await readBpPersonalContext(rpc,memberId);
+ if(!ctx)return null;
+ const last=v.readings.at(-1);
+ if(!last)return null;
+ const signs=Object.values(v.symptoms);
+ const symptoms=signs.includes(true)?true:signs.length&&signs.every(s=>s===false)?false:'unknown' as const;
+ const current=v.readingId?ctx.readings.find(r=>r.id===v.readingId):undefined;
+ let earlier=ctx.readings.filter(r=>r.id!==v.readingId&&(!current||Date.parse(r.measuredAt)<=Date.parse(current.measuredAt)));
+ // No reading id (the episode read failed): the newest stored reading with these numbers is this one.
+ if(!current){const i=earlier.findLastIndex(r=>r.systolic===last.sbp&&r.diastolic===last.dbp);if(i>=0)earlier=earlier.filter((_,n)=>n!==i);}
+ const target=personalTarget(ctx.target);
+ const r=evaluatePersonalBp({systolic:last.sbp,diastolic:last.dbp,pulse:current?.pulse??null,symptoms},earlier.map(x=>({systolic:x.systolic,diastolic:x.diastolic,pulse:x.pulse,symptoms:'unknown' as const})),target);
+ const shown=target??DEFAULT_PERSONAL_BP_TARGET;
+ let taskIds:string[]=[];
+ if(personalAlertRaises(r)&&!alerted&&zoeAppV3Enabled()){
+  const at=new Date().toISOString();
+  const entrySource=current?.entrySource??null;
+  const report=await raiseCareQueueTasks(rpc,[{memberId,queue:'nurse',zone:'orange',reason:r.status==='alert_low'?'bp_personal_alert_low':'bp_personal_alert_high',ruleVersion:PERSONAL_BP_VERSION,
+   redFlagsStatus:symptoms===true?'positive':symptoms===false?'cleared':'unknown',suggestedAction:null,
+   summary:{readings:v.readings.map(({sbp,dbp})=>({sbp,dbp})),rule:r.ruleId,usedPersonalTarget:r.usedPersonalTarget,...(entrySource==='patient_text_entry'||entrySource==='caregiver_reported'?{entrySource}:{})},
+   slaDeadline:slaDeadline({slaHours:ZONE_RULES_V1.slaHours.orange},at),sourceRef:`${v.episodeId}:personal`.slice(0,128)}]);
+  taskIds=report.taskIds;
+ }
+ return {flow:{status:r.status,ruleId:r.ruleId,usedPersonalTarget:r.usedPersonalTarget,target:{systolic:shown.homeSystolicTarget,diastolic:shown.homeDiastolicTarget},raised:taskIds.length>0},taskIds};
 }
 
 /** After a reading is saved. Never loses the reading: anything that fails here leaves a neutral reply, with no "sent" words. */

@@ -38,6 +38,7 @@ import {doctorDayCounts} from '@/lib/doctor-inbox/day-counts';
 import type {AnswerContent,StreamEvent,ToolResult} from '@/lib/staff-zoe/contracts';
 import type {DoctorDay} from '@/lib/doctor-inbox/day';
 import {DoctorChatShell} from '@/components/staff/doctor-workspace/chat-shell';
+import {realtimeStubs} from './realtime-test-stubs';
 
 const aiCurrentModule=await import('@/lib/ai-plan/current');
 const outcomes=await import('@/lib/staff-zoe/outcome-copy');
@@ -89,6 +90,8 @@ const doc=Object.assign(new EventTarget(),{hidden:false});
 let coarsePointer=false,inputFocuses=0;
 const intervals=new Set<()=>void>();
 modules['@/components/charts/trend-chart']=await import('@/components/charts/trend-chart');
+Object.assign(modules,await realtimeStubs());
+modules['@/lib/clinical-review/config']=await import('@/lib/clinical-review/config');modules['@/components/staff/clinical-review-cards']={WorklistCard:()=>null,TargetsCard:()=>null,MemberTierTargets:()=>null};
 modules['./patient-graphs']={...modules['./patient-graphs'] as object,PlanSparklines:()=>null};
 modules['@/lib/ai-plan/language']=await import('@/lib/ai-plan/language');
 function load(file:string){

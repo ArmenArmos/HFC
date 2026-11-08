@@ -9,6 +9,8 @@ import {act,create,type ReactTestRenderer} from 'react-test-renderer';
 import * as copy from '@/lib/patient/copy';
 import * as contract from '@/lib/zoe-chat-actions/voice-contract';
 import {screenVoiceTranscripts} from '@/lib/zoe-chat-actions/voice';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 const require=createRequire(import.meta.url);
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
 const windowEvents=new EventTarget(),documentEvents=new EventTarget();
@@ -79,7 +81,7 @@ let cards:import('../lib/zoe-chat-actions/registry').ZoeCards={enabled:true,card
 Object.assign(win,{setInterval:()=>0,clearInterval:()=>{}});
 Object.assign(doc,{visibilityState:'visible'});
 const hookModule=load('components/patient/use-zoe-thread.ts',{
-  'react':React,'@/lib/chat/tasks':await import('@/lib/chat/tasks'),
+  ...realtimeBoundaries,'react':React,'@/lib/chat/tasks':await import('@/lib/chat/tasks'),
   '@/lib/zoe-chat-actions/everyday-contract':await import('@/lib/zoe-chat-actions/everyday-contract'),
   '@/lib/zoe-chat-actions/everyday-actions':{openEverydayCard:()=>{throw Error('Unexpected card');}},
   '@/lib/zoe-chat-actions/thread-events':await import('@/lib/zoe-chat-actions/thread-events'),

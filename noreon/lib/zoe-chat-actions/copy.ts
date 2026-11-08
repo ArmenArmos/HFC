@@ -187,6 +187,21 @@ export const FLOW={
  zoneRed:c('Կարմիր գոտի','Red zone','Красная зона'),
  zoneRedAction:c('Զանգահարեք 103','Call 103','Позвоните 103'),
 };
+/**
+ * WP T: a saved reading against the member's own home target (lib/clinical/rules/personal-bp.ts). DRAFT for Armen and
+ * Yesayi, unapproved wording. The numbers are the target, never a judgement made in a component.
+ */
+export const PERSONAL_BP={
+ below:(t:string)=>c(`Սա ցածր է ձեր բժշկի սահմանած թիրախից՝ ${t}։`,`This is below the target your doctor set for you, ${t}.`,`Это ниже цели, которую поставил вам врач: ${t}.`),
+ belowUsual:(t:string)=>c(`Սա ցածր է տնային սովորական թիրախից՝ ${t}։`,`This is below the usual home target of ${t}.`,`Это ниже обычной домашней цели: ${t}.`),
+ above:(t:string)=>c(`Սա բարձր է ձեր բժշկի սահմանած թիրախից՝ ${t}։`,`This is above the target your doctor set for you, ${t}.`,`Это выше цели, которую поставил вам врач: ${t}.`),
+ aboveUsual:(t:string)=>c(`Սա բարձր է տնային սովորական թիրախից՝ ${t}։`,`This is above the usual home target of ${t}.`,`Это выше обычной домашней цели: ${t}.`),
+ alertSent:c('Սա այն մակարդակն է, որին ձեր բժիշկը խնդրել է հետևել։ Ձեր բուժքույրը կկապվի ձեզ հետ այսօր։','This is at the level your doctor asked us to watch for. Your nurse will contact you today.','Это уровень, за которым ваш врач просил следить. Ваша медсестра свяжется с вами сегодня.'),
+ alertNotSent:c('Սա այն մակարդակն է, որին ձեր բժիշկը խնդրել է հետևել։ Եթե վատ եք զգում, գրեք այստեղ կամ զանգահարեք 103։','This is at the level your doctor asked us to watch for. If you feel unwell, write here or call 103.','Это уровень, за которым ваш врач просил следить. Если вам плохо, напишите здесь или позвоните 103.'),
+ lowAsk:c('Եթե գլխապտույտ, թուլություն կամ ուշագնացության զգացում ունեք, գրեք ինձ այստեղ։','If you feel dizzy, weak or faint, tell me here.','Если у вас головокружение, слабость или предобморочное состояние, напишите мне здесь.'),
+ explain:c('Թիրախը ձեր տնային ճնշումն է, որին ձեր բժիշկը ձգտում է ձեզ համար։ Վերին թիվը պետք է ցածր լինի առաջին թվից, ստորինը՝ երկրորդից։','Your target is the home blood pressure your doctor is aiming for with you. Your upper number should stay below the first number, and your lower number below the second.','Цель это домашнее давление, к которому ваш врач стремится вместе с вами. Верхнее число должно быть ниже первого числа цели, нижнее ниже второго.'),
+ line:c('Ձեր թիրախը','Your target','Ваша цель'),
+};
 export const FLAG_QUESTION={
  chest_pain:c('Հիմա ունե՞ք կրծքավանդակի ցավ կամ ճնշում։','Do you have chest pain or pressure right now?','Сейчас есть боль или давление в груди?'),
  dyspnea:c('Հիմա ունե՞ք շնչահեղձություն հանգստի ժամանակ։','Are you short of breath at rest right now?','Сейчас есть одышка в покое?'),
@@ -393,8 +408,8 @@ export function sideEffectMessage(l:CardLocale,what:SideEffect,detail:string){
 export function allCopy():L[]{
  const sample=[COMMON.asShown('08:00'),DOSE.later('08:00'),DOSE.laterPlan('08:00'),DOSE.confirmTaken('X, 08:00'),DOSE.confirmMissed('X, 08:00'),BP.week(2,7,true),BP.week(2,7,false),BP.weekProgress(3,28),
   BP.confirm('120/80'),BP.pulse(70),BP.saved('120/80'),BP.last('120/80','1.1, 08:00'),LDL.goal('1.4','mmol/L'),LDL.goalPct('50'),LDL.latest('1.1'),LDL.lower('40'),LDL.onePartBody('1.4','mmol/L'),LDL.next('1.1'),LDL.withName('X'),LDL.visit('1.1, 08:00'),LDL.window('1.1','2.1'),BP.confirmLine('120/80'),RESULTS.published('1.1'),RESULTS.reference('1-2'),RESULTS.more(3),RESULTS.older(3),RESULTS.cut(3),PLAN.approvedBy('X','1.1'),PLAN.version(2),
-  VISIT.proposed('1.1, 08:00','X'),VISIT.confirmAccept('1.1, 08:00'),FLOW.within(4),FLOW.wait(60),FLOW.progress(1,5),FLOW.stripAnswer(1),FLOW.stripAnswer(2),PROFILE.said('X','7:00','22:00'),MEDICINES.statusLabel('X'),CAREGIVER.phoneEnds('107'),INVITATION.lead('X'),CARING.since('1.1')];
- const fixed=[TG_WRITE,NOTICE,CHIP,TITLE,SIDE_EFFECT,COMMON,DOSE,TELEGRAM,BP,FLOW,FLAG_QUESTION,FLAG_MESSAGE,RESULTS,PLAN,VISIT,SIDE,MESSAGE,LDL,PROFILE,MEDICINES,ANAMNESIS,ONBOARDING,CAREGIVER,CAREGIVER.status,CONSENTS,INVITATION,CARING].flatMap(o=>Object.values(o).filter((v):v is L=>typeof v==='object'&&v!==null&&'hy'in v));
+  VISIT.proposed('1.1, 08:00','X'),VISIT.confirmAccept('1.1, 08:00'),FLOW.within(4),FLOW.wait(60),PERSONAL_BP.below('130/80'),PERSONAL_BP.belowUsual('135/85'),PERSONAL_BP.above('130/80'),PERSONAL_BP.aboveUsual('135/85'),FLOW.progress(1,5),FLOW.stripAnswer(1),FLOW.stripAnswer(2),PROFILE.said('X','7:00','22:00'),MEDICINES.statusLabel('X'),CAREGIVER.phoneEnds('107'),INVITATION.lead('X'),CARING.since('1.1')];
+ const fixed=[TG_WRITE,NOTICE,CHIP,TITLE,SIDE_EFFECT,COMMON,DOSE,TELEGRAM,BP,FLOW,PERSONAL_BP,FLAG_QUESTION,FLAG_MESSAGE,RESULTS,PLAN,VISIT,SIDE,MESSAGE,LDL,PROFILE,MEDICINES,ANAMNESIS,ONBOARDING,CAREGIVER,CAREGIVER.status,CONSENTS,INVITATION,CARING].flatMap(o=>Object.values(o).filter((v):v is L=>typeof v==='object'&&v!==null&&'hy'in v));
  return [...fixed,...sample];
 }
 export {LIVING_VISIT} from './living-visit-copy';

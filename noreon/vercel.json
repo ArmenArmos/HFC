@@ -22,6 +22,18 @@
     {
       "path": "/api/internal/care-alerts/sweep",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/internal/risk-tiers",
+      "schedule": "41 */6 * * *"
+    },
+    {
+      "path": "/api/internal/clinical-anomalies",
+      "schedule": "23 5 * * *"
+    },
+    {
+      "path": "/api/internal/realtime-signals",
+      "schedule": "29 * * * *"
     }
   ]
 }

@@ -32,6 +32,8 @@ export type OverviewFacts = {
   clinicBp: { id: string; systolic: number; diastolic: number; at: string }[] | null;
   bpWeek: BpWeekRead | null;
   ldl: MemberLdl | undefined;
+  /** WP T: the home target the member's physician set (member_bp_target_read); null or absent draws no target. */
+  bpTarget?: { systolic: number; diastolic: number } | null;
   medicines: MemberMedicinesRead | null;
   uploaded: { id: string; fileName: string; resultDate: string | null; createdAt: string }[] | null;
   released: { fileId: string; clinic: string; uploadedAt: string; releasedAt: string }[] | null;
@@ -69,6 +71,8 @@ export type OverviewData = {
     mean: { systolic: number; diastolic: number; count: number } | null;
     week: { day: number; days: number } | null;
     ranges: { 7: BpRange; 14: BpRange };
+    /** WP T: the physician-set home target, drawn as reference lines. */
+    target?: { systolic: number; diastolic: number } | null;
   };
   ldl: { shown: false } | { shown: true; baseline: { value: string; on: string } | null; current: { value: string; on: string } | null; reduction: string | null; target: string };
   today: {
@@ -149,6 +153,7 @@ function bp(f: OverviewFacts): OverviewData["bp"] {
     mean: overview?.average ? { ...overview.average, count: overview.count } : null,
     week: running ? { day: Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${week.startsOn}T00:00:00Z`)) / 86400000) + 1, days: week.days } : null,
     ranges: { 7: bpRange(slotted, today, 7), 14: bpRange(slotted, today, 14) },
+    target: f.bpTarget ?? null,
   };
 }
 

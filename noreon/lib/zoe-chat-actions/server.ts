@@ -21,7 +21,7 @@ import {getMemberAppointmentSummary} from '@/lib/real-booking/appointment-reposi
 import {memberChatOnlyEnabled} from '@/lib/patient/member-chat-config';
 import {readV3Plan,readConfirmedPlanDoses} from './plan-read';
 import {medicinesCardEnabled,zoeAppV3Enabled} from '@/lib/patient/zoe-app-v3';
-import {verifyVoiceReceipt} from './voice-receipt';
+import {verifyLiveMarker,verifyVoiceReceipt} from './voice-receipt';
 import type {TypedBp} from './commands';
 import {typedReading} from './typed-reading';
 import {readMedicines} from './medicines-read';
@@ -108,7 +108,9 @@ export async function typedFromMessage(seq:number):Promise<{typed?:TypedBp}>{
  const typed=typedReading(m.text);
  if(!typed)return {};
  const voiceConfirmed=verifyVoiceReceipt(m.receipt,m.memberId,m.text,Date.parse(m.at));
- return {typed:{...typed,measuredAt:m.at,...(voiceConfirmed?{entrySource:'patient_voice_confirmed' as const}:{})}};
+ // WP V: a Live turn's server-signed marker labels the reading as Live-dictated (unverified, like a typed one).
+ const live=!voiceConfirmed&&verifyLiveMarker(m.receipt,m.memberId,m.text,Date.parse(m.at));
+ return {typed:{...typed,measuredAt:m.at,...(voiceConfirmed?{entrySource:'patient_voice_confirmed' as const}:live?{entrySource:'patient_voice_live_confirmed' as const}:{})}};
 }
 
 /** One stored card as the server answers it (the session read below, or a verified actor's zoe_chat_card_get). */
@@ -214,7 +216,7 @@ async function latestBp():Promise<Snapshot<'bp'>['latest']>{
   const client=await createClient();
   const {data,error}=await client.from('patient_measurements').select('systolic,diastolic,pulse,measured_at,entry_source').order('measured_at',{ascending:false}).limit(1).maybeSingle();
   if(error)return undefined;
-  return data&&{systolic:data.systolic,diastolic:data.diastolic,pulse:data.pulse,measuredAt:data.measured_at,entrySource:data.entry_source as 'patient_text_entry'|'patient_photo_confirmed'|'patient_voice_confirmed'|'caregiver_reported'|null};
+  return data&&{systolic:data.systolic,diastolic:data.diastolic,pulse:data.pulse,measuredAt:data.measured_at,entrySource:data.entry_source as 'patient_text_entry'|'patient_photo_confirmed'|'patient_voice_confirmed'|'patient_voice_live_confirmed'|'caregiver_reported'|null};
  }catch{return undefined;}
 }
 async function bpSnapshot(now:Date,typed?:TypedBp):Promise<Snapshot<'bp'>>{

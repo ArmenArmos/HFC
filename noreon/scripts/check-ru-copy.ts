@@ -27,6 +27,7 @@ const EXCLUDED: Array<[RegExp, string]> = [
   [/^lib\/reports\/history\.ts$|^lib\/lab-ai\/(catalogue|identity)\.ts$/, 'Armenian analyte names matched in uploaded reports, not shown as copy'],
   [/^lib\/patient-care\/demo\.ts$/, 'fictional presentation data'],
   [/^lib\/staff-zoe\/(home-intent|typed-boundary|small-talk)\.ts$/, 'per-language keyword tables that recognise typed doctor commands, not shown text'],
+  [/^lib\/voice-core\/(spoken-numbers|intent|confirm)\.ts$/, 'WP V: per-language tables that recognise spoken numbers, commands and yes or no in hy/ru/en, not shown text'],
   [/^lib\/clinical\/rules\/branch-coverage\.ts$/, 'quotes the clinical source conditions for traceability, not shown on screen'],
 ];
 const ARMENIAN = /[Ա-և]/;

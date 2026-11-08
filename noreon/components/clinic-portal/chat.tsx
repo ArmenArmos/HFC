@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
+import {lazy,Suspense,useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import Link from 'next/link';
 import type {Route} from 'next';
 import {CircleHelp,Clock,UserCog,Building2,PanelTop,CalendarDays,FlaskConical,RefreshCw,ArrowUp,UsersRound} from 'lucide-react';
@@ -18,8 +18,13 @@ import {ChatMenuItems} from '@/components/staff/chat-menu-items';
 import {clinicLabFileLabel,clinicBatchName,clinicDate,clinicTimestamp} from '@/lib/clinic-portal/display-time';
 import {bookingActionReceipt} from '@/lib/clinic-chat/receipt';
 import {EmptyStaffChat} from '@/components/staff/empty-chat';
+import {useRealtimeSignals} from '@/components/realtime/use-realtime-signals';
+/** WP V: loaded only for a clinic administrator with voice on. */
+const StaffVoiceBar=lazy(()=>import('@/components/staff/staff-voice-bar').then(m=>({default:m.StaffVoiceBar})));
 
 type Props={identity:ClinicIdentity;locale:Locale;actorScope:string;canChooseClinic:boolean;resultLink:boolean;initial:ClinicChatReply;initialQuery:ChatQuery;
+ /** WP V: voice for the clinic administrator (server capability). */
+ voice?:{available:boolean;live:boolean};
  read:(query:ChatQuery)=>Promise<ClinicChatReply>;run:(command:ScheduleCommand)=>Promise<ScheduleResult>;slots:(day:string)=>Promise<FreeSlot[]|null>};
 /** A read that never answers must not leave the chat busy for good (every menu button is disabled while busy): after 25 seconds it counts as unavailable, and Refresh works. */
 const timed=<T,>(read:Promise<T>)=>Promise.race([read,new Promise<never>((_,reject)=>setTimeout(()=>reject(new Error('Read timed out')),25_000))]);
@@ -36,7 +41,7 @@ const labels={
  member:{en:'Open the member file',hy:'Բացել անդամի քարտը',ru:'Открыть карту участника'},
 };
 /** Fixed questions and typed cards. All facts are printed from the existing scoped records. */
-export function ClinicChat({identity,locale,actorScope,canChooseClinic,resultLink,initial,initialQuery,read,run,slots}:Props){
+export function ClinicChat({identity,locale,actorScope,canChooseClinic,resultLink,initial,initialQuery,read,run,slots,voice}:Props){
  const t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
  const [message,setMessage]=useState(''),[typed,setTyped]=useState(''),[guidance,setGuidance]=useState(false),[started,setStarted]=useState(initialQuery.kind!=='home'||initial.kind!=='home');
  const [reply,setReply]=useState(initial),[query,setQuery]=useState(initialQuery),[busy,setBusy]=useState(false);
@@ -61,6 +66,19 @@ export function ClinicChat({identity,locale,actorScope,canChooseClinic,resultLin
   const result=await timed(read(current)).catch(()=>({kind:'unavailable'} as const));
   if(request===sequence.current){setReply(result);setBusy(false);}
  },[read]);
+ // WP R: a clinic_thread signal (a booking or an upload batch of this clinic changed; ids only) re-reads the view on screen
+ // when nothing is in flight. The read stays the source of truth; the clinic chat has no other polling.
+ const busyRef=useRef(busy);
+ useEffect(()=>{busyRef.current=busy;},[busy]);
+ const rereadView=useCallback(async()=>{
+  if(busyRef.current)return;
+  const current=activeQuery.current;
+  if(current.kind!=='home'&&current.kind!=='bookings'&&current.kind!=='batches'&&current.kind!=='batch')return;
+  const request=++sequence.current;
+  const result=await timed(read(current)).catch(()=>null);
+  if(result&&request===sequence.current){setReply(result);setNow(Date.now());}
+ },[read]);
+ useRealtimeSignals({plane:'clinic',onSignal:useCallback((kind:string)=>{if(kind==='clinic_thread')void rereadView();},[rereadView]),onResync:useCallback(()=>void rereadView(),[rereadView])});
  async function decide(command:ScheduleCommand,booking:ClinicBooking){
   const before=activeQuery.current;
   const source=reply.kind==='home'?attention:reply.kind==='bookings'&&reply.result.status==='loaded'&&reply.result.data.enabled?reply.result.data.bookings:[];
@@ -94,8 +112,10 @@ export function ClinicChat({identity,locale,actorScope,canChooseClinic,resultLin
  const waitingBatches=reply.kind==='home'&&reply.batches.status==='loaded'?reply.batches.data.batches.filter(batch=>batch.attentionCount>0):[];
  const menuButton='inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2 text-left text-body2 hover:bg-muted disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-ring';
 
- function send(event:FormEvent){
-  event.preventDefault();const text=message.trim().toLocaleLowerCase();if(!text||busy)return;setTyped(message.trim());setMessage('');
+ function send(event:FormEvent){event.preventDefault();route(message);}
+ /** The composer's keyword routing, shared by typed and spoken text (WP V). */
+ function route(raw:string){
+  const text=raw.trim().toLocaleLowerCase();if(!text||busy)return;setTyped(raw.trim());setMessage('');
   if(/attention|waiting|սպաս|ուշադր|вниман|ожида/.test(text)){void ask({kind:'home'});return;}
   if(/upload|file|batch|վերբեռ|ֆայլ|փաթեթ|загруз|файл|пакет/.test(text)){void ask({kind:'batches',cursor:null});return;}
   if(/member|record|անդամ|քարտ|участ|карт/.test(text)){setSearch('');void ask(identity.capability==='clinic_admin'&&identity.fullAccess?{kind:'records'}:{kind:'members',query:'',page:1});return;}
@@ -171,6 +191,7 @@ export function ClinicChat({identity,locale,actorScope,canChooseClinic,resultLin
   <footer className="shrink-0 border-t bg-background pt-3 pb-[env(safe-area-inset-bottom)]">
    <form aria-label={t('Message the clinic assistant','Գրել կլինիկայի օգնականին','Написать помощнику клиники')} onSubmit={send} className="flex items-end gap-2">
     <label className="min-w-0 flex-1"><span className="sr-only">{t('Your message','Ձեր հաղորդագրությունը','Ваше сообщение')}</span><input name="clinic-message" className={field} value={message} maxLength={100} onChange={event=>setMessage(event.target.value)} placeholder={t('Ask your clinic assistant…','Գրեք կլինիկայի օգնականին…','Спросите помощника клиники…')}/></label>
+    {voice?.available&&identity.capability==='clinic_admin'&&<Suspense fallback={null}><StaffVoiceBar locale={locale} role="clinic_admin" available live={voice.live} onIntent={action=>{if(action.kind==='open_operations'){void ask({kind:'bookings',scope:'upcoming',day:null});return true;}if(action.kind==='open_worklist'){void ask({kind:'home'});return true;}return false;}} onText={text=>setMessage(text.slice(0,100))} onSubmit={text=>route(text.slice(0,100))}/></Suspense>}
     <button aria-label={t('Send','Ուղարկել','Отправить')} className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-ring" disabled={busy||!message.trim()}><ArrowUp aria-hidden className="size-5"/></button>
    </form>
    <p className="pt-2 text-caption text-muted-foreground">{t('Bookings and files only. No clinical advice.','Միայն այցեր և ֆայլեր։ Առանց բժշկական խորհրդի։','Только записи и файлы. Без медицинских рекомендаций.')}</p>

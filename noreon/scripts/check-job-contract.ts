@@ -56,7 +56,7 @@ assert.equal(cronAuthorized(req('Bearer '),''),false,'an unset secret never auth
 assert.equal(cronAuthorized(req('Bearer undefined'),undefined),false);
 
 // Every internal job route goes through the contract, and zoe/run has its own cron.
-for(const route of ['care-alerts/sweep','lab-ai','message-dispatch','report-cleanup','telegram/dispatch','zoe/run'])
+for(const route of ['care-alerts/sweep','lab-ai','message-dispatch','report-cleanup','telegram/dispatch','zoe/run','risk-tiers','clinical-anomalies','realtime-signals'])
  assert.match(readFileSync(`app/api/internal/${route}/route.ts`,'utf8'),/export const GET=jobRoute\(/,`${route} uses jobRoute`);
 const crons=(JSON.parse(readFileSync('vercel.json','utf8')) as {crons:{path:string}[]}).crons.map(c=>c.path);
 assert.deepEqual(JSON.parse(readFileSync('vercel.json','utf8')).crons,[
@@ -65,6 +65,9 @@ assert.deepEqual(JSON.parse(readFileSync('vercel.json','utf8')).crons,[
  {path:'/api/internal/zoe/run',schedule:'*/5 * * * *'},
  {path:'/api/internal/lab-ai',schedule:'*/5 * * * *'},
  {path:'/api/internal/care-alerts/sweep',schedule:'* * * * *'},
+ {path:'/api/internal/risk-tiers',schedule:'41 */6 * * *'},
+ {path:'/api/internal/clinical-anomalies',schedule:'23 5 * * *'},
+ {path:'/api/internal/realtime-signals',schedule:'29 * * * *'},
 ],'care alerts run every minute and the existing crons keep their schedules');
 assert.ok(crons.includes('/api/internal/zoe/run'),'zoe/run is scheduled');
 assert.ok(!crons.includes('/api/internal/monitoring-follow-up'),'the demo-only monitoring cron is retired');

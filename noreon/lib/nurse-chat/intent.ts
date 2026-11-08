@@ -9,6 +9,7 @@ export type NurseIntent=
  |{kind:'missing-bp'}
  |{kind:'adherence'}
  |{kind:'handoffs'}
+ |{kind:'worklist'}
  |{kind:'find';query:string};
 
 const clean=(raw:string)=>raw.normalize('NFKC').toLocaleLowerCase().replace(/[’`]/gu,"'")
@@ -67,6 +68,8 @@ export function nurseIntent(raw:unknown):NurseIntent|null{
  if(HANDOFFS.some(pattern=>pattern.test(text))&&!/\d/u.test(text))return {kind:'handoffs'};
  if(ADHERENCE.some(pattern=>pattern.test(text))&&!/\d/u.test(text))return {kind:'adherence'};
  if(words(text)>10)return null;
+ // WP T: the prioritised worklist card (a read only).
+ if(/^(?:(?:show|open) )?(?:(?:my|the) )?(?:worklist|work list|priority list|risk list)$|^(?:(?:ցույց տուր|բացիր|բացել) )?(?:իմ )?(?:աշխատանքային ցուցակ(?:ը)?|առաջնահերթությունների ցուցակ(?:ը)?)$|^(?:(?:покажи|открой|открыть) )?(?:мой )?(?:рабочий список|список приоритетов)$/u.test(text))return {kind:'worklist'};
  if(PRIORITY.some(pattern=>pattern.test(text)))return {kind:'priority'};
  if(TODAY.some(pattern=>pattern.test(text)))return {kind:'today'};
  if(MISSING_BP.some(pattern=>pattern.test(text)))return {kind:'missing-bp'};

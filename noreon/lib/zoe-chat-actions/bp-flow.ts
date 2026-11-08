@@ -4,6 +4,7 @@ import {ZONE_RULES_V1} from '@/lib/clinical/zones/config-v1';
 import {zoeAppV3Enabled} from '@/lib/patient/zoe-app-v3';
 import type {ZoeCard} from './registry';
 import {SAMS_QUESTIONS,samsItem} from './dose-flow';
+import type {PersonalBpRuleId,PersonalBpStatus} from '@/lib/clinical/rules/personal-bp';
 
 /**
  * The blood pressure flow's decisions, pure. The rules decide; no model and no word list is involved. A "yes" to a
@@ -43,7 +44,11 @@ export function decide(readings:readonly Reading[],symptoms:BpSymptoms):{result:
 /** What the reply to a saved reading says, stored with the card so every read and device shows the same. */
 export type BpFlow={zone:ZoneResult['zone'];provisional:boolean;ruleVersion:string;next:FlowNext;
  /** Only a role that really received the task or reading alert. Null never claims delivery. */
- sentTo:'nurse'|'physician'|null;slaHours:number|null;taskIds:string[];alertId?:string;alertReason?:'bp_doctor_today'|'bp_doctor_48h';nurseTask?:boolean;slaDeadline?:string|null;outOfHours:boolean;mandatoryTemplateId?:ZoneResult['mandatoryTemplateId']};
+ sentTo:'nurse'|'physician'|null;slaHours:number|null;taskIds:string[];alertId?:string;alertReason?:'bp_doctor_today'|'bp_doctor_48h';nurseTask?:boolean;slaDeadline?:string|null;outOfHours:boolean;mandatoryTemplateId?:ZoneResult['mandatoryTemplateId'];
+ /** WP T: the reading against the member's own target (personal-bp.ts). Absent while NOREON_BP_TARGETS is off or the target could not be read. */
+ personal?:PersonalBpFlow};
+export type PersonalBpFlow={status:PersonalBpStatus;ruleId:PersonalBpRuleId;usedPersonalTarget:boolean;target:{systolic:number;diastolic:number};
+ /** True only when the clinician-set alert's nurse task really landed. */raised:boolean};
 export const failedFlow=():BpFlow=>({zone:null,provisional:false,ruleVersion:ZONE_RULES_V1.version,next:null,sentTo:null,slaHours:null,taskIds:[],outOfHours:false});
 /** The doctor when a doctor's task landed, else the nurse, else nobody. */
 export const sentToFrom=(landed:readonly('nurse'|'physician')[])=>landed.includes('physician')?'physician' as const:landed.includes('nurse')?'nurse' as const:null;

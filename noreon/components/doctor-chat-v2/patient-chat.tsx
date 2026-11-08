@@ -1,5 +1,5 @@
 'use client';
-import {ConversationToggle,useConversation} from '@/components/chat-v2/conversation';
+import {ConversationToggle,useConversation,VoiceMicrophone} from '@/components/chat-v2/conversation';
 import {renderedStaffReply,staffConversationReply} from '@/components/staff/voice-reply';
 import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
@@ -33,13 +33,17 @@ import {ResultsBlock} from './results-block';
 import type {AlertPress} from './alerts';
 import {labValuesChanged} from './lab-review-action';
 import {handBackCopy} from '@/lib/staff-zoe/hand-back-copy';
+import {MemberTierTargets,TargetsCard} from '@/components/staff/clinical-review-cards';
+import type {RiskTier} from '@/lib/clinical/rules/risk-tier';
 
-type Props={voiceAvailable?:boolean;focusLabId?:string;focusAlertId?:string;doctorId:string;doctorName:string;member:Identity;locale:StaffLocale;owners:{id:string;name:string;role:'doctor'|'nurse'}[]|null;risk:string|null;planVersion:number|null;resultsReport:boolean};
+type Props={voiceAvailable?:boolean;voiceLive?:boolean;focusLabId?:string;focusAlertId?:string;doctorId:string;doctorName:string;member:Identity;locale:StaffLocale;owners:{id:string;name:string;role:'doctor'|'nurse'}[]|null;risk:string|null;planVersion:number|null;resultsReport:boolean;
+ /** WP T: tier, targets and whether the targets card is on; null while both switches are off. */
+ clinical?:{tier:{tier:RiskTier;reasons:string[]}|null;bpTarget:{systolic:number;diastolic:number}|null;ldlGoalMmol:number|null;targets:boolean}|null};
 type Choice={id:string;kind:'open-chat';rows:({id:string;name:string}&Partial<Identity>)[]};
-type Message=ThreadMessage|Choice|{id:string;kind:'handover-retry';note:string|null}|{id:string;kind:'patient-labs'}|{id:string;kind:'patient-graphs';data:GraphData};
+type Message=ThreadMessage|Choice|{id:string;kind:'handover-retry';note:string|null}|{id:string;kind:'patient-labs'}|{id:string;kind:'targets'}|{id:string;kind:'patient-graphs';data:GraphData};
 /** A key is also enforced here for client navigations that reuse this component's position. */
 export function PatientChat(props:Props){return <PatientThread key={`${props.doctorId}:${props.member.id}:${props.focusAlertId??''}:${props.focusLabId??''}`} {...props}/>;}
-function PatientThread({focusLabId,focusAlertId,doctorId,doctorName,member,locale:l,owners,risk,planVersion,resultsReport,voiceAvailable=false}:Props){
+function PatientThread({focusLabId,focusAlertId,doctorId,doctorName,member,locale:l,owners,risk,planVersion,resultsReport,voiceAvailable=false,voiceLive=false,clinical=null}:Props){
  const router=useRouter(),memberId=member.id,name=member.name??'',target={memberId,memberName:name};
  const [openedAt]=useState(()=>Date.now());
  const [messages,setMessages]=useState<Message[]>([]),[text,setText]=useState(''),[busy,setBusy]=useState(true),[ready,setReady]=useState(false);
@@ -160,6 +164,8 @@ function PatientThread({focusLabId,focusAlertId,doctorId,doctorName,member,local
   else if(data.kind==='unavailable')setMessages(previous=>[...previous,{id:next(),kind:'handover-retry',note}]);
   else failure();
  }
+ /** WP T: the targets card, next to the plan. One open card at a time; reopening moves it to the end. */
+ function openTargets(){setMessages(previous=>[...previous.filter(m=>m.kind!=='targets'),{id:next(),kind:'targets'}]);newest();}
  function openPlan(prepare=false,again=false){
   if(prepare&&!alertsReady){failure();return;}
   const id=next();newest();
@@ -257,13 +263,14 @@ function PatientThread({focusLabId,focusAlertId,doctorId,doctorName,member,local
  const placeholder=replyTo?t(`Reply to ${name}`,`Պատասխանել ${name}-ին`,`Ответить: ${name}`):alertTo?t('Write the reason for closing this alert','Գրեք ահազանգը փակելու պատճառը','Напишите причину закрытия оповещения'):t(`Ask Zoe about ${name}`,`Հարցրեք Զոյային ${name}-ի մասին`,`Спросите Зою об участнике ${name}`);
  const voiceReply=staffConversationReply(messages);
  const voiceBlocked=!ready||!!replyTo||!!alertTo;
- const voiceConversation=useConversation({enabled:voiceAvailable,disabled:voiceBlocked,locale:l,audience:'staff',contextKey:memberId,urgentKey:null,
+ const voiceConversation=useConversation({enabled:voiceAvailable,live:voiceLive,streamSpeech:true,disabled:voiceBlocked,locale:l,audience:'staff',contextKey:memberId,urgentKey:null,
   onTranscript:result=>setText(result.text),onSend:()=>{void send();},
   reply:voiceReply?{key:voiceReply,text:()=>renderedStaffReply(contentRef.current,voiceReply)}:null});
  function render(m:Message){
   if(m.kind==='handover-retry')return <><p role="alert">{doctorHandoverCopy(l).prepareFailed}</p><button type="button" className="dcv2-choice" disabled={busy} onClick={()=>void work(()=>handover(m.note))}>{t('Try again','Փորձել կրկին','Попробовать снова')}</button></>;
   if(m.kind==='doctor')return <p className="cv2-say">{m.text}</p>;
   if(m.kind==='patient-graphs')return <PatientGraphs data={m.data} memberId={memberId} locale={l}/>;
+  if(m.kind==='targets')return <TargetsCard memberId={memberId} locale={l} onSaved={text=>add({kind:'text',text})}/>;
   if(m.kind==='patient-labs')return <PatientLabs memberId={memberId} name={name} doctorId={doctorId} locale={l} resultsReport={resultsReport} onLab={fileId=>router.push(`/staff/real/doctor-chat-v2/patient/${memberId}?lab=${fileId}` as Route)} onUpload={fileId=>openUpload(memberId,fileId)}/>;
   if(m.kind==='open-chat')return <div data-open-patient-chat><p>{m.rows.length===1?t(`Open ${m.rows[0].name}'s chat to ask this`,`Այս հարցը տալու համար բացեք ${m.rows[0].name}-ի զրույցը։`,`Чтобы задать этот вопрос, откройте чат участника ${m.rows[0].name}.`):t('Open the member’s chat to ask this.','Այս հարցը տալու համար բացեք անդամի զրույցը։','Чтобы задать этот вопрос, откройте чат участника.')}</p><MemberDisambiguationCard rows={m.rows} locale={l} actionLabel={t('Open chat','Բացել զրույցը','Открыть чат')} onChoose={row=>navigate(row.id)}/></div>;
   const r=m.reply;
@@ -286,6 +293,7 @@ function PatientThread({focusLabId,focusAlertId,doctorId,doctorName,member,local
    <button type="button" className="dcv2-choice" onClick={()=>router.push('/staff/real/doctor-chat-v2')}>← {t('Patients','Անդամներ','Участники')}</button>
    <h1><ChatMemberIdentity memberId={memberId} name={name} member={member} locale={l}/></h1>
    <div className="dcv2-controls">{risk&&labels[risk]&&<span className="dcv2-tag">{labels[risk]}</span>}{planVersion!==null&&<span className="dcv2-tag">{t(`Plan v${planVersion}`,`Պլան v${planVersion}`,`План v${planVersion}`)}</span>}</div>
+   {clinical&&<MemberTierTargets tier={clinical.tier} bpTarget={clinical.bpTarget} ldlGoalMmol={clinical.ldlGoalMmol} locale={l}/>}
    <p className="dcv2-time" data-care-team>{owners===null?t('Care team unavailable','Խնամքի թիմն անհասանելի է','Команда сопровождения недоступна'):owners.length?owners.map(owner=>`${owner.name} · ${owner.role==='doctor'?t('Doctor','Բժիշկ','Врач'):t('Nurse','Բուժքույր','Медсестра')}`).join(' · '):t('Care team not recorded','Խնամքի թիմը գրանցված չէ','Команда сопровождения не указана')}</p>
   </header>
   <section className="cv2-thread" ref={threadRef} role="log" aria-label={t('Member chat','Անդամի զրույց','Чат участника')}><div className="cv2-messages" ref={contentRef}>
@@ -303,11 +311,12 @@ function PatientThread({focusLabId,focusAlertId,doctorId,doctorName,member,local
     <button type="button" className="dcv2-choice" disabled={busy||!ready||!!replyTo||!!alertTo} onClick={()=>void work(overview)}>{t('At a glance','Մի հայացքով','Кратко')}</button>
     <button type="button" className="dcv2-choice" disabled={busy||!ready||!!replyTo||!!alertTo} onClick={openLabs}>{t('Labs','Լաբորատոր արդյունքներ','Анализы')}</button>
     <button type="button" className="dcv2-choice" disabled={busy||!ready||!!replyTo||!!alertTo} onClick={()=>openPlan()}>{t('Plan','Պլան','План')}</button>
+    {clinical?.targets&&<button type="button" className="dcv2-choice" data-targets-chip disabled={busy||!ready||!!replyTo||!!alertTo} onClick={openTargets}>{t('Targets','Թիրախներ','Цели')}</button>}
     <button type="button" className="dcv2-choice" disabled={busy||!ready||!!replyTo||!!alertTo} onClick={()=>void work(async()=>{await refreshMember();})}>{t('Messages','Հաղորդագրություններ','Сообщения')}</button>
     <button type="button" className="dcv2-choice" disabled={busy||!ready||!!replyTo||!!alertTo} onClick={()=>void work(()=>handover())}>{t('Hand over','Փոխանցել','Передать')}</button>
    </div>
    {(replyTo||alertTo)&&<div className="dcv2-ask-bar"><span>{placeholder}</span><button type="button" onClick={()=>{setReplyTo(null);setAlertTo(null);setText('');}}>{t('Cancel','Չեղարկել','Отмена')}</button></div>}
-   <form className="cv2-composer" onSubmit={event=>{event.preventDefault();void send();}}><textarea ref={input} value={text} autoComplete="off" autoCorrect="off" autoCapitalize="sentences" spellCheck={false} maxLength={replyTo?8000:1000} aria-label={placeholder} placeholder={placeholder} onPointerDown={()=>voiceConversation.edit()} onChange={event=>{voiceConversation.edit();setText(event.target.value);}} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send();}}}/>{voiceAvailable&&<ConversationToggle locale={l} conversation={voiceConversation} disabled={voiceBlocked||busy||(!voiceConversation.active&&!!text.trim())}/>}<button type="submit" disabled={busy||!ready||!text.trim()} aria-label={replyTo?t('Save reply','Պահպանել պատասխանը','Сохранить ответ'):t('Ask Zoe','Հարցնել Զոյային','Спросить Зою')}>↑</button></form>
+   <form className="cv2-composer" onSubmit={event=>{event.preventDefault();void send();}}><textarea ref={input} value={text} autoComplete="off" autoCorrect="off" autoCapitalize="sentences" spellCheck={false} maxLength={replyTo?8000:1000} aria-label={placeholder} placeholder={placeholder} onPointerDown={()=>voiceConversation.edit()} onChange={event=>{voiceConversation.edit();setText(event.target.value);}} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send();}}}/>{voiceAvailable&&<VoiceMicrophone locale={l} endpoint="/api/staff/zoe/voice" onBusy={()=>{}} disabled={voiceBlocked||voiceConversation.active} onTranscript={value=>setText(current=>current.trim()?`${current} ${value}`:value)}/>}{voiceAvailable&&<ConversationToggle locale={l} conversation={voiceConversation} disabled={voiceBlocked||busy||(!voiceConversation.active&&!!text.trim())}/>}<button type="submit" disabled={busy||!ready||!text.trim()} aria-label={replyTo?t('Save reply','Պահպանել պատասխանը','Сохранить ответ'):t('Ask Zoe','Հարցնել Զոյային','Спросить Зою')}>↑</button></form>
   </footer>
  </main>;
 }

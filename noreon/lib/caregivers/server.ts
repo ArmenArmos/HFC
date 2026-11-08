@@ -97,7 +97,8 @@ const now=()=>new Date().toISOString();
  * repeats the same invitation. A definite refusal (limit, duplicate, own number) releases the claim so the member can
  * correct the form on the same card.
  */
-export async function runCaregiverInvite(actor:MemberActor,ports:CaregiverCardPorts,v:CaregiverInviteInput):Promise<CaregiverCardResult>{
+/** method: the browser input is always a tap; 'voice' is set only by the server after a spoken yes bound to this card (WP V). */
+export async function runCaregiverInvite(actor:MemberActor,ports:CaregiverCardPorts,v:CaregiverInviteInput,method:'tap'|'voice'='tap'):Promise<CaregiverCardResult>{
  if(actor.channel!=='app')return {status:'disabled'};
  const card=await ownCard(ports,v.cardId,'caregiver');
  if(!card)return {status:'invalid'};
@@ -109,7 +110,7 @@ export async function runCaregiverInvite(actor:MemberActor,ports:CaregiverCardPo
  if(!held.success)return {status:'invalid',card};
  if(held.data.proof!==proof)return {status:'stale',card};
  const textHash=await consentTextHash(caregiverConsentText(v.locale,v.name,v.scopes));
- const r=await inviteCaregiver(ports.rpc,{requestId:c.claim.op,name:v.name,relationship:v.relationship,phone:v.phone,scopes:v.scopes,wordingVersion:CAREGIVER_CONSENT_VERSION,textHash,method:v.method});
+ const r=await inviteCaregiver(ports.rpc,{requestId:c.claim.op,name:v.name,relationship:v.relationship,phone:v.phone,scopes:v.scopes,wordingVersion:CAREGIVER_CONSENT_VERSION,textHash,method});
  if(!r.ok)return {status:r.code==='access'?'signed_out':'unavailable',card};
  if(!r.data.ok){
   await ports.unclaim(card.id,caregiverItem.invite,c.claim.op).catch(()=>false);
@@ -124,7 +125,7 @@ export async function runCaregiverInvite(actor:MemberActor,ports:CaregiverCardPo
  * statement for the new scopes, shown with the name on this card: that text is rebuilt and hashed here, and the
  * database records it on the link and as a caregiver-sharing consent, as on invite.
  */
-export async function runCaregiverScopes(actor:MemberActor,ports:CaregiverCardPorts,v:CaregiverScopesInput):Promise<CaregiverCardResult>{
+export async function runCaregiverScopes(actor:MemberActor,ports:CaregiverCardPorts,v:CaregiverScopesInput,method:'tap'|'voice'='tap'):Promise<CaregiverCardResult>{
  if(actor.channel!=='app')return {status:'disabled'};
  const card=await ownCard(ports,v.cardId,'caregiver');
  const link=card?.snapshot.links.find(l=>l.id===v.linkId);
@@ -135,7 +136,7 @@ export async function runCaregiverScopes(actor:MemberActor,ports:CaregiverCardPo
  const held=z.object({revision:z.number(),scopes:z.array(caregiverScopeSchema).min(1),locale:z.enum(['hy','en','ru'])}).safeParse(c.claim.payload);
  if(!held.success)return {status:'invalid',card};
  const textHash=await consentTextHash(caregiverConsentText(held.data.locale,link.name,held.data.scopes));
- const r=await updateCaregiverScopes(ports.rpc,{linkId:v.linkId,revision:held.data.revision,scopes:held.data.scopes,wordingVersion:CAREGIVER_CONSENT_VERSION,textHash,method:'tap'});
+ const r=await updateCaregiverScopes(ports.rpc,{linkId:v.linkId,revision:held.data.revision,scopes:held.data.scopes,wordingVersion:CAREGIVER_CONSENT_VERSION,textHash,method});
  if(!r.ok)return {status:r.code==='access'?'signed_out':'unavailable',card};
  if(!r.data.ok){
   await ports.unclaim(card.id,item,c.claim.op).catch(()=>false);

@@ -7,6 +7,8 @@ import {clinicChatRead,clinicChatCommand,clinicChatSlots} from '@/lib/clinic-cha
 import {ClinicShell} from '@/components/clinic-portal/shell';
 import {ClinicChat} from '@/components/clinic-portal/chat';
 import {resultAttachEnabled} from '@/lib/clinic-portal/result-attach-schema';
+/** WP V: the clinic administrator's voice, and Gemini Live only when voice itself is on (loaded for administrators only). */
+const clinicVoice=async()=>{const {staffLiveAvailable,staffVoiceAvailable}=await import('@/lib/staff-zoe/voice');const available=await staffVoiceAvailable('CLINIC_ADMIN');return {available,live:available&&await staffLiveAvailable('CLINIC_ADMIN')};};
 // Lab reading scheduled by upload/attach actions uses the cron worker's function budget.
 export const maxDuration=300;
 export default async function ClinicChatPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
@@ -19,6 +21,6 @@ export default async function ClinicChatPage({searchParams}:{searchParams:Promis
  const choices=await clinicAccess();
  const canChooseClinic=choices.access.status==='selection-required';
  const initial=await clinicChatRead(clinicId,context.actorScope,parsed.data);
- return <ClinicShell identity={context.identity} locale={locale} current="chat"><ClinicChat key={`${context.actorScope}:${locale}:${parsed.data.kind==='member'?parsed.data.memberId:'home'}`} identity={context.identity} locale={locale} actorScope={context.actorScope} canChooseClinic={canChooseClinic} resultLink={resultAttachEnabled()} initial={initial} initialQuery={parsed.data}
+ return <ClinicShell identity={context.identity} locale={locale} current="chat"><ClinicChat key={`${context.actorScope}:${locale}:${parsed.data.kind==='member'?parsed.data.memberId:'home'}`} identity={context.identity} locale={locale} actorScope={context.actorScope} canChooseClinic={canChooseClinic} resultLink={resultAttachEnabled()} initial={initial} initialQuery={parsed.data} voice={context.identity.capability==='clinic_admin'?await clinicVoice():undefined}
  read={clinicChatRead.bind(null,clinicId,context.actorScope)} run={clinicChatCommand.bind(null,clinicId,context.actorScope)} slots={clinicChatSlots.bind(null,clinicId,context.actorScope)}/></ClinicShell>;
 }

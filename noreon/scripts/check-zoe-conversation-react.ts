@@ -17,7 +17,7 @@ let capture!:controller.CaptureCallbacks,stopped=0;const sent:Array<{text:string
 const exports:Record<string,unknown>={};
 const deps:Record<string,unknown>={'react':React,'react/jsx-runtime':require('react/jsx-runtime'),'lucide-react':require('lucide-react'),'@/lib/patient/copy':copy,'@/lib/zoe/symptoms/intake':{URGENT_TEXT},
  '@/lib/staff-zoe/typed-boundary':await import('@/lib/staff-zoe/typed-boundary'),
- '@/components/patient/use-hydrated':{useHydrated:()=>true},'./conversation-controller':controller,
+ '@/components/patient/use-hydrated':{useHydrated:()=>true},'./conversation-controller':controller,'./microphone':{Microphone:()=>null},
  './conversation-browser':{conversationSupported:()=>true,captureConversation:async(callbacks:controller.CaptureCallbacks)=>{capture=callbacks;return ()=>stopped++;},
  transcribeConversation:async()=>({status:'ok',text:'urgent transcript',receipt:'bound-receipt',urgent:true}),
  playConversation:async(text:string,signal:AbortSignal)=>{spoken.push(text);if(playback==='fail')throw Error('Synthetic speech outage');if(playback==='complete')return;await new Promise<void>(resolve=>signal.addEventListener('abort',()=>resolve(),{once:true}));}},

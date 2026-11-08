@@ -37,7 +37,7 @@ export function RecordCard({card,locale,inline=false}:{card:ToolResult;locale:L;
   <header className="flex flex-wrap items-baseline justify-between gap-2"><h3 className="text-h3">{l3(locale,TITLE[card.tool])}</h3>{!inline&&<Link href={card.href as Route} className="text-caption underline underline-offset-2">{st(locale,'Open source','Բացել աղբյուրը','Открыть источник')}</Link>}</header>
   {card.state==='ok'?<>
    {!!card.facts.length&&<dl className="divide-y">{card.facts.map(f=><div key={f.id} className="grid gap-x-4 py-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]"><dt className="text-body2 text-muted-foreground">{staffDisplayText(f.label,locale)}</dt><dd className="min-w-0 space-y-0.5">{f.alertCard?<AlertCardLines fields={f.alertCard} locale={locale}/>:<p className="break-words text-body2 font-medium">{displayFactValue(f.value,locale)}</p>}<p><FactChip fact={f} locale={locale} inline={inline}/></p></dd></div>)}</dl>}
-   {card.tool==='bp'&&card.bpSeries&&<BpChart series={card.bpSeries} locale={locale}/>}
+   {card.tool==='bp'&&card.bpSeries&&<BpChart series={card.bpSeries} locale={locale} target={card.bpTarget}/>}
    {!!card.quotes.length&&<ul className="space-y-2">{card.quotes.map(q=><QuoteLine key={q.id} text={q.text} date={q.date} flagged={q.flagged} nurseName={q.nurseName} zoe={q.zoe} rationale={q.id.startsWith('zoe_why.')} locale={locale}/>)}</ul>}
   </>:<p className="text-body2" role="status">{l3(locale,STATE[card.state])}</p>}
   {card.state==='none'&&card.tool==='bp'&&!!card.bpSeries&&card.bpSeries.length<2&&<BpChart series={card.bpSeries} locale={locale}/>}

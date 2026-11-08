@@ -67,6 +67,9 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     short_name: copy.short_name,
     description: copy.description,
     lang: locale,
+    // WP R: a stable identity equal to the start URL (the default id), so installs keep their identity; the member
+    // app's offline page and service worker live under /patient/, inside this scope.
+    id: backoffice || process.env.NOREON_DEPLOYMENT_TARGET === "marketing" ? "/" : "/patient",
     start_url: backoffice || process.env.NOREON_DEPLOYMENT_TARGET === "marketing" ? "/" : "/patient",
     scope: "/",
     display: "standalone",

@@ -10,10 +10,14 @@ export const DEFAULT_VOICE_SETTINGS = Object.freeze({
   tts_voice:'Kore',
   tts_instructions:'Speak calmly, warmly and with care. Use Eastern Armenian by default and the polite Դուք form. If the text is Russian or English, speak that language. Use short, natural sentences. Say numbers naturally; blood pressure as the upper and lower number. Never read symbols, lists or codes aloud. Never rush.',
   version:1,
+  // WP V: Gemini Live streaming transcription (off until a Noreon administrator turns it on).
+  live_enabled:false,
+  live_model:'gemini-live-2.5-flash-preview',
 });
 const model=z.string().trim().min(1).max(160);
 const schema=z.object({enabled:z.boolean(),stt_model:model,stt_urgent_model:model,tts_model:model,
-  tts_voice:z.string().trim().min(1).max(80),tts_instructions:z.string().trim().min(1).max(599),version:z.number().int().positive()});
+  tts_voice:z.string().trim().min(1).max(80),tts_instructions:z.string().trim().min(1).max(599),version:z.number().int().positive(),
+  live_enabled:z.boolean().default(false),live_model:z.string().regex(/^(models\/)?[a-z0-9][a-z0-9.-]{2,79}$/).default(DEFAULT_VOICE_SETTINGS.live_model)});
 export type VoiceSettings=z.infer<typeof schema>;
 
 /** Cache configuration only, never member text or audio. Unsuccessful reads disable voice for 30 seconds. */
@@ -41,6 +45,6 @@ export const readVoiceSettings=createVoiceSettingsReader(async()=>{
   if(!url||!key)return null;
   // Runtime schema validation keeps a missing/unmigrated table on the documented fallback.
   const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
-  const {data,error}=await (client as unknown as {from:(table:string)=>{select:(columns:string)=>{eq:(column:string,value:boolean)=>{maybeSingle:()=>{abortSignal:(signal:AbortSignal)=>PromiseLike<{data:unknown;error:unknown}>}}}}}).from('voice_settings').select('enabled,stt_model,stt_urgent_model,tts_model,tts_voice,tts_instructions,version').eq('id',true).maybeSingle().abortSignal(AbortSignal.timeout(2000));
+  const {data,error}=await (client as unknown as {from:(table:string)=>{select:(columns:string)=>{eq:(column:string,value:boolean)=>{maybeSingle:()=>{abortSignal:(signal:AbortSignal)=>PromiseLike<{data:unknown;error:unknown}>}}}}}).from('voice_settings').select('enabled,stt_model,stt_urgent_model,tts_model,tts_voice,tts_instructions,version,live_enabled,live_model').eq('id',true).maybeSingle().abortSignal(AbortSignal.timeout(2000));
   return error?null:data;
 });

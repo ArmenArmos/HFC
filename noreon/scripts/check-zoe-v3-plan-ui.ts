@@ -11,6 +11,8 @@ import * as jsx from 'react/jsx-runtime';
 import {act,create,type ReactTestRenderer} from 'react-test-renderer';
 import {cardSchema,type ValidCard} from '@/lib/zoe-chat-actions/registry';
 import {cardTurns,dialogThread} from '@/lib/zoe-chat-actions/thread';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 
 (globalThis as {IS_REACT_ACT_ENVIRONMENT?:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
 const native=createRequire(import.meta.url),cache=new Map<string,Record<string,unknown>>();
@@ -20,7 +22,7 @@ function load(file:string):Record<string,unknown>{
  file=resolve(file);if(cache.has(file))return cache.get(file)!;
  const exports:Record<string,unknown>={};cache.set(file,exports);
  const code=ts.transpileModule(readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- vm.runInNewContext(code,{exports,process:{env:{}},window:{dispatchEvent(){}},Event,crypto:globalThis.crypto,Date,Intl,setTimeout,clearTimeout,console,require(name:string):unknown{
+ vm.runInNewContext(code,{exports,process:{env:{}},window:{dispatchEvent(){}},Event,crypto:globalThis.crypto,Date,Intl,setTimeout,clearTimeout,console,require(name:string):unknown{if(name in realtimeBoundaries)return realtimeBoundaries[name];
   if(name==='react')return React;if(name==='react/jsx-runtime')return jsx;
   if(name==='next/link')return {default:({children,...props}:{children:React.ReactNode})=>React.createElement('a',props,children)};
   if(name==='@/lib/zoe-chat-actions/actions')return {};

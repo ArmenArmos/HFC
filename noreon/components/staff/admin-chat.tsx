@@ -1,10 +1,15 @@
 'use client';
-import {useRef,useState,useTransition} from 'react';
+import {lazy,Suspense,useCallback,useRef,useState,useTransition} from 'react';
+import {useRealtimeSignals,useSignalNotices} from '@/components/realtime/use-realtime-signals';
+import {SignalNotices} from '@/components/realtime/signal-notices';
 import Link from 'next/link';
 import {AdminActionCards} from './admin-action-cards';
 import type {Route} from 'next';
 import {st,type StaffLocale} from '@/lib/staff/staff-locale-copy';
 import {ADMIN_INTENTS,waitingAge,type AdminIntent,type AdminChatResult,type OperationsView,type WorkItem} from '@/lib/admin-chat/contracts';
+/** WP V: loaded only when voice is on, or when the voice settings card is opened. */
+const StaffVoiceBar=lazy(()=>import('./staff-voice-bar').then(m=>({default:m.StaffVoiceBar})));
+const VoiceSettingsCard=lazy(()=>import('./voice-settings-card').then(m=>({default:m.VoiceSettingsCard})));
 
 export type AdminChatLocale=StaffLocale;
 export const adminQuestions:Record<AdminIntent,[string,string,string]>={
@@ -63,11 +68,17 @@ export function AdminOperationsCard({view,locale,onAsk,disabled=false}:{view:Ope
 }
 
 /** Ephemeral, fixed questions. Every tap authenticates again on the server. */
-export function AdminChat({initial,locale,readAction}:{initial:AdminChatResult;locale:AdminChatLocale;readAction:(intent:AdminIntent)=>Promise<AdminChatResult>}){
+/** voice (WP V): push-to-talk and hands-free for the Noreon administrator; words only open a question or the voice settings card. */
+export function AdminChat({initial,locale,readAction,voice}:{initial:AdminChatResult;locale:AdminChatLocale;readAction:(intent:AdminIntent)=>Promise<AdminChatResult>;voice?:{available:boolean;live:boolean}}){
  const [result,setResult]=useState(initial),[question,setQuestion]=useState<AdminIntent>('operations'),[pending,start]=useTransition();
  const menu=useRef<HTMLDetailsElement>(null);
  const [working,setWorking]=useState(false);const workingRef=useRef(false),reading=useRef(false);
+ const [voiceSettings,setVoiceSettings]=useState(false);
  const pick=(copy:[string,string,string])=>st(locale,...copy);
+ // WP R: queue changes (admin care-queue tasks, coordination tasks, bookings) arrive as worklist signals with ids only;
+ // the notice offers to read the operations view again. Nothing is re-read under the administrator's eyes.
+ const {notices,push,dismiss}=useSignalNotices();
+ useRealtimeSignals({plane:'staff',enabled:result.kind!=='off',onSignal:useCallback((kind:string,ref:string|null)=>{if(kind==='worklist')push(kind,ref);},[push])});
  function ask(intent:AdminIntent){
   if(reading.current||workingRef.current)return;
   reading.current=true;
@@ -84,14 +95,23 @@ export function AdminChat({initial,locale,readAction}:{initial:AdminChatResult;l
   <header className="dw-heading gap-3"><h1 className="text-h2">{pick(['Your operations with Zoe','Ձեր գործերը Զոյայի հետ',"Ваши дела с Зои"])}</h1>
    <details ref={menu} className="relative"><summary className="dw-pill min-h-11 cursor-pointer text-body2">{pick(['More questions','Այլ հարցեր','Другие вопросы'])}</summary>
     <div className="mt-2 space-y-3 rounded-xl border bg-card p-4">
-     <nav aria-label={pick(['Questions you can ask','Հարցեր, որոնք կարող եք տալ','Вопросы, которые можно задать'])} className="flex flex-col items-start">{ADMIN_INTENTS.map(intent=><button key={intent} type="button" disabled={pending||working} aria-pressed={question===intent} onClick={()=>ask(intent)} className="min-h-11 text-left text-body2 underline">{pick(adminQuestions[intent])}</button>)}</nav>
+     <nav aria-label={pick(['Questions you can ask','Հարցեր, որոնք կարող եք տալ','Вопросы, которые можно задать'])} className="flex flex-col items-start">{ADMIN_INTENTS.map(intent=><button key={intent} type="button" disabled={pending||working} aria-pressed={question===intent} onClick={()=>ask(intent)} className="min-h-11 text-left text-body2 underline">{pick(adminQuestions[intent])}</button>)}
+      <button type="button" disabled={pending||working} aria-pressed={voiceSettings} onClick={()=>{if(menu.current)menu.current.open=false;setVoiceSettings(true);}} className="min-h-11 text-left text-body2 underline">{pick(['Voice settings','Ձայնի կարգավորումներ','Настройки голоса'])}</button></nav>
 
     </div>
    </details>
+   {voice?.available&&<Suspense fallback={null}><StaffVoiceBar locale={locale} role="noreon_admin" available={voice.available} live={voice.live} onIntent={action=>{
+    if(action.kind==='open_voice_settings'){setVoiceSettings(true);return true;}
+    if(action.kind==='open_operations'){ask('operations');return true;}
+    if(action.kind==='open_worklist'){ask('overdue');return true;}
+    return false;
+   }}/></Suspense>}
   </header>
    <section className="dw-chat mx-auto w-full max-w-3xl space-y-4" aria-label={pick(['Operations chat','Գործերի զրույց',"Чат по делам"])} aria-busy={pending}>
+    <SignalNotices notices={notices} locale={locale} onDismiss={dismiss} actions={{worklist:()=>ask(question==='operations'?'operations':question)}}/>
     {question!=='operations'&&<div className="flex justify-end"><p className="max-w-full rounded-xl bg-primary p-4 text-body2 text-primary-foreground">{pick(adminQuestions[question])}</p></div>}
     <div aria-live="polite">{pending?<p role="status" className="rounded-xl bg-card p-4">{pick(['Reading current records…','Կարդացվում են ընթացիկ գրառումները…',"Загружаем актуальные записи…"])}</p>:result.kind==='ready'?<AdminOperationsCard view={result.view} locale={locale} onAsk={ask} disabled={pending||working}/>:<p role="alert" className="rounded-xl bg-card p-4 text-body2">{result.kind==='denied'?pick(['This workspace is unavailable for your account. Open operations to continue.','Այս աշխատատարածքը ձեր հաշվի համար անհասանելի է։ Շարունակելու համար բացեք գործերի էջը։',"Этот раздел недоступен для вашей учётной записи. Откройте дела, чтобы продолжить."]):pick(['The records could not be read. Choose a question to try again or open operations.','Գրառումները չհաջողվեց կարդալ։ Կրկին ընտրեք հարցը կամ բացեք գործերի էջը։',"Не удалось загрузить записи. Выберите вопрос, чтобы повторить попытку, или откройте дела."])}</p>}</div>
+    {voiceSettings&&<Suspense fallback={<p role="status" className="text-body2">{pick(['Opening voice settings…','Բացում եմ ձայնի կարգավորումները…','Открываю настройки голоса…'])}</p>}><VoiceSettingsCard locale={locale} onClose={()=>setVoiceSettings(false)}/></Suspense>}
     {(result.kind!=='denied')&&<AdminActionCards locale={locale} onWorkingChange={value=>{workingRef.current=value;setWorking(value);}} onUnavailable={kind=>setResult({kind})}/>}
    </section>
  </div>;

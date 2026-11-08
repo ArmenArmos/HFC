@@ -1,6 +1,6 @@
 /* Patient shell values transcribed from Noreon_Health_Zoe_v12.html, as requested.
    Scoped here: the vendored brand tokens and the previous shell are untouched. */
-.cv2-root, .cv2-menu {
+.cv2-root, .cv2-menu, .cv2-voicebar {
   --cv2-canvas:#F4F4F6; --cv2-white:#FFFFFF; --cv2-ink:#111114;
   --cv2-muted:#62656C; --cv2-dots:#C9CBD3; --cv2-hair:#F0F1F6; --cv2-blue:#2669D9;
   --cv2-avatar:#55698D; --cv2-blue-soft:#E3F0FF; --cv2-blue-text:#2A5FB8; --cv2-alert:#C62828;
@@ -17,12 +17,12 @@
 }
 html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; overflow:clip!important; overscroll-behavior:none; }
 .cv2-root { position:fixed; inset:var(--chat-view-top,0px) 0 auto; height:100dvh; height:var(--chat-view-height,100dvh); min-height:0; display:flex; flex-direction:column; overflow:clip; background:var(--cv2-canvas); isolation:isolate; }
-.cv2-root *, .cv2-menu * { box-sizing:border-box; }
+.cv2-root *, .cv2-menu *, .cv2-voicebar * { box-sizing:border-box; }
 .cv2-root p, .cv2-root h1, .cv2-root h2 { margin:0; }
-.cv2-root button, .cv2-menu button { cursor:pointer; font:inherit; border:0; -webkit-tap-highlight-color:transparent; }
+.cv2-root button, .cv2-menu button, .cv2-voicebar button { cursor:pointer; font:inherit; border:0; -webkit-tap-highlight-color:transparent; }
 .cv2-root button:focus-visible, .cv2-root textarea:focus-visible, .cv2-menu button:focus-visible,
 .cv2-root :is(a[href], summary, select, input, [tabindex="0"]):focus-visible, .cv2-menu :is(a[href], summary, select, input):focus-visible { outline:3px solid var(--cv2-blue); outline-offset:2px; }
-.cv2-root button:disabled, .cv2-menu button:disabled { opacity:.5; cursor:default; }
+.cv2-root button:disabled, .cv2-menu button:disabled, .cv2-voicebar button:disabled { opacity:.5; cursor:default; }
 .cv2-header { display:flex; flex:none; align-items:center; gap:10px; padding:calc(8px + env(safe-area-inset-top)) 16px 10px; background:var(--cv2-white); border-bottom:1px solid var(--cv2-hair); }
 .cv2-header h1 { display:flex; align-items:center; gap:10px; flex:1; font-size:17px; font-weight:800; letter-spacing:-.03em; line-height:1; }
 .cv2-orb { display:inline-block; flex:none; width:20px; height:20px; border-radius:var(--cv2-pill); background:var(--cv2-orb); box-shadow:var(--cv2-orb-shadow); }
@@ -177,7 +177,8 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 
 /* Voice controls reuse the prototype palette and have no motion. */
 .cv2-voice { position:relative; flex:none; }
-.cv2-composer .cv2-mic { width:48px; height:48px; background:var(--cv2-blue-soft); color:var(--cv2-blue-text); touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+/* WP V: elderly-friendly voice buttons, at least 56px (3.5rem) square. */
+.cv2-composer .cv2-mic { width:3.5rem; height:3.5rem; min-width:3.5rem; background:var(--cv2-blue-soft); color:var(--cv2-blue-text); touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
 .cv2-mic[data-recording] { outline:2px solid var(--cv2-blue); }
 .cv2-recording, .cv2-voice-status { position:absolute; bottom:calc(100% + 12px); right:0; width:min(280px,70vw); padding:12px; border-radius:var(--cv2-tail); background:var(--cv2-white); color:var(--cv2-ink); box-shadow:var(--cv2-shadow); font-size:14px; }
 .cv2-recording meter { display:block; width:100%; height:16px; accent-color:var(--cv2-blue); }
@@ -223,7 +224,13 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-visit-steps li[data-step-state="done"] { color:var(--foreground); }
 .cv2-msg[data-card-highlight="true"] .cv2-block { outline:2px solid var(--ring); outline-offset:2px; }
 
-.cv2-composer .cv2-conversation { background:var(--cv2-blue-soft); color:var(--cv2-blue-text); }
+.cv2-composer .cv2-conversation { width:3.5rem; height:3.5rem; min-width:3.5rem; background:var(--cv2-blue-soft); color:var(--cv2-blue-text); }
+/* WP V: the live caption of what the person is saying (Gemini Live), above the composer, large and readable. */
+.cv2-voice-caption { position:absolute; bottom:calc(100% + 12px); left:auto; right:0; width:min(320px,80vw); padding:12px; border-radius:var(--cv2-tail); background:var(--cv2-blue-soft); color:var(--cv2-ink); box-shadow:var(--cv2-shadow); font-size:var(--cv2-text); line-height:1.4; }
+.cv2-voice-status + .cv2-voice-caption { bottom:calc(100% + 76px); }
+/* WP V: the spoken confirmation hint on a card that waits for a yes. */
+.cv2-voice-hint { display:none; margin-top:8px; color:var(--cv2-blue-text); font-size:var(--cv2-text); }
+[data-voice-confirm="on"] .cv2-voice-hint { display:block; }
 .cv2-composer .cv2-conversation[aria-pressed=true] { background:var(--cv2-blue); color:var(--cv2-white); }
 .cv2-conversation:focus-visible { outline:2px solid var(--cv2-blue); outline-offset:2px; }
 
@@ -231,3 +238,14 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 @media (prefers-reduced-motion: reduce) {
   .cv2-root *, .cv2-root *::before, .cv2-root *::after, .cv2-menu, .cv2-menu * { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
 }
+
+/* WP V: the voice bar for staff surfaces without the chat shell (operations chat, care queue, clinic chat): the same
+   push-to-talk and hands-free buttons, 56px square, without taking over the page layout. */
+.cv2-voicebar { display:inline-flex; gap:8px; align-items:flex-end; background:transparent; }
+.cv2-voicebar .cv2-mic, .cv2-voicebar .cv2-conversation { width:3.5rem; height:3.5rem; display:grid; place-items:center; border-radius:var(--cv2-pill); background:var(--cv2-blue-soft); color:var(--cv2-blue-text); touch-action:none; user-select:none; }
+.cv2-voicebar .cv2-conversation[aria-pressed=true] { background:var(--cv2-blue); color:var(--cv2-white); }
+.cv2-voicebar :is(button):focus-visible { outline:3px solid var(--cv2-blue); outline-offset:2px; }
+.cv2-voicebar .cv2-voice-status, .cv2-voicebar .cv2-recording, .cv2-voicebar .cv2-voice-caption { left:0; right:auto; }
+/* WP R: offline banner (member chat). Polite status above the thread; the 103 call keeps its 44px target. */
+.cv2-offline { flex:none; display:flex; flex-direction:column; gap:6px; margin:0 16px 6px; padding:10px 14px; border-radius:var(--cv2-bubble); background:var(--cv2-white); box-shadow:var(--cv2-shadow); font-size:var(--cv2-text); }
+.cv2-offline-call { display:inline-flex; align-items:center; justify-content:center; min-height:var(--cv2-target); min-width:var(--cv2-target); margin-left:6px; padding:0 14px; }

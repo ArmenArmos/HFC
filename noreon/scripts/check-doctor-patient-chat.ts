@@ -52,6 +52,7 @@ const pageModules:Record<string,unknown>={
  '@/lib/ldl/runtime':{readDoctorLdl:async()=>({enabled:true,goals:[{category:'high'}]})},
  '@/lib/doctor-completion/document-runtime':{readDoctorPlanVersions:async()=>[{current:true,version:2}]},
  '@/lib/gp-report/config':{resultsReportEnabled:()=>false},'./patient-chat':{PatientChat:PatientView},
+ '@/lib/clinical-review/header-read':{readStaffClinicalHeader:async()=>null},
  '@/components/chat-v2/chat.css':{},'./doctor-chat.css':{},
 };
 const page=load('components/doctor-chat-v2/patient-chat-page.tsx',pageModules).patientChatPage as (id:string)=>Promise<React.ReactElement<Record<string,unknown>>>;
@@ -155,6 +156,7 @@ const card=(name:string)=>function Card(props:Record<string,unknown>){return Rea
 function PlanCard(props:Record<string,unknown>){const [draft,setDraft]=React.useState('');return React.createElement('section',{'data-card':'plan'},React.createElement('input',{'aria-label':'Unsaved plan text',value:draft,onChange:(event:{target:{value:string}})=>setDraft(event.target.value)}),JSON.stringify(props));}
 componentModules['./patient-graphs']={PatientGraphs:card('patient-graphs'),PlanSparklines:()=>null};
 componentModules['./patient-labs']={PatientLabs:card('patient-labs')};
+componentModules['@/components/staff/clinical-review-cards']={TargetsCard:card('targets'),MemberTierTargets:()=>null};
 const MemberCard=card('member'),LabCard=card('lab'),UploadCard=card('upload'),HandoverCard=card('handover'),ResultCard=card('results');
 const ReplyCard=(props:{reply:{kind:string;alert?:{memberId:string}};onOpen:(id:string,name:string)=>void})=>React.createElement('section',{'data-card':props.reply.kind},JSON.stringify(props.reply),props.reply.alert&&React.createElement('button',{onClick:()=>props.onOpen(props.reply.alert!.memberId,'Example')},'Open alert member'));
 Object.assign(componentModules,{'./messages':{DoctorReply:ReplyCard},'./conversation':{MemberConversation:MemberCard},'./plan':{DoctorChatPlan:PlanCard},'./lab':{DoctorChatLab:LabCard},'./upload':{DoctorChatUpload:UploadCard},'./handover':{DoctorHandoverCard:HandoverCard},'./results-block':{ResultsBlock:ResultCard}});

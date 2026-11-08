@@ -18,6 +18,8 @@ import type { Button } from "../components/ui/button";
 import {cardSchema,type ZoeCards} from '../lib/zoe-chat-actions/registry';
 import {chatNextStep} from '../lib/zoe-chat-actions/next-step';
 import {STAGE_CLASSES} from '../lib/patient/journey-stage';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 const nodeRequire=createRequire(import.meta.url);
 const {create,act}=nodeRequire("react-test-renderer") as typeof import("react-test-renderer");
 (globalThis as typeof globalThis & {IS_REACT_ACT_ENVIRONMENT:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
@@ -56,7 +58,7 @@ function load<T>(path: string): T {
     document: { addEventListener() {}, removeEventListener() {} },
     requestAnimationFrame: (callback: () => void) => setTimeout(callback, 0),
     cancelAnimationFrame: clearTimeout,
-    require(name: string): unknown {
+    require(name: string): unknown {if(name in realtimeBoundaries)return realtimeBoundaries[name];
       if (name === "zod") return nodeRequire(name);
       if (name === "lucide-react") return {Phone:()=>null,ArrowUp:()=>null};
       if (name === "@/components/patient/use-zoe-thread") return {useZoeThread:()=>({items:[],cards:visibleCards,setCards(){},focusCard:null,opening:null,openCard(){},localEmergencies:{},thread:{messages:[]},emergencies:{},shown,input:React.useRef(null),text:"",setText(){},notice:null,setNotice(){},submit(){},deliver(){}})};

@@ -1,5 +1,5 @@
 'use client';
-import {ConversationToggle,useConversation} from '@/components/chat-v2/conversation';
+import {ConversationToggle,useConversation,VoiceMicrophone} from '@/components/chat-v2/conversation';
 import {renderedStaffReply,staffConversationReply} from '@/components/staff/voice-reply';
 import {taskTitle} from '@/lib/staff/real-coordination/task-copy';
 import {closingAsLabel} from '@/lib/care-alerts/contracts';
@@ -31,6 +31,9 @@ import {useNurseNotes,type NotesPage} from './use-nurse-notes';
 import {NurseNotes,NurseNoteTurns} from './notes';
 import type {CoordinationTask} from '@/lib/staff/real-coordination/schema';
 import {useNurseConversation} from './use-nurse-conversation';
+import {useSignalNotices} from '@/components/realtime/use-realtime-signals';
+import {SignalNotices} from '@/components/realtime/signal-notices';
+import type {SignalKind} from '@/lib/realtime/contracts';
 import {NurseConversation} from './conversation';
 import {NurseUrgentSheet} from './urgent-sheet';
 import {NurseChatMenu} from './menu';
@@ -50,11 +53,12 @@ import {recordNurseVisitMark} from '@/lib/nurse-visit/actions';
 import {ChatMemberIdentity} from '@/components/staff/chat-member-identity';
 import {NurseReply,memberLabel,type MemberChoice,type AskMember,type Reply,type ThreadMessage} from './messages';
 import {noreonName} from '@/lib/brand';
+import {WorklistCard} from '@/components/staff/clinical-review-cards';
 
 /** A typed name must be whole words of the member's name: "Ann" is not "Anna". */
 function wholeWords(typed:string,full:string){const words:string[]=full.toLocaleLowerCase().match(/[\p{L}\p{M}]+/gu)??[];const wanted:string[]=typed.toLocaleLowerCase().match(/[\p{L}\p{M}]+/gu)??[];return wanted.length>0&&wanted.every(word=>words.includes(word));}
 
-export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{locale:StaffLocale;nurseName:string;nurseId:string;voiceAvailable?:boolean}){
+export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false,worklist=false,voiceLive=false}:{locale:StaffLocale;nurseName:string;nurseId:string;voiceAvailable?:boolean;worklist?:boolean;voiceLive?:boolean}){
  const [l,setLocale]=useState(locale),[menu,setMenu]=useState(false),[urgent,setUrgent]=useState(false),[text,setText]=useState('');
  const [messages,setMessages]=useState<ThreadMessage[]>([]);
  const [pendingAlerts,setPendingAlerts]=useState<Record<string,boolean>>({});
@@ -82,7 +86,11 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
  const t=(en:string,hy:string,ru:string)=>st(l,en,hy,ru);
  const atEnd=useRef<()=>boolean>(()=>true);
  const notes=useNurseNotes(setText,refuseNotes);
- const conversation=useNurseConversation(setText,atEnd,notes.held,clearAskMember);
+ // WP R: care alerts, staff notices and worklist changes arrive as signals and show a notice at the top of the chat.
+ const {notices:signalNotices,push:pushSignal,dismiss:dismissSignal}=useSignalNotices();
+ const conversation=useNurseConversation(setText,atEnd,notes.held,clearAskMember,useCallback((kind:SignalKind,ref:string|null)=>{
+  if(kind==='care_alert'||kind==='staff_notice'||(kind==='worklist'&&worklist))pushSignal(kind,ref);
+ },[pushSignal,worklist]));
  const visit=useNurseVisit(setText,l);
  const task=useNurseTask(setText),taskLabel=task.composerLabel(l);
  const handoff=conversation.handoff,hcopy=nurseHandoffCopy(l),handoffActive=conversation.open&&handoff.active;
@@ -364,6 +372,8 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
   if(notes.start(member,page,id))setMessages(previous=>[...previous.map<ThreadMessage>(row=>row.id===used&&row.kind==='reply'&&row.reply.kind==='notes'?{...row,reply:{...row.reply,used:true}}:row),{id:String(++sequence.current),kind:'nurse',text:t('Add a note','Ավելացնել նշում','Добавить заметку'),at:new Date().toISOString(),conversationKey:conversation.session?.key},{id,kind:'care-note',at:new Date().toISOString(),conversationKey:conversation.session?.key}]);
   focus();
  }
+ /** WP T: the worklist card. The words only open it; opening a member is the usual member choice. */
+ function openWorklist(said:string){append([{id:String(++sequence.current),kind:'nurse',text:said},{id:String(++sequence.current),kind:'reply',reply:{kind:'worklist'}}]);}
  function replace(id:string,reply:Reply){setMessages(previous=>previous.map(message=>message.id===id?{id,kind:'reply',reply}:message));}
  async function loadZoeHistory(){
   if(historyLoaded.current)return;
@@ -477,6 +487,7 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
   // In Zoe mode only the read-only lists (handoffs, the BP cohort) are commands; every other sentence stays a question about the open member.
   const intent=zoeMode?(rawIntent?.kind==='handoffs'||rawIntent?.kind==='missing-bp'||rawIntent?.kind==='adherence'||rawIntent?.kind==='priority'?rawIntent:null):rawIntent;
   if(intent?.kind==='handoffs'){if(busy||frozen)return;setText('');newest();allHandoffs();return;}
+  if(intent?.kind==='worklist'){if(busy||frozen)return;setText('');newest();openWorklist(value);return;}
   if(intent?.kind==='missing-bp'){if(busy||frozen)return;setText('');newest();allMissingBp();return;}
   if(intent?.kind==='adherence'){if(busy||frozen)return;setText('');newest();allAdherence();return;}
   if(intent&&(intent.kind==='visits'||intent.kind==='tasks')){if(busy||frozen)return;setText('');newest();if(intent.kind==='visits')allVisits();else allTasks(intent.filter);return;}
@@ -517,6 +528,7 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
       if(reply.kind==='task-details'&&task.entries.some(entry=>entry.task.id===reply.snapshot.id&&Number(entry.id)>Number(message.id)))return null;
       if(reply.kind==='task-details')content=<NurseTaskDetails {...props} snapshot={task.updates[reply.snapshot.id]?.revision>reply.snapshot.revision?{...reply.snapshot,...task.updates[reply.snapshot.id]}:reply.snapshot}/>;
       if(reply.kind==='visits')content=<NurseVisitList data={reply.data} locale={l} disabled={held} onOpen={openVisit}/>;
+      if(reply.kind==='worklist')content=<WorklistCard locale={l} variant="nurse" disabled={held} onOpen={(id,name)=>select({id,name},message.id)}/>;
       if(reply.kind==='notes')content=<NurseNotes page={reply.page} locale={l} disabled={busy||frozen||notes.active||handoffActive||!conversation.open||conversation.session?.member.id!==reply.member.id} onAdd={reply.used?undefined:()=>addNote(reply.member,reply.page,message.id)}/>;
       if(content)return <article key={message.id} data-message-key={message.id} className="cv2-msg cv2-zoe"><div className="cv2-say ncv2-card">{content}</div></article>;
      }
@@ -531,7 +543,7 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
  }
  const voiceReply=staffConversationReply(messages);
  const voiceBlocked=menu||urgent||workHeld||memberComposer||confirmReply;
- const voiceConversation=useConversation({enabled:voiceAvailable,disabled:voiceBlocked,locale:l,audience:'staff',contextKey:`${askMember?.memberId??''}:${zoeMode}:${confirmKey}`,urgentKey:null,
+ const voiceConversation=useConversation({enabled:voiceAvailable,live:voiceLive,streamSpeech:true,disabled:voiceBlocked,locale:l,audience:'staff',contextKey:`${askMember?.memberId??''}:${zoeMode}:${confirmKey}`,urgentKey:null,
   onTranscript:result=>{setText(result.text);setConfirmReply(false);},onSend:()=>{void send();},
   reply:voiceReply?{key:voiceReply,text:()=>renderedStaffReply(contentRef.current,voiceReply)}:null});
  const initials=nurseName.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('');
@@ -540,7 +552,12 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
   <button type="button" className="ncv2-urgent" data-nurse-urgent-line onClick={()=>{focus();setUrgent(true);}} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{urgentWords.emergency} <span>{urgentWords.guidance}</span></button>
   <section ref={threadRef} className="cv2-thread" role="log" aria-live="polite" aria-label={t('Your work chat','Ձեր աշխատանքային զրույցը','Ваш рабочий чат')} tabIndex={0}>
    <div ref={contentRef} className="cv2-messages">
-    {!messages.length&&<article className="cv2-msg cv2-zoe"><div className="cv2-say ncv2-card">{fragmentReady?<><p>{t('Hello. Start with today or a member’s name.','Բարև։ Սկսեք «Այսօր»-ից կամ անդամի անունից։','Здравствуйте. Начните с «Сегодня» или имени участника.')}</p><button type="button" className="ncv2-choice" onClick={()=>void send(t('Today','Այսօր','Сегодня'))} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{t('Today','Այսօր','Сегодня')}</button><button type="button" className="ncv2-choice" disabled={busy||frozen} onClick={allHandoffs} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{sentHandoffsCopy(l).title}</button></>:<NurseReply reply={{kind:'loading-today'}} locale={l} onMember={()=>{}}/>}</div></article>}
+    <SignalNotices notices={signalNotices} locale={l} onDismiss={dismissSignal} actions={{
+     care_alert:()=>{focus();setUrgent(true);},
+     staff_notice:()=>{focus();setUrgent(true);},
+     ...(worklist?{worklist:()=>{newest();openWorklist(t('Worklist','Աշխատանքային ցանկ','Рабочий список'));}}:{}),
+    }}/>
+    {!messages.length&&<article className="cv2-msg cv2-zoe"><div className="cv2-say ncv2-card">{fragmentReady?<><p>{t('Hello. Start with today or a member’s name.','Բարև։ Սկսեք «Այսօր»-ից կամ անդամի անունից։','Здравствуйте. Начните с «Сегодня» или имени участника.')}</p><button type="button" className="ncv2-choice" onClick={()=>void send(t('Today','Այսօր','Сегодня'))} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{t('Today','Այսօր','Сегодня')}</button><button type="button" className="ncv2-choice" disabled={busy||frozen} onClick={allHandoffs} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{sentHandoffsCopy(l).title}</button>{worklist&&<button type="button" className="ncv2-choice" data-worklist-chip disabled={busy||frozen} onClick={()=>openWorklist(t('Worklist','Աշխատանքային ցուցակ','Рабочий список'))} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{t('Worklist','Աշխատանքային ցուցակ','Рабочий список')}</button>}</>:<NurseReply reply={{kind:'loading-today'}} locale={l} onMember={()=>{}}/>}</div></article>}
     {messages.filter(message=>!message.conversationKey).map(renderMessage)}
    </div>
   </section>
@@ -553,6 +570,7 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
      if(!(event.metaKey||event.ctrlKey)&&window.matchMedia('(pointer: coarse)').matches)return;
      event.preventDefault();void send();
     }}/>
+   {voiceAvailable&&<VoiceMicrophone locale={l} endpoint="/api/staff/zoe/voice" onBusy={()=>{}} disabled={voiceBlocked||busy||frozen||voiceConversation.active} onTranscript={value=>{setText(text.trim()?`${text} ${value}`:value);setConfirmReply(false);}}/>}
    {voiceAvailable&&<ConversationToggle locale={l} conversation={voiceConversation} disabled={voiceBlocked||busy||frozen||(!voiceConversation.active&&!!text.trim())}/>}
    <button type="submit" disabled={busy||notes.frozen||notes.blocked||task.frozen||(visit.open&&(visit.frozen||!visitTakesWords(visit)))||!text.trim()||(!notes.active&&(zoeMode?frozen:conversation.open&&(frozen||!conversation.session?.data?.ok||(handoffActive?!handoff.flow?.topic:!conversation.session.data.canSend))))} aria-label={t('Send','Ուղարկել','Отправить')} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}><ArrowUp size={18} strokeWidth={2.4} aria-hidden/></button>
   </form></footer>

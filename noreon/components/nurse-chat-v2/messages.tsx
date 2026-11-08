@@ -31,6 +31,8 @@ export type Reply=
  | {kind:'zoe-loading'|'zoe-cards'|'zoe-answer'|'zoe-error';member:AskMember;cards:ToolResult[];content?:AnswerContent;error?:string}
  | {kind:'question-choice';rows:({id:string;name:string}&Partial<import('@/lib/staff/chat-member-identity-schema').ChatMemberIdentity>)[];question:string;used?:boolean}
  | {kind:'choose-member'}
+ /** WP T: the prioritised worklist card; it reads its own data. */
+ | {kind:'worklist'}
  | {kind:'missing-bp';data:NurseMissingBp}
  | {kind:'adherence';data:NurseAdherence}
  | {kind:'handoffs';page:SentHandoffs}

@@ -10,6 +10,7 @@ import * as contracts from '@/lib/admin-chat/contracts';
 import type {AdminChatResult,AdminIntent,OperationsView} from '@/lib/admin-chat/contracts';
 import * as localeCopy from '@/lib/locale';
 import * as staffLocaleCopy from '@/lib/staff/staff-locale-copy';
+import {realtimeStubs} from './realtime-test-stubs';
 
 const require=createRequire(import.meta.url);
 const fixture:OperationsView={intent:'overdue',asOf:'2026-10-31T12:00:00Z',summary:null,unavailable:[],partial:[],disabled:[],notices:[],items:[
@@ -21,7 +22,7 @@ const load=(path:string,dependencies:Record<string,unknown>)=>{
  return exports;
 };
 const link={default:(p:React.ComponentProps<'a'>)=>React.createElement('a',p)};
-const components=load('components/staff/admin-chat.tsx',{'./admin-action-cards':{AdminActionCards:()=>null},'react':React,'react/jsx-runtime':require('react/jsx-runtime'),'next/link':link,'@/lib/admin-chat/contracts':contracts,'@/lib/staff/staff-locale-copy':staffLocaleCopy}) as typeof import('../components/staff/admin-chat');
+const components=load('components/staff/admin-chat.tsx',{...await realtimeStubs(),'./admin-action-cards':{AdminActionCards:()=>null},'react':React,'react/jsx-runtime':require('react/jsx-runtime'),'next/link':link,'@/lib/admin-chat/contracts':contracts,'@/lib/staff/staff-locale-copy':staffLocaleCopy}) as typeof import('../components/staff/admin-chat');
 const ready:AdminChatResult={kind:'ready',view:fixture};
 for(const locale of ['en','hy','ru'] as const){
  const html=renderToStaticMarkup(React.createElement(components.AdminChat,{initial:ready,locale,readAction:async()=>ready}));
@@ -104,6 +105,7 @@ const Page=load('app/staff/real/(review)/admin-chat/page.tsx',{
  '@/lib/admin-chat/config':{adminChatEnabled:()=>enabled},
  '@/lib/staff/real-admin':{requireRealAdmin:async()=>{authCalls++;if(role!=='admin')throw Error('denied');return {identity:{id:'admin'}};}},
  '@/lib/admin-chat/actions':{readAdminChat:async()=>{pageReads++;return ready;}},
+ '@/lib/staff-zoe/voice':{staffVoiceAvailable:async()=>false,staffLiveAvailable:async()=>false},
  '@/components/staff/admin-chat':components,'../doctor-workspace/workspace.css':{},
 }).default as (props:{searchParams:Promise<{lang?:string}>})=>Promise<React.ReactNode>;
 await assert.rejects(()=>Page({searchParams:Promise.resolve({})}),/not-found/);

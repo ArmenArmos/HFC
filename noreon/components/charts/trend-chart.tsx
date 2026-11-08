@@ -15,7 +15,7 @@ function Mark({point,x,y,stroke}:{point:TrendPoint;x:number;y:number;stroke:stri
  return <circle cx={x} cy={y} r={3} fill={point.slot==='morning'?'var(--card)':stroke} {...props}/>;
 }
 /** A single numeric axis, factual source markers, and the same exact-value table at both sizes. */
-export function TrendChart({points:raw,title,labels,unit,locale,entity='other',emptyText,target,sparkline=false,defaultExpanded=false}:TrendProps){
+export function TrendChart({points:raw,title,labels,unit,locale,entity='other',emptyText,target,references=[],sparkline=false,defaultExpanded=false}:TrendProps){
  const [expanded,setExpanded]=useState(defaultExpanded),id=useId();
  const t=(en:string,hy:string,ru:string)=>st(locale,en,hy,ru);
  const points=raw.filter(p=>Number.isFinite(Date.parse(p.at))&&p.values.length===labels.length&&p.values.every(Number.isFinite)).slice().sort((a,b)=>Date.parse(a.at)-Date.parse(b.at));
@@ -23,7 +23,7 @@ export function TrendChart({points:raw,title,labels,unit,locale,entity='other',e
  const time=new Intl.DateTimeFormat(locale,{timeZone:'Asia/Yerevan',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
  const source=(p:TrendPoint)=>[chartSource(p.source,locale),p.slot==='morning'?t('Morning','Առավոտ','Утро'):p.slot==='evening'?t('Evening','Երեկո','Вечер'):null].filter(Boolean).join(' · ');
  const stroke=color[entity],width=320,height=sparkline&&!expanded?64:205,left=44,right=304,top=12,bottom=height-38;
- const values=points.flatMap(p=>[...p.values]);if(target)values.push(target.below,0);
+ const values=points.flatMap(p=>[...p.values]);if(target)values.push(target.below,0);const lines=references.filter(r=>Number.isFinite(r.value)&&r.series>=0&&r.series<labels.length);values.push(...lines.map(r=>r.value));
  const min=Math.min(...values),max=Math.max(...values),pad=Math.max((max-min)*.12,Math.abs(max)*.04,.1),low=min-pad,high=max+pad;
  const first=Date.parse(points[0]?.at??''),last=Date.parse(points.at(-1)?.at??'');
  const x=(p:TrendPoint)=>first===last?(left+right)/2:left+(Date.parse(p.at)-first)/(last-first)*(right-left);
@@ -38,6 +38,7 @@ export function TrendChart({points:raw,title,labels,unit,locale,entity='other',e
     <svg role="img" aria-label={title} viewBox={`0 0 ${width} ${height}`} className="block w-full" style={{maxHeight:sparkline&&!expanded?64:240}}>
      {(!sparkline||expanded)&&[low,(low+high)/2,high].map((n,i)=><g key={i}><path d={`M${left},${y(n)}H${right}`} stroke="var(--border)"/><text x={left-5} y={y(n)+4} textAnchor="end" fill="var(--muted-foreground)" fontSize={12}>{new Intl.NumberFormat(locale,{maximumFractionDigits:entity==='bp'?0:2}).format(n)}</text></g>)}
      {target&&<g data-target-band><rect x={left} y={y(target.below)} width={right-left} height={y(0)-y(target.below)} fill={stroke} fillOpacity={.1}/><path d={`M${left},${y(target.below)}H${right}`} stroke={stroke} strokeDasharray="2 3"/></g>}
+     {lines.map(r=><path key={`ref:${r.series}`} data-reference={r.series} d={`M${left},${y(r.value)}H${right}`} stroke={stroke} strokeWidth={1} strokeDasharray={r.series?'1 3':'6 4'}/>)}
      {labels.map((label,k)=><g key={label}>
       {/* Unverified observations stay points only, never a segment in the verified trend. */}
       {(['home','clinic','reviewed','verified'] as const).map(s=>{const group=points.filter(p=>p.source===s);return group.length>1?<polyline key={s} points={group.map(p=>`${x(p)},${y(p.values[k]!)}`).join(' ')} fill="none" stroke={stroke} strokeWidth={1.5} strokeDasharray={k?'5 3':undefined}/>:null;})}
@@ -53,6 +54,7 @@ export function TrendChart({points:raw,title,labels,unit,locale,entity='other',e
    {labels.length>1&&<ul aria-label={t('Legend','Պայմանական նշաններ','Условные обозначения')} className="flex flex-wrap gap-x-4 text-caption">{labels.map((label,i)=><li key={label} className="inline-flex items-center gap-2"><svg width={20} height={10} aria-hidden><path d="M0 5H20" stroke={stroke} strokeWidth={1.5} strokeDasharray={i?'5 3':undefined}/></svg>{label}</li>)}</ul>}
    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption" aria-label={t('Sources','Աղբյուրներ','Источники')}>{[...new Set(points.map(p=>p.source))].map(s=><li key={s} className="inline-flex items-center gap-1"><svg width={14} height={14} aria-hidden><Mark point={{id:s,at:'',values:[],source:s}} x={7} y={7} stroke={stroke}/></svg>{chartSource(s,locale)}</li>)}</ul>
    {target&&<p className="text-caption">{t('Recorded threshold','Գրանցված շեմ','Записанный порог')}: &lt; {number(target.below)} {unit}. {t('The reduction part is assessed separately.','Նվազման մասը գնահատվում է առանձին։','Часть цели по снижению оценивается отдельно.')}</p>}
+   {lines.length>0&&<p className="text-caption" data-reference-summary>{t('Personal target, dashed lines','Անձնական թիրախ, կետագծեր','Личная цель, пунктирные линии')}: {t('below','ցածր','ниже')} {lines.map(r=>number(r.value)).join('/')} {unit}</p>}
    {expanded&&<div id={id} className="max-w-full overflow-x-auto">
     <p className="text-caption text-muted-foreground">{t('Time in Yerevan (24-hour)','Երևանի ժամանակով (24 ժամ)','Время Еревана (24 часа)')}</p>
     <table role="table" aria-label={title} className="w-full table-fixed text-left text-caption"><thead><tr role="row">{[t('Date','Ամսաթիվ','Дата'),t('Time','Ժամ','Время'),`${labels.join(' / ')} (${unit})`,t('Source','Աղբյուր','Источник')].map(s=><th role="columnheader" key={s} className="break-words py-2 pr-2 font-medium">{s}</th>)}</tr></thead><tbody>{points.map(p=><tr role="row" key={p.id} className="border-t"><td role="cell" className="break-words py-2 pr-2">{date.format(Date.parse(p.at))}</td><td role="cell" className="py-2 pr-2">{p.dateOnly?t('Not recorded','Գրանցված չէ','Не указано'):time.format(Date.parse(p.at))}</td><td role="cell" className="break-words py-2 pr-2 tabular-nums">{p.values.map(number).join('/')}</td><td role="cell" className="break-words py-2">{source(p)}</td></tr>)}</tbody></table>

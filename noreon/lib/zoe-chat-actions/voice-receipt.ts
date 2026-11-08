@@ -39,3 +39,24 @@ export function verifyVoiceReceipt(receipt:unknown,memberId:string,text:string,a
   return timingSafeEqual(Buffer.from(mac,'hex'),Buffer.from(signature(memberId,text,issuedAt,secret),'hex'));
  }catch{return false;}
 }
+
+/**
+ * A Live turn's marker (WP V). The transcript of a Gemini Live session reaches the server only through the browser, so
+ * nothing attests what was said: the marker records only that the member sent this text as a spoken Live turn. It never
+ * verifies as a voice receipt (different format and key), so it never grants 'patient_voice_confirmed'; it labels a BP
+ * card opened from that message 'patient_voice_live_confirmed' and gives Zoe's reply the voice style.
+ */
+const liveKey=(secret:string)=>{if(secret.length<32)throw Error('Voice receipt unavailable');return createHmac('sha256',secret).update('noreon:voice-live-marker:v1').digest();};
+const liveMac=(memberId:string,text:string,issuedAt:number,secret:string)=>createHmac('sha256',liveKey(secret)).update(JSON.stringify({memberId,text,issuedAt})).digest('base64url');
+export const LIVE_MARKER=/^live\.\d{13}\.[A-Za-z0-9_-]{43}$/;
+export function signLiveMarker(memberId:string,text:string,secret=process.env.SUPABASE_SERVICE_ROLE_KEY??'',now=Date.now()):string{
+ return `live.${now}.${liveMac(memberId,text,now,secret)}`;
+}
+export function verifyLiveMarker(marker:unknown,memberId:string,text:string,at=Date.now(),secret=process.env.SUPABASE_SERVICE_ROLE_KEY??''):marker is string{
+ try{
+  if(typeof marker!=='string'||!LIVE_MARKER.test(marker)||!Number.isFinite(at))return false;
+  const [,time,mac]=marker.split('.'),issuedAt=Number(time);
+  if(issuedAt>at+30_000||at-issuedAt>TTL_MS)return false;
+  return timingSafeEqual(Buffer.from(mac!),Buffer.from(liveMac(memberId,text,issuedAt,secret)));
+ }catch{return false;}
+}

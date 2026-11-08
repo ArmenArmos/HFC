@@ -5,7 +5,7 @@ import {pick,type Locale} from '@/lib/locale';
  * Provenance changes display/aggregate eligibility only, never the safety checks. */
 export const isUnverifiedBp=(row:{entry_source?:string|null;entrySource?:string|null})=>{
  const source=row.entry_source??row.entrySource;
- return source==='patient_text_entry'||source==='caregiver_reported';
+ return source==='patient_text_entry'||source==='caregiver_reported'||source==='patient_voice_live_confirmed';
 };
 
 /** STAGING hy/ru wording: needs Armen/Yesayi sign-off before go-live. */

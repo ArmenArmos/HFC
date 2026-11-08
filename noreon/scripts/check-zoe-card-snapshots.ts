@@ -54,7 +54,7 @@ function load(r:Reads){
   if(name==='@/lib/patient/zoe-app-v3')return {zoeAppV3Enabled:()=>r.v3===true};
   if(name==='./booking-read')return {readVisitBooking:async()=>r.booking?.()};
   if(name==='./registry')return registry;
-  if(name==='./voice-receipt')return {verifyVoiceReceipt:()=>false};
+  if(name==='./voice-receipt')return {verifyVoiceReceipt:()=>false,verifyLiveMarker:()=>false};
   if(name==='@/lib/ldl/member')return {memberLdl:async()=>undefined};
   if(name==='@/lib/member-medicines/asks')return {medicineAskSchema:{safeParse:()=>({success:false})}};
   if(name==='@/lib/patient/zoe-app-v3')return {zoeAppV3Enabled:()=>r.v3===true};

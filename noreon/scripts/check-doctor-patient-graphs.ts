@@ -72,6 +72,7 @@ const modules:Record<string,unknown>={'@/lib/bp-unit':bpUnit,react:React,'react/
  '@/lib/lab-ai/member-approval-server':{readMemberUploadApprovals:async(_client:unknown,id:string)=>{scoped.push(id);return undefined;}},
  '@/lib/member-history/server':{readMemberHistoryForStaff:async(_client:unknown,id:string)=>{scoped.push(id);return {values:[]};}},
  '@/lib/ldl/runtime':{readDoctorLdl:async(_client:unknown,id:string)=>{scoped.push(id);return a.ldl;}},
+ '@/lib/bp-target/runtime':{readDoctorBpTarget:async()=>null},'@/lib/clinical-review/config':{bpTargetsEnabled:()=>false},
 };
 function load(path:string){const exports:Record<string,unknown>={};vm.runInNewContext(ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,Date,require:(name:string)=>{assert.ok(name in modules,`Unmocked ${name}`);return modules[name];}});return exports;}
 const reader=load('lib/staff-zoe/patient-graphs-read.ts').readPatientGraphs as typeof import('@/lib/staff-zoe/patient-graphs-read').readPatientGraphs;

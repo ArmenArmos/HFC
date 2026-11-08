@@ -1,6 +1,7 @@
 import {VOICE_MAX_BYTES,VOICE_MAX_MS} from '@/lib/zoe-chat-actions/voice-contract';
 import type {PatientLocale} from '@/lib/patient/copy';
 import type {CaptureCallbacks,ConversationTranscript} from './conversation-controller';
+import {splitConversationSpeech} from '@/lib/voice-core/chunk';
 
 export const conversationSupported=()=>typeof window!=='undefined'&&typeof MediaRecorder!=='undefined'&&typeof AudioContext!=='undefined'&&!!navigator.mediaDevices?.getUserMedia&&['audio/mp4','audio/webm;codecs=opus','audio/webm'].some(type=>MediaRecorder.isTypeSupported(type));
 /** One microphone stream per listening/playback interval; late permission is always released. */
@@ -53,31 +54,9 @@ export async function transcribeConversation(audio:Blob,durationMs:number,locale
  if(!response.ok||result.status!=='ok'||typeof result.text!=='string'||!result.text.trim()||typeof result.receipt!=='string')throw new Error('Voice transcription unavailable');
  return result;
 }
-/** Prefer whole sentences around 160 characters; long sentences have a hard 200-character cap. */
-export function splitConversationSpeech(text:string):string[]{
- const sentences:string[]=[];let start=0;
- for(const match of text.matchAll(/[.!?։;:\n]+["'»”’)]*/g)){
-  const at=match.index;
-  if(match[0]==='.'&&/\d/.test(text[at-1]??'')&&/\d/.test(text[at+1]??''))continue;
-  sentences.push(text.slice(start,at+match[0].length).trim());start=at+match[0].length;
- }
- sentences.push(text.slice(start).trim());
- const chunks:string[]=[];let chunk='';
- const append=(part:string)=>{
-  if(chunk&&chunk.length+1+part.length>160){chunks.push(chunk);chunk='';}
-  chunk=chunk?`${chunk} ${part}`:part;
- };
- for(let sentence of sentences){
-  while(sentence.length>200){
-   const space=sentence.lastIndexOf(' ',200),end=space>0?space:200;
-   append(sentence.slice(0,end));sentence=sentence.slice(end).trim();
-  }
-  if(sentence)append(sentence);
- }
- if(chunk)chunks.push(chunk);
- return chunks;
-}
-async function playSpeechChunk(result:{audioBase64:string;mime:string},signal:AbortSignal):Promise<void>{
+/** The chunker moved to lib/voice-core so the streaming speech route uses the same chunks; re-exported for callers. */
+export {splitConversationSpeech};
+export async function playSpeechChunk(result:{audioBase64:string;mime:string},signal:AbortSignal):Promise<void>{
  const bytes=Uint8Array.from(atob(result.audioBase64),char=>char.charCodeAt(0));
  const url=URL.createObjectURL(new Blob([bytes],{type:result.mime})),audio=new Audio(url);
  await new Promise<void>((resolve,reject)=>{
@@ -121,4 +100,72 @@ export async function playConversation(text:string,locale:PatientLocale,signal:A
    if(next)pending=next;
   }
  }finally{controller.abort();}
+}
+
+/** One server-sent event block ("event: x\ndata: {...}") parsed; null when it is not one of ours. Exported for the checks. */
+export function parseSpeechEvent(block:string):{event:'chunk';index:number;audioBase64:string;mime:string}|{event:'end'|'failed'}|null{
+ let name='',data='';
+ for(const line of block.split('\n')){if(line.startsWith('event: '))name=line.slice(7).trim();else if(line.startsWith('data: '))data+=line.slice(6);}
+ try{
+  const value=JSON.parse(data);
+  if(name==='chunk'&&Number.isInteger(value?.index)&&typeof value.audioBase64==='string'&&typeof value.mime==='string'&&/^audio\//.test(value.mime))return {event:'chunk',index:value.index,audioBase64:value.audioBase64,mime:value.mime};
+  if(name==='end'||name==='failed')return {event:name};
+ }catch{/* not ours */}
+ return null;
+}
+
+/**
+ * Streaming speech (WP V): Zoe's reply arrives as server-sent sentence chunks while the server synthesizes them, so
+ * playback starts after the first chunk. Chunks play strictly in order; an abort (barge-in, stop, page hidden) stops the
+ * current audio at once and cancels the rest of the stream. When the stream route is unavailable before any audio
+ * arrives, the existing per-chunk route (playConversation) speaks the reply instead.
+ */
+export async function playConversationStream(text:string,locale:PatientLocale,signal:AbortSignal,endpoint='/api/patient/zoe/speech-stream',fallback='/api/patient/zoe/speech'):Promise<void>{
+ if(signal.aborted||!text.trim())return;
+ window.dispatchEvent(new Event('cv2-conversation-playback'));
+ const controller=new AbortController(),stop=AbortSignal.any([signal,controller.signal]);
+ let response:Response;
+ try{
+  response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,locale}),cache:'no-store',signal:AbortSignal.any([stop,AbortSignal.timeout(60_000)])});
+ }catch{if(signal.aborted)return;return playConversation(text,locale,signal,fallback);}
+ if(!response.ok||!response.body||!(response.headers.get('content-type')??'').startsWith('text/event-stream')){
+  if(signal.aborted)return;
+  return playConversation(text,locale,signal,fallback);
+ }
+ const reader=response.body.pipeThrough(new TextDecoderStream()).getReader();
+ const queue:{audioBase64:string;mime:string}[]=[];let done=false,failed=false,played=0,wake:(()=>void)|null=null;
+ const notify=()=>{const w=wake;wake=null;w?.();};
+ // Reads the stream into the in-order queue while the chunks play.
+ const read=(async()=>{
+  let buffer='',expected=0;
+  try{
+   for(;;){
+    const {value,done:end}=await reader.read();
+    if(end)break;
+    buffer+=value;
+    let at:number;
+    while((at=buffer.indexOf('\n\n'))>=0){
+     const parsed=parseSpeechEvent(buffer.slice(0,at));buffer=buffer.slice(at+2);
+     if(!parsed)continue;
+     if(parsed.event==='chunk'){if(parsed.index!==expected){failed=true;break;}expected++;queue.push({audioBase64:parsed.audioBase64,mime:parsed.mime});}
+     else if(parsed.event==='failed')failed=true;
+     notify();
+     if(failed)break;
+    }
+    if(failed)break;
+   }
+  }catch{failed=true;}
+  finally{done=true;notify();}
+ })();
+ try{
+  for(;;){
+   if(stop.aborted)return;
+   const next=queue.shift();
+   if(next){await playSpeechChunk(next,stop);played++;continue;}
+   if(done)break;
+   await new Promise<void>(resolve=>{wake=resolve;stop.addEventListener('abort',()=>resolve(),{once:true});});
+  }
+  // Nothing could be spoken: the same failure the per-chunk player reports, so the controller can stop cleanly.
+  if(played===0&&failed&&!stop.aborted)throw new Error('Voice playback unavailable');
+ }finally{controller.abort();void reader.cancel().catch(()=>{});await read.catch(()=>{});}
 }

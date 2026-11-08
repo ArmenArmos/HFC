@@ -8,6 +8,8 @@ import {act,create,type ReactTestRenderer} from 'react-test-renderer';
 import * as copy from '@/lib/zoe-chat-actions/copy';
 import * as bp from '@/components/patient/bp-entry-values';
 import {doseItem} from '@/lib/zoe-chat-actions/registry';
+import {realtimeStubs} from './realtime-test-stubs';
+const realtimeBoundaries=await realtimeStubs();
 (globalThis as {IS_REACT_ACT_ENVIRONMENT?:boolean}).IS_REACT_ACT_ENVIRONMENT=true;
 const writes:Record<string,unknown>[]=[];
 let resolveWrite:((value:unknown)=>void)|undefined;
@@ -20,6 +22,7 @@ const bpHook:Record<string,unknown>={};
 const controls:Record<string,unknown>={};
 const resultsMessage:Record<string,unknown>={};
 const boundary=(name:string):unknown=>{
+ if(name in realtimeBoundaries)return realtimeBoundaries[name];
  if(name==='./use-bp-card')return bpHook;
  if(name==='./zoe-card-controls')return controls;
  if(name==='./zoe-results-message')return resultsMessage;

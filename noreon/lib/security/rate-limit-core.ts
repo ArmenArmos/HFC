@@ -6,7 +6,7 @@ import { networkPrefix } from './admission-source';
  * which buckets a request falls in and their keyed digests. The limits themselves live in the
  * database (`_rate_limit_policy`), never here, so a caller cannot widen them.
  */
-export type RateOperation = 'member_code' | 'member_verify' | 'member_link' | 'staff_signin' | 'member_upload' | 'member_speech' | 'clinic_upload' | 'bp_photo';
+export type RateOperation = 'member_code' | 'member_verify' | 'member_link' | 'staff_signin' | 'member_upload' | 'member_speech' | 'clinic_upload' | 'bp_photo' | 'member_live' | 'staff_live' | 'realtime_token';
 export type RateMode = 'take' | 'peek' | 'record';
 export type RateBucket = { kind: 'source'; mode?: RateMode } | { kind: 'phone' | 'email' | 'user'; value: string; mode?: RateMode };
 export type RateEnv = { vercel: boolean; secret: string | undefined };

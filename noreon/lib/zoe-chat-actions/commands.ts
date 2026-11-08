@@ -51,7 +51,8 @@ export type CardPorts={
 /** What a card opens with beyond its kind: typed numbers for the BP card, or which page of results. */
 export type OpenInput={typed?:TypedBp;page?:number;ask?:MedicineAsk;askId?:string};
 /** Numbers a member typed, shown back on a BP card (typed-reading.ts); measuredAt is when they sent them. */
-export type TypedBp={systolic:number;diastolic:number;pulse:number|null;measuredAt:string;entrySource?:'patient_voice_confirmed'};
+/** entrySource: 'patient_voice_confirmed' only after a verified server receipt; 'patient_voice_live_confirmed' for a Live-dictated reading (WP V). */
+export type TypedBp={systolic:number;diastolic:number;pulse:number|null;measuredAt:string;entrySource?:'patient_voice_confirmed'|'patient_voice_live_confirmed'};
 type BpEntry=TypedBp&{submissionId:string;photoConfirmed?:boolean};
 
 export const fromStore=(code:StoreCode,card?:ZoeCard):CardResult=>({status:code==='recorded'||code==='conflict'?'stale':code==='not_found'?'invalid':code,...(card?{card}:{})});
@@ -147,7 +148,8 @@ export async function logDose(actor:MemberActor,ports:CardPorts,v:{cardId:string
 /** Records a saved reading, with the flow's reply when it ran. */
 async function savedReading(actor:MemberActor,ports:CardPorts,card:ZoeCard,r:z.infer<typeof bpClaim>,submissionId:string,bp?:BpStep,weekOverride?:BpFlowContext['week']):Promise<CardResult>{
  const after=await ports.afterBp?.(actor.memberId,{submissionId,systolic:r.systolic,diastolic:r.diastolic,follows:{cardId:card.id,item:'bp'},...(card.valid&&card.kind==='repeat'&&card.snapshot.episodeId?{episodeId:card.snapshot.episodeId}:{}),...(card.valid&&(card.kind==='bp'||card.kind==='repeat')?{week:weekOverride===undefined?card.snapshot.week:weekOverride}:{})})??null;
- const entrySource=r.photoConfirmed?'patient_photo_confirmed':card.valid&&card.kind==='bp'&&card.snapshot.typed?.entrySource==='patient_voice_confirmed'?'patient_voice_confirmed':'patient_text_entry';
+ const voice=card.valid&&card.kind==='bp'?card.snapshot.typed?.entrySource:undefined;
+ const entrySource=r.photoConfirmed?'patient_photo_confirmed':voice==='patient_voice_confirmed'||voice==='patient_voice_live_confirmed'?voice:'patient_text_entry';
  const done=await record(actor,ports,card,'bp',{...r,entrySource,submissionId,...(bp?{bp}:{}),...(after?{flow:after.flow}:{})},true);
  return after?.next&&done.status==='ok'?{...done,next:after.next}:done;
 }

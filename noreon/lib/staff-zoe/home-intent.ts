@@ -1,6 +1,6 @@
 /** Bounded navigation/read commands. No model interprets a cohort predicate or writes a clinical answer. */
 export type DoctorCardKind='results'|'uploads'|'safety'|'tasks'|'consultation'|'gp'|'ldl'|'conversation'|'observations';
-type SimpleKind='alerts'|'today'|'dashboard'|'bp'|'overdue'|'missing_bp'|'unsupported';
+type SimpleKind='alerts'|'today'|'dashboard'|'bp'|'overdue'|'missing_bp'|'worklist'|'unsupported';
 /** Preparation opens the existing doctor card. Saving and publication still need its buttons. */
 export function prepareCarePlanIntent(raw:string):{query:string}|null{
  const q=raw.trim().replace(/[.!։]+$/u,'').replace(/[՞՜՛]/gu,'');
@@ -23,10 +23,14 @@ export function memberRecordIntent(raw:string):'plan'|'results'|'gp'|null{
  if(/^(?:care plan|plan|план|պլանը)$/iu.test(match[1]))return 'plan';
  return /report|отч[её]т|հաշվետվությունը/iu.test(match[1])?'gp':'results';
 }
+/** "Worklist", "show my worklist", "priority list" in en, hy and ru, whole message only. */
+export const WORKLIST=/^(?:(?:show|open)\s+)?(?:(?:my|the)\s+)?(?:worklist|work list|priority list|risk list)$|^(?:(?:ցույց տուր|բացիր|բացել)\s+)?(?:իմ\s+)?(?:աշխատանքային ցուցակ(?:ը)?|առաջնահերթությունների ցուցակ(?:ը)?)$|^(?:(?:покажи|открой|открыть)\s+)?(?:мой\s+)?(?:рабочий список|список приоритетов)$/iu;
 export function workspaceIntent(raw:string):WorkspaceIntent{
  const q=raw.trim();
  const record=memberRecordIntent(q);
  if(record&&record!=='plan')return {kind:'card',card:record,query:''};
+ // WP T: the prioritised worklist card. Opens a read; never a write.
+ if(WORKLIST.test(q.replace(/[?.!։]+$/u,'').trim()))return {kind:'worklist'};
  if(/^(?:(?:show|open) )?(?:alerts|ահազանգեր(?:ը)?|оповещения)$/iu.test(q)||/^(?:բացել ահազանգերը|открыть оповещения)$/iu.test(q))return {kind:'alerts'};
  const named=/^show\s+(.+?)['’]s\s+results$/iu.exec(q)??/^открыть результаты\s+(.+)$/iu.exec(q)??/^բացել\s+(.+?)(?:ի|ի՞) արդյունքները$/iu.exec(q);
  if(named)return {kind:'card',card:'results',query:named[1].trim()};

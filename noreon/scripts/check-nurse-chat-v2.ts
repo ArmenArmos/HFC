@@ -48,6 +48,7 @@ import * as visitParser from '@/lib/nurse-visit/chat-parser';
 import * as visitSchema from '@/lib/nurse-visit/schema';
 import type {NurseVisitCollectCommand,NurseVisitReady,NurseVisitMarkCommand,NurseVisitStepCommand,NurseVisitCompleteCommand} from '@/lib/nurse-visit/schema';
 import type {CoordinationTask,CoordinationCommand,CoordinationSnapshot} from '@/lib/staff/real-coordination/schema';
+import {realtimeStubs} from './realtime-test-stubs';
 
 // Execute the real route/action with isolated auth and IO, never a database.
 let flag:string|undefined,enabled=true,role='nurse',auth=0,searches=0;
@@ -97,6 +98,7 @@ for(const query of [{previous:'1'},{member:'id'},{view:'today'},{source:'appoint
 for(const env of [{},{NOREON_NURSE_CHAT:'true'},{NOREON_NURSE_CHAT_V2:'true'},{...on,NOREON_NURSE_CHAT_V2:'TRUE'},{...on,NOREON_NURSE_CHAT:'false'}])assert.equal(nurseChatNewScreen({},env),false,'Flag off restores today');
 
 const resolveFormModule=resolveTestModule();
+Object.assign(modules,await realtimeStubs());
 modules['@/components/staff/care-alert-resolve']=resolveFormModule;
 modules['./care-alert-resolve']=resolveFormModule;
 modules['./config']=modules['@/lib/nurse-chat/config'];
@@ -292,6 +294,7 @@ modules['@/lib/staff-zoe/response-copy']=staffZoeCopy;
 modules['@/lib/staff-zoe/stream']=staffZoeStream;
 modules['@/lib/nurse-chat/zoe-events']=load('lib/nurse-chat/zoe-events.ts');
 modules['@/lib/nurse-chat/intent']=load('lib/nurse-chat/intent.ts');
+modules['@/components/staff/clinical-review-cards']={WorklistCard:()=>null};
 modules['@/lib/nurse-chat/draft-intent']=load('lib/nurse-chat/draft-intent.ts');
 modules['@/lib/nurse-chat/handoff-draft']=load('lib/nurse-chat/handoff-draft.ts');
 let missingBpResult:unknown={kind:'unavailable'},missingBpCalls=0;

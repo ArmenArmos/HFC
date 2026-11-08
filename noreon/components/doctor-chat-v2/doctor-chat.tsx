@@ -1,7 +1,7 @@
 'use client';
-import {ConversationToggle,useConversation} from '@/components/chat-v2/conversation';
+import {ConversationToggle,useConversation,VoiceMicrophone} from '@/components/chat-v2/conversation';
 import {renderedStaffReply,staffConversationReply} from '@/components/staff/voice-reply';
-import {useEffect,useLayoutEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import type {Route} from 'next';
 import {ArrowUp} from 'lucide-react';
@@ -25,9 +25,13 @@ import {PatientsCard} from './patients-card';
 import {PanelGraphs} from './panel-graphs';
 import {OpenPatientChatChoice} from './open-patient-chat-choice';
 import {noreonName} from '@/lib/brand';
-type Message=ThreadMessage|{id:string;kind:'open-chat';rows:({id:string;name:string}&Partial<ChatMemberIdentity>)[];locale:StaffLocale};
+import {WorklistCard} from '@/components/staff/clinical-review-cards';
+import {useRealtimeSignals,useSignalNotices} from '@/components/realtime/use-realtime-signals';
+import {SignalNotices} from '@/components/realtime/signal-notices';
+import {liveDue} from '@/lib/realtime/contracts';
+type Message=ThreadMessage|{id:string;kind:'open-chat';rows:({id:string;name:string}&Partial<ChatMemberIdentity>)[];locale:StaffLocale}|{id:string;kind:'worklist';locale:StaffLocale};
 /** General Zoe owns only portfolio work. Every member control leaves this thread. */
-export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable=false}:{voiceAvailable?:boolean;resultsReport?:boolean;telegram?:{connected:boolean}|null;locale:StaffLocale;doctorId:string;doctorName:string}){
+export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable=false,worklist=false,voiceLive=false}:{voiceAvailable?:boolean;voiceLive?:boolean;resultsReport?:boolean;telegram?:{connected:boolean}|null;locale:StaffLocale;doctorId:string;doctorName:string;worklist?:boolean}){
  const router=useRouter();
  const navigateMember=(memberId:string)=>router.push(`/staff/real/doctor-chat-v2/patient/${memberId}` as Route);
  const [l,setLocale]=useState(locale),[menu,setMenu]=useState(false),[text,setText]=useState('');
@@ -50,6 +54,14 @@ export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable
   const read=summaryRead.current??=readDoctorChatPanel(doctorId,'summary');
   try{return await read;}finally{if(summaryRead.current===read)summaryRead.current=null;}
  }
+ // WP R: a signal (ids only) re-reads the portfolio now; the 60 s poll stays as the fallback and slows while the socket is healthy.
+ const pollNow=useRef<()=>void>(()=>{});
+ const {notices,push:pushNotice,dismiss}=useSignalNotices();
+ const realtime=useRealtimeSignals({plane:'staff',onSignal:useCallback((kind:string,ref:string|null)=>{
+  if(kind==='care_alert'||kind==='staff_notice'||kind==='staff_thread'||kind==='worklist')pollNow.current();
+  if(kind==='care_alert'||kind==='staff_notice'||(kind==='worklist'&&worklist))pushNotice(kind,ref);
+ },[pushNotice,worklist]),onResync:useCallback(()=>pollNow.current(),[])});
+ const liveHealthy=realtime.healthyRef;
  useEffect(()=>{
   mounted.current=true;let active=true,running=false,failed=false;
   async function poll(){
@@ -80,9 +92,11 @@ export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable
    }catch{if(active&&!failed){failed=true;setMessages(previous=>[...previous,{id:next(),kind:'reply',reply:{kind:'poll-failed'}}]);}}
    finally{running=false;}
   }
-  void poll();const timer=setInterval(()=>void poll(),60_000);
+  let last=Date.now();
+  void poll();const timer=setInterval(()=>{if(liveDue(last,Date.now(),60_000,liveHealthy.current)){last=Date.now();void poll();}},60_000);
+  pollNow.current=()=>{last=Date.now();void poll();};
   const visible=()=>{if(!document.hidden)void poll();};document.addEventListener('visibilitychange',visible);
-  return()=>{active=false;mounted.current=false;clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
+  return()=>{active=false;mounted.current=false;clearInterval(timer);pollNow.current=()=>{};document.removeEventListener('visibilitychange',visible);};
  // The summary promise is shared across React's mount-effect replay.
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[doctorId]);
@@ -101,6 +115,7 @@ export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable
   setMessages(previous=>[...previous,{id:next(),kind:'doctor',text:value},{id,kind:'reply',reply:{kind:'loading-search'}}]);
   try{
    if(talk){replace(id,{kind:'small-talk',lines:smallTalkLines(talk,'doctor',language)});return;}
+   if(intent.kind==='worklist'){setMessages(previous=>previous.map(m=>m.id===id?{id,kind:'worklist',locale:language}:m));return;}
    const boundary=typedBoundary(value);
    const who=intent.kind==='today'||['who needs me','ո՞ւմ է պետք իմ օգնությունը','кому нужна моя помощь'].includes(value.toLowerCase().replace(/\?$/u,''));
    if(who||intent.kind==='alerts'){
@@ -143,23 +158,28 @@ export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable
   finally{locked.current=false;if(mounted.current)setBusy(false);}
  }
  const voiceReply=staffConversationReply(messages,voiceTurn);
- const voiceConversation=useConversation({enabled:voiceAvailable,disabled:menu,locale:l,audience:'staff',contextKey:doctorId,urgentKey:null,
+ const voiceConversation=useConversation({enabled:voiceAvailable,live:voiceLive,streamSpeech:true,disabled:menu,locale:l,audience:'staff',contextKey:doctorId,urgentKey:null,
   onTranscript:result=>setText(result.text),onSend:()=>{void send();},
   reply:voiceReply?{key:voiceReply,text:()=>renderedStaffReply(contentRef.current,voiceReply),locale:replyLanguages.get(voiceReply)??l}:null});
  const initials=doctorName.trim().split(/\s+/u).slice(0,2).map(part=>part[0]).join('');
  return <main className="cv2-root" lang={l} data-doctor-chat-v2>
   <header className="cv2-header"><h1><i className="cv2-orb" aria-hidden/>{noreonName(l)}</h1><button type="button" className="cv2-avatar" onClick={()=>setMenu(true)} aria-label={t('Open menu','Բացել ընտրացանկը','Открыть меню')}><span>{initials||'N'}</span></button></header>
   <section ref={threadRef} className="cv2-thread" role="log" aria-live="polite" aria-label={t('Your work chat','Ձեր աշխատանքային զրույցը','Ваш рабочий чат')} tabIndex={0} data-zoe-thread><div ref={contentRef} className="cv2-messages">
-   <article className="cv2-msg cv2-zoe"><p className="cv2-say">{t(`Hello, ${doctorName}. Who needs you today?`,`Բարև, ${doctorName}։ Ո՞ւմ է այսօր պետք ձեր օգնությունը։`,`Здравствуйте, ${doctorName}. Кому сегодня нужна ваша помощь?`)}</p><div className="dcv2-patient-chips">{[t('Who needs me','Ո՞ւմ է պետք իմ օգնությունը','Кому нужна моя помощь'),t('Alerts','Ահազանգեր','Оповещения')].map(label=><button type="button" className="dcv2-choice" key={label} disabled={busy} onClick={()=>void send(label)}>{label}</button>)}<button type="button" className="dcv2-choice" disabled={busy} onClick={()=>{setFindHint(true);input.current?.focus();}}>{t('Find a member','Գտնել անդամին','Найти участника')}</button><button type="button" className="dcv2-choice" disabled={busy} onClick={()=>void showPatients()}>{t('Patients','Անդամներ','Участники')}</button></div></article>
+   <SignalNotices notices={notices} locale={l} onDismiss={dismiss} actions={{
+    care_alert:()=>void send(t('Alerts','Ահազանգեր','Оповещения')),
+    staff_notice:()=>void send(t('Alerts','Ահազանգեր','Оповещения')),
+    ...(worklist?{worklist:()=>{setMessages(previous=>[...previous,{id:next(),kind:'worklist',locale:l}]);newest();}}:{}),
+   }}/>
+   <article className="cv2-msg cv2-zoe"><p className="cv2-say">{t(`Hello, ${doctorName}. Who needs you today?`,`Բարև, ${doctorName}։ Ո՞ւմ է այսօր պետք ձեր օգնությունը։`,`Здравствуйте, ${doctorName}. Кому сегодня нужна ваша помощь?`)}</p><div className="dcv2-patient-chips">{[t('Who needs me','Ո՞ւմ է պետք իմ օգնությունը','Кому нужна моя помощь'),t('Alerts','Ահազանգեր','Оповещения')].map(label=><button type="button" className="dcv2-choice" key={label} disabled={busy} onClick={()=>void send(label)}>{label}</button>)}<button type="button" className="dcv2-choice" disabled={busy} onClick={()=>{setFindHint(true);input.current?.focus();}}>{t('Find a member','Գտնել անդամին','Найти участника')}</button><button type="button" className="dcv2-choice" disabled={busy} onClick={()=>void showPatients()}>{t('Patients','Անդամներ','Участники')}</button>{worklist&&<button type="button" className="dcv2-choice" disabled={busy} data-worklist-chip onClick={()=>void send(t('Worklist','Աշխատանքային ցուցակ','Рабочий список'))}>{t('Worklist','Աշխատանքային ցուցակ','Рабочий список')}</button>}</div></article>
    {messages.map(message=><article key={message.id} data-message-key={message.id} className={`cv2-msg ${message.kind==='doctor'?'cv2-me':'cv2-zoe'}`}>
-    {message.kind==='doctor'?<p className="cv2-say">{message.text}</p>:message.kind==='open-chat'?<OpenPatientChatChoice rows={message.rows} locale={message.locale} onOpen={navigateMember} busy={busy}/>:<DoctorReply doctorId={doctorId} reply={message.reply} locale={replyLanguages.get(message.id)??l} busy={busy} onChoose={row=>navigateMember(row.id)} onWho={()=>void send(t('Who needs me','Ո՞ւմ է պետք իմ օգնությունը','Кому нужна моя помощь'))} onOpen={navigateMember} onLab={(memberId,fileId)=>router.push(`/staff/real/doctor-chat-v2/patient/${memberId}?lab=${fileId}` as Route)} onUpload={navigateMember} onPlan={navigateMember} onResults={navigateMember}/>}
+    {message.kind==='doctor'?<p className="cv2-say">{message.text}</p>:message.kind==='worklist'?<WorklistCard locale={message.locale} variant="doctor" disabled={busy} onOpen={id=>navigateMember(id)}/>:message.kind==='open-chat'?<OpenPatientChatChoice rows={message.rows} locale={message.locale} onOpen={navigateMember} busy={busy}/>:<DoctorReply doctorId={doctorId} reply={message.reply} locale={replyLanguages.get(message.id)??l} busy={busy} onChoose={row=>navigateMember(row.id)} onWho={()=>void send(t('Who needs me','Ո՞ւմ է պետք իմ օգնությունը','Кому нужна моя помощь'))} onOpen={navigateMember} onLab={(memberId,fileId)=>router.push(`/staff/real/doctor-chat-v2/patient/${memberId}?lab=${fileId}` as Route)} onUpload={navigateMember} onPlan={navigateMember} onResults={navigateMember}/>}
    </article>)}
    {panelState==='loading'&&<p role="status">{t('Loading your members…','Ձեր անդամները բեռնվում են…','Загрузка ваших участников…')}</p>}
    {panelState==='failed'&&<div role="alert"><p>{t('Your panel could not be read. Try again.','Չհաջողվեց կարդալ ձեր անդամների խումբը։ Փորձեք կրկին։','Не удалось загрузить ваших участников. Попробуйте ещё раз.')}</p><button type="button" className="dcv2-choice" onClick={()=>void showPatients()}>{t('Try again','Փորձել կրկին','Попробовать ещё раз')}</button></div>}
    {panelState==='ready'&&panel&&<article className="cv2-msg cv2-zoe dcv2-panel"><PanelGraphs graphs={panel.graphs} locale={l} onSelect={ids=>{setMemberIds([...ids]);newest();}}/><PatientsCard rosterComplete={panel.rosterComplete} rows={panel.rows} locale={l} asOf={panel.asOf} memberIds={memberIds} onClearFilter={()=>setMemberIds(null)} onOpen={navigateMember}/></article>}
   </div></section>
   {unread&&<button type="button" className="cv2-new" onClick={newest}>{t('New message','Նոր հաղորդագրություն','Новое сообщение')}</button>}
-  <footer className="cv2-bottom">{findHint&&<p id="doctor-member-search-hint" className="dcv2-find-hint">{searchHint}</p>}<form className="cv2-composer dcv2-ask-composer" onSubmit={event=>{event.preventDefault();void send();}}><textarea ref={input} rows={1} autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={1000} value={text} onPointerDown={()=>voiceConversation.edit()} onChange={event=>{voiceConversation.edit();setText(event.target.value);}} aria-label={t('Your message','Ձեր հաղորդագրությունը','Ваше сообщение')} aria-describedby={findHint?'doctor-member-search-hint':undefined} placeholder={searchHint} onKeyDown={event=>{if(event.key!=='Enter'||event.shiftKey||event.nativeEvent.isComposing||event.keyCode===229)return;if(!(event.metaKey||event.ctrlKey)&&window.matchMedia('(pointer: coarse)').matches)return;event.preventDefault();void send();}}/>{voiceAvailable&&<ConversationToggle locale={l} conversation={voiceConversation} disabled={menu||busy||(!voiceConversation.active&&!!text.trim())}/>}<button type="submit" disabled={busy||!text.trim()} aria-label={t('Send','Ուղարկել','Отправить')} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}><ArrowUp size={18} strokeWidth={2.4} aria-hidden/></button></form></footer>
+  <footer className="cv2-bottom">{findHint&&<p id="doctor-member-search-hint" className="dcv2-find-hint">{searchHint}</p>}<form className="cv2-composer dcv2-ask-composer" onSubmit={event=>{event.preventDefault();void send();}}><textarea ref={input} rows={1} autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={1000} value={text} onPointerDown={()=>voiceConversation.edit()} onChange={event=>{voiceConversation.edit();setText(event.target.value);}} aria-label={t('Your message','Ձեր հաղորդագրությունը','Ваше сообщение')} aria-describedby={findHint?'doctor-member-search-hint':undefined} placeholder={searchHint} onKeyDown={event=>{if(event.key!=='Enter'||event.shiftKey||event.nativeEvent.isComposing||event.keyCode===229)return;if(!(event.metaKey||event.ctrlKey)&&window.matchMedia('(pointer: coarse)').matches)return;event.preventDefault();void send();}}/>{voiceAvailable&&<VoiceMicrophone locale={l} endpoint="/api/staff/zoe/voice" onBusy={()=>{}} disabled={menu||voiceConversation.active} onTranscript={value=>setText(current=>current.trim()?`${current} ${value}`:value)}/>}{voiceAvailable&&<ConversationToggle locale={l} conversation={voiceConversation} disabled={menu||busy||(!voiceConversation.active&&!!text.trim())}/>}<button type="submit" disabled={busy||!text.trim()} aria-label={t('Send','Ուղարկել','Отправить')} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}><ArrowUp size={18} strokeWidth={2.4} aria-hidden/></button></form></footer>
   {menu&&<StaffChatMenu locale={l} onLocale={setLocale} onClose={()=>setMenu(false)} oldWorkspace="/staff/real/doctor-workspace/classic"><button type="button" disabled={busy} onClick={()=>{setMenu(false);void showPatients();}}>{t('Patients','Անդամներ','Участники')}</button>{telegramState&&<DoctorTelegramMenu locale={l} connected={telegramState.connected} onConnectionChange={connected=>setTelegramState({connected})}/>}</StaffChatMenu>}
  </main>;
 }

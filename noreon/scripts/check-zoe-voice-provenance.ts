@@ -25,7 +25,7 @@ const server=load('lib/zoe-chat-actions/server.ts',{...unused,
  '@/lib/supabase/server':{createClient:async()=>client},
  '@/lib/zoe/app-chat':{readZoeThread:async()=>thread},
  './typed-reading':{typedReading},'zod':zod,
- './voice-receipt':{verifyVoiceReceipt:(r:unknown,m:string,t:string,at:number)=>voiceReceipt.verifyVoiceReceipt(r,m,t,at,secret)},
+ './voice-receipt':{verifyVoiceReceipt:(r:unknown,m:string,t:string,at:number)=>voiceReceipt.verifyVoiceReceipt(r,m,t,at,secret),verifyLiveMarker:(r:unknown,m:string,t:string,at:number)=>voiceReceipt.verifyLiveMarker(r,m,t,at,secret)},
 });
 const typedFromMessage=server.typedFromMessage as (seq:number,forged?:boolean)=>Promise<{typed?:{entrySource?:string}}>;
 assert.equal((await typedFromMessage(1,true)).typed?.entrySource,undefined,'Client voiceConfirmed cannot label a stored typed message, including with provider off');
@@ -57,7 +57,7 @@ const store=load('lib/zoe-chat-actions/voice-message.ts',{
  '@/lib/zoe/app-chat-contracts':appContracts,
  '@/lib/conversation-persistence/contracts':contracts,
  './actor':{sessionActor:async()=>({memberId})},
- './voice-receipt':{verifyVoiceReceipt:(r:unknown,m:string,t:string)=>voiceReceipt.verifyVoiceReceipt(r,m,t,now,secret)},
+ './voice-receipt':{verifyVoiceReceipt:(r:unknown,m:string,t:string)=>voiceReceipt.verifyVoiceReceipt(r,m,t,now,secret),signLiveMarker:(m:string,t:string)=>voiceReceipt.signLiveMarker(m,t,secret,now)},
 });
 const sendModule=load('app/patient/zoe/chat-actions.ts',{
  '@/lib/observability/with-logging':{loggedAction:(_name:string,fn:unknown)=>fn},

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { ShieldCheck } from "lucide-react";
 import { SignInEnded } from "@/components/patient/sign-in-ended";
 import { setConsentFromCard } from "@/lib/consents/actions";
@@ -25,6 +25,12 @@ function ConsentRowView({ card, kind, current, locale: l, onCard, onAct }: Props
   const [opId] = useState(() => crypto.randomUUID());
   const sending = useRef(false);
   const [title, ...lines] = consentLines(kind, l);
+  // WP V: while a decision waits for its confirmation, a spoken yes may confirm exactly this choice (the server binds it to the card).
+  useEffect(() => {
+    if (pending === null) return;
+    window.dispatchEvent(new CustomEvent("cv2-voice-pending", { detail: { cardId: card.id, action: { kind: "consent", consent: kind, granted: pending, locale: l } } }));
+    return () => { window.dispatchEvent(new CustomEvent("cv2-voice-pending-clear", { detail: { cardId: card.id } })); };
+  }, [pending, card.id, kind, l]);
   const confirm = () => {
     if (pending === null || sending.current) return;
     sending.current = true; onAct(card.id, true);
@@ -60,6 +66,7 @@ function ConsentRowView({ card, kind, current, locale: l, onCard, onAct }: Props
     {!decided && pending !== null && <div className="cv2-block">
       <button type="button" className="cv2-reading-save" disabled={busy} aria-busy={busy} onClick={confirm}>{say(l, pending ? CONSENTS.confirmGrant : CONSENTS.confirmWithdraw)}</button>
       <button type="button" className="cv2-link" disabled={busy} onClick={() => setPending(null)}>{say(l, CONSENTS.cancel)}</button>
+      <p className="cv2-voice-hint">{say(l, { en: "Say yes to save", hy: "Ասեք «այո»՝ պահպանելու համար", ru: "Скажите «да», чтобы сохранить" })}</p>
     </div>}
     {problem === "signed_out" ? <SignInEnded locale={l} /> : problem && <p role="alert">{problem}</p>}
   </li>;

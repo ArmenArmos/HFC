@@ -46,7 +46,8 @@ import { Anamnesis, type QuestionnaireTurn } from "./anamnesis";
 import { ReadingCard, SavedReading } from "./reading-card";
 import { ContextStripView, FlagsTurn, RedFlagCard } from "./bp-flow-cards";
 import { ProfileCard, SavedProfileTurn } from "./profile-card";
-import { CaregiverCard, CaregiverInvitations, ConsentsCard } from "./member-settings-cards";
+import { CaregiverCard, CaregiverInvitations, ConsentsCard, VoiceAccountCard } from "./member-settings-cards";
+import type { VoicePendingState, VoiceTurn, VoiceTurnOutcome } from "./voice-turn";
 import type { CaregiverInvitation } from "@/lib/caregivers/schema";
 import { MedicinesCard, SavedMedicinesTurn } from "./medicines-card";
 import { PlanCard, ConfirmedPlanTurn } from "./plan-card";
@@ -59,6 +60,8 @@ import { Microphone } from "./microphone";
 import { Speaker, VoicePlayback } from "./speaker";
 import { useNoticeSeen } from "./use-notice-seen";
 import { ConversationToggle, useConversation } from "./conversation";
+import { OfflineBanner } from "./offline-banner";
+import { offlineText } from "@/lib/offline/copy";
 
 export type MemberChatNextStep = { stage: JourneyStage | null; text: Record<Locale, string>; href: string | null };
 type Props = {
@@ -66,7 +69,8 @@ type Props = {
   /** NO_CARDS (the default) means no card is read, polled, opened or drawn. */
   cards?: ZoeCards;
   /** Server capability only; absent with V3 off. */
-  voice?: {microphone:boolean;conversation?:boolean};
+  /** live: Gemini Live streaming transcription is available (WP V); stream: speak replies through the streaming speech route. */
+  voice?: {microphone:boolean;conversation?:boolean;live?:boolean;stream?:boolean};
   /** V3 only. profileRequest: the card to offer after consent, when one is still due. Undefined means none of the new blocks. */
   onboarding?: { profileRequest: string | null };
   assessment?: AssessmentDraft; emergencyCard?: boolean;
@@ -95,7 +99,7 @@ const SHOWN = (card: ZoeCard, v3: boolean) => SHOWN_KINDS.has(card.kind) || (v3 
 const stamp = (at: string, locale: PatientLocale) => formatMemberDate(at, locale, { timeZone: "Asia/Yerevan", hour: "2-digit", minute: "2-digit" });
 
 /** The payload identity is retained by the hook on unchanged polls, so this list does not render. */
-const Messages = memo(function Messages({ entries, whole = entries, locale: l, emergencies, messages, tasks, focusCard, canFocus, onCard, onAct, offerMedicines, onQuestions, onPlan, onMessage, stepsDisabled = false, journeyEnabled = false, bpPhoto = false }: {
+const Messages = memo(function Messages({ voiceRequests, entries, whole = entries, locale: l, emergencies, messages, tasks, focusCard, canFocus, onCard, onAct, offerMedicines, onQuestions, onPlan, onMessage, stepsDisabled = false, journeyEnabled = false, bpPhoto = false }: {
   bpPhoto?: boolean;
   journeyEnabled?: boolean;
   stepsDisabled?: boolean;
@@ -108,6 +112,8 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
   onQuestions: () => void;
   onPlan: () => void;
   onMessage: () => void;
+  /** WP V: account (reminders) cards a spoken request opened, with what was asked; only these account cards are shown. */
+  voiceRequests?: Record<string, { time: string; target: "bp" | "medicine" } | null>;
   locale: PatientLocale; emergencies: Record<string, { request: string | null; text: string; toDoctor: boolean; status?: CareAlertZoeStatus }>; messages: ZoeThread["messages"]; tasks?: ZoeCards["tasks"];
 }) {
   return entries.map(entry => {
@@ -186,6 +192,7 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
       // A newer card replaces an unsaved one, so the thread shows one form unless this one holds the member's numbers. A later
       // action replaces only an empty form: numbers from the member's own message still wait to be saved.
       if (entry.card.kind === "red_flags") return <RedFlagCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct} />;
+      if (entry.card.kind === "account") return entry.card.id in (voiceRequests ?? {}) ? <VoiceAccountCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} requested={voiceRequests?.[entry.card.id] ?? null} /> : null;
       if (entry.card.kind !== "bp" && entry.card.kind !== "repeat") return null;
       const later = (other: DialogEntry) => other.type !== "item" && (other.card.kind === entry.card.kind || (entry.card.kind === "repeat" && other.card.kind === "bp")) && Date.parse(other.type === "turn" ? other.at : other.card.at) > Date.parse(entry.card.at);
       const { typed } = entry.card.snapshot as { typed?: unknown };
@@ -242,7 +249,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
   const fillOpenQuestion = useCallback((text: string) => fillQuestion.current?.(text) ?? false, []);
   // WP F: the member settings cards the server switched on (the menu opens them; an offer names only these).
   const settingsKinds = useMemo<CardKind[]>(() => [...(settings?.caregivers ? ["caregiver" as const] : []), ...(settings?.consents ? ["consents" as const] : [])], [settings?.caregivers, settings?.consents]);
-  const state = useZoeThread<HTMLTextAreaElement>({ initial: initial ?? empty, emergencyCheck, cards: initialCards, bpOnly: true, onboarding: !!onboarding, fillOpenQuestion, settingsKinds });
+  const state = useZoeThread<HTMLTextAreaElement>({ initial: initial ?? empty, emergencyCheck, cards: initialCards, bpOnly: true, onboarding: !!onboarding, fillOpenQuestion, settingsKinds, realtime: !!initial, offline: !!initial });
   const { items, thread, emergencies: threadEmergencies, shown, input, text, setText, notice, setNotice, submit, deliver, cards, setCards, focusCard, focusVersion, opening, openCard, offer } = state;
   // A yes on a safety card opens 103 from the card's saved outcome, the same card a typed urgent message gets, under the member's message.
   const emergencies = useMemo(() => ({ ...threadEmergencies, ...Object.fromEntries(cards.cards.flatMap(card => {
@@ -255,13 +262,18 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
     ?cards.nextStepStatus==='unavailable'?{stage:null,text:NEXT_STEP.unavailable,href:null}:stage?{stage,text:STAGE_CLASSES[stage],href:null}:nextStep
     :nextStep;
   const showAnamnesis = !!assessment && (!consent || consentResolved || !!firesEmergency({ answers: assessment.answers, observations: [] }));
+  // WP V: account cards a spoken request opened (reminders), with what was asked, and the card waiting for a spoken yes.
+  const [voiceRequests, setVoiceRequests] = useState<Record<string, { time: string; target: "bp" | "medicine" } | null>>({});
+  const [voicePending, setVoicePending] = useState<VoicePendingState>(null);
+  const voiceTurn = useRef<VoiceTurn | null>(null);
+  const shownCard = useCallback((card: ZoeCard) => SHOWN(card, !!onboarding) || (card.kind === "account" && card.id in voiceRequests), [onboarding, voiceRequests]);
   const visibleEntries = useMemo(() => {
-    const bp = cards.cards.filter(card=>SHOWN(card,!!onboarding));
+    const bp = cards.cards.filter(shownCard);
     // Only a reading card opens here, so only that request has its card as the answer. Any other request keeps Zoe's reply.
     const opened = new Set([...bp.filter(card => card.kind === "bp").map(card => card.sourceSeq), offer?.kind === "bp" ? offer.seq : null, opening?.kind === "bp" ? opening.seq : null]);
     opened.delete(null);
-    return dialogThread(withoutCardReplies(items, opened as Set<number>), cards.cards.filter(card=>SHOWN(card,!!onboarding)),!!onboarding);
-  }, [items, cards.cards, offer, opening, onboarding]);
+    return dialogThread(withoutCardReplies(items, opened as Set<number>), cards.cards.filter(shownCard),!!onboarding);
+  }, [items, cards.cards, offer, opening, onboarding, shownCard]);
   const onCard = useCallback((card: ZoeCard) => setCards(on => upsertCard(on, card)), [setCards]);
   // The member just acted here, so the chat goes to the action, from any block and even when its reply was lost. An action on another device moves no one.
   const acting = useRef(new Set<string>());
@@ -269,7 +281,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
   const keyboardOpen = useChatViewport(true);
   // Right after a finished action, offering another would answer nothing the member said.
   const justActed = visibleEntries.filter(entry => entry.type !== "item" || entry.item.kind !== "pending").at(-1)?.type === "turn";
-  const tail = `${items.map(item => item.key + ("text" in item ? item.text : "")).join("|")}:${shown.map(p => `${p.requestId}:${p.state}`).join("|")}:${Object.keys(emergencies).join("|")}:${cards.cards.filter(card=>SHOWN(card,!!onboarding)).map(c => `${c.id}:${c.state}:${Object.keys(c.outcome).join(",")}`).join("|")}`;
+  const tail = `${items.map(item => item.key + ("text" in item ? item.text : "")).join("|")}:${shown.map(p => `${p.requestId}:${p.state}`).join("|")}:${Object.keys(emergencies).join("|")}:${cards.cards.filter(shownCard).map(c => `${c.id}:${c.state}:${Object.keys(c.outcome).join(",")}`).join("|")}`;
   // Only target an authenticated notice already present in this member's thread.
   const [requestedNotice] = useState(() => typeof window === "undefined" ? null : /[?&]notice=([0-9a-f-]{36})(?:&|$)/i.exec(window.location.search)?.[1] ?? null);
   const targetNotice = thread.notices?.some(item => item.id === requestedNotice) ? requestedNotice : thread.firstUnseenNotice;
@@ -309,7 +321,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
     let latest = "";
     const inOrder = (at: string) => { const iso = new Date(at).toISOString(); latest = iso > latest ? iso : latest; return latest; };
     for (const entry of visibleEntries) {
-      const node = <Messages onMessage={onMessage} bpPhoto={bpPhoto} onPlan={onPlan} journeyEnabled={!!onboarding} stepsDisabled={cards.nextStepStatus==='unavailable'||!!openFlags(cards.cards)} entries={[entry]} whole={visibleEntries} focusCard={focusCard} canFocus={isFollowing} onCard={onCard} onAct={onAct} onQuestions={onQuestions} locale={l} emergencies={emergencies} messages={thread.messages} tasks={cards.tasks} offerMedicines={offerMedicines} />;
+      const node = <Messages voiceRequests={voiceRequests} onMessage={onMessage} bpPhoto={bpPhoto} onPlan={onPlan} journeyEnabled={!!onboarding} stepsDisabled={cards.nextStepStatus==='unavailable'||!!openFlags(cards.cards)} entries={[entry]} whole={visibleEntries} focusCard={focusCard} canFocus={isFollowing} onCard={onCard} onAct={onAct} onQuestions={onQuestions} locale={l} emergencies={emergencies} messages={thread.messages} tasks={cards.tasks} offerMedicines={offerMedicines} />;
       if (entry.type === "item") {
         const { item } = entry;
         const at = "at" in item ? item.at : turns.at(-1)?.at ?? "";
@@ -321,7 +333,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
       else turns.push({ key: `card-${entry.card.id}`, at: inOrder(entry.card.at), form: entry.card.state === "open", node });
     }
     return turns;
-  }, [visibleEntries, focusCard, isFollowing, onCard, onAct, onQuestions, onPlan, onMessage, offerMedicines, l, emergencies, thread.messages, cards.tasks, cards.nextStepStatus, cards.cards, onboarding,bpPhoto]);
+  }, [visibleEntries, focusCard, isFollowing, onCard, onAct, onQuestions, onPlan, onMessage, offerMedicines, l, emergencies, thread.messages, cards.tasks, cards.nextStepStatus, cards.cards, onboarding,bpPhoto, voiceRequests]);
   useNoticeSeen(threadRef, thread.notices);
   useLayoutEffect(() => {
     const landed = cards.cards.filter(card => acting.current.has(card.id) && cardTurns(card,!!onboarding).length);
@@ -336,18 +348,58 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
   const latestAnswer = (thread.answers ?? []).at(-1);
   const urgentKey = Object.keys(emergencies).sort().join("|") || (assessment && firesEmergency({answers:assessment.answers,observations:[]}) ? "assessment" : null);
   const conversation = useConversation({enabled:!!voice?.conversation,disabled:!initial || locked || menu || voiceBusy || !consentClear,locale:l,
-    onTranscript:result=>state.setVoiceText(result.text,result.receipt,result.urgent),onSend:()=>{newest();submit();},
+    live:!!voice?.live,streamSpeech:!!voice?.stream,
+    onTranscript:result=>{
+      // A Live turn has no server receipt: its send asks the server for a Live marker instead ("live").
+      const live="origin" in result&&result.origin==="live";
+      voiceTurn.current={text:result.text.trim(),origin:live?"live":"batch",urgent:!!result.urgent,...(!live&&result.receipt?{receipt:result.receipt}:{})};
+      state.setVoiceText(result.text,live?"live":result.receipt,result.urgent);
+    },onSend:()=>{void voiceSend();},
     reply:latestAnswer?{key:latestAnswer.id,text:latestAnswer.text}:null,urgentKey,
     failureKey:[...shown.filter(p=>p.state==='failed').map(p=>p.requestId),notice&&!['empty','doctor_sent'].includes(notice)?notice:''].filter(Boolean).join('|')||null});
-  const send = (via?: "enter") => { if (locked || voiceBusy) return; if(text.trim())conversation.sent(); newest(); submit(via); };
+  // WP V: a finished voice turn may be a spoken yes to the pending card, or open a card; otherwise it is the ordinary send.
+  // An urgent turn never waits for this: it goes straight to the ordinary send, which is the urgent path.
+  const voiceSend = async (via?: "enter") => {
+    const turn = voiceTurn.current; voiceTurn.current = null;
+    if (!turn || turn.urgent || turn.text !== text.trim()) { newest(); submit(via); return; }
+    let outcome: VoiceTurnOutcome = { kind: "send" };
+    try { const { handleVoiceTurn } = await import("./voice-turn"); outcome = await handleVoiceTurn(turn, l, voicePending); } catch { outcome = { kind: "send" }; }
+    if (outcome.kind === "send") { newest(); submit(via); return; }
+    setText("");
+    for (const card of outcome.cards) onCard(card);
+    const pending = outcome.pending;
+    if (pending !== "keep") setVoicePending(pending);
+    const account = outcome.cards.find(card => card.kind === "account");
+    if (account) setVoiceRequests(current => ({ ...current, [account.id]: pending !== "keep" && pending?.action.kind === "reminders" ? { time: pending.action.time, target: pending.action.target } : null }));
+    newest();
+    conversation.say(outcome.speak);
+    if (outcome.href) window.location.assign(outcome.href);
+  };
+  // WP V: a card that waits for an explicit confirmation (consents, caregiver) announces its pending choice, so a spoken
+  // yes confirms exactly that choice; the server issues the nonce bound to the card and its revision.
+  useEffect(() => {
+    if (!voice) return;
+    let latest = 0;
+    const pending = (event: Event) => {
+      const detail = (event as CustomEvent<{ cardId: string; action: import("@/lib/zoe-chat-actions/voice-card").VoicePending }>).detail;
+      if (!detail?.cardId) return;
+      const ticket = ++latest;
+      void import("./voice-turn").then(m => m.pendingFor(detail.cardId, detail.action)).then(next => { if (ticket === latest) setVoicePending(next); }, () => {});
+    };
+    const clear = (event: Event) => { const id = (event as CustomEvent<{ cardId: string }>).detail?.cardId; latest++; setVoicePending(current => current && (!id || current.cardId === id) ? null : current); };
+    window.addEventListener("cv2-voice-pending", pending); window.addEventListener("cv2-voice-pending-clear", clear);
+    return () => { window.removeEventListener("cv2-voice-pending", pending); window.removeEventListener("cv2-voice-pending-clear", clear); };
+  }, [voice]);
+  const send = (via?: "enter") => { if (locked || voiceBusy) return; if(text.trim())conversation.sent(); void voiceSend(via); };
   const initials = memberName.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("");
-  return <VoicePlayback enabled={!!voice} locale={l}><main className="cv2-root" lang={l} data-chat-v2>
+  return <VoicePlayback enabled={!!voice} locale={l}><main className="cv2-root" lang={l} data-chat-v2 data-voice-confirm={voice?.microphone || voice?.conversation ? "on" : undefined}>
     <header className="cv2-header">
       <h1><i className="cv2-orb" aria-hidden />{noreonName(l)}</h1>
       <Call103 size="pill" className="cv2-help" label={tx(l, "Զանգահարել 103", "Call 103", "Позвонить 103")}><Phone size={14} aria-hidden />103</Call103>
       <button type="button" className="cv2-avatar" onClick={() => setMenu(true)} aria-label={tx(l, "Բացել մենյուն", "Open menu", "Открыть меню")}><span>{initials || "N"}</span></button>
     </header>
     <div className="cv2-greet"><h2>{zoeName(l)}</h2><p>{tx(l, "ԱԲ օգնական, ոչ բժիշկ", "AI assistant, not a doctor", "ИИ-помощник, не врач")}</p></div>
+    {initial && <OfflineBanner locale={l} queued={state.queuedCount} onCard={onCard} />}
     <section className="cv2-thread" ref={threadRef} role="log" aria-live="polite" aria-relevant="additions" aria-label={tx(l, "Զրույց Զոյայի հետ", "Conversation with Zoe", "Переписка с Зоей")} data-zoe-thread tabIndex={0}>
       <div className="cv2-messages" ref={contentRef}>
         <CaregiverInvitations invitations={caregiverInvitations} locale={l} />
@@ -357,7 +409,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
         {assessment && showAnamnesis && <Anamnesis key={assessment.id} initial={assessment} locale={l} emergencyCard={emergencyCard} onTurn={onQuestionTurn} onAction={newest} threadTurns={questionThread} revision={languageRevision} onState={onQuestionnaireState} onComplete={onboarding?onQuestionComplete:undefined} disabled={menuBusy} fillRef={fillQuestion} showProgress={!!onboarding} refreshOnComplete={refreshOnComplete} />}
         {shown.map(p => <Fragment key={p.requestId}>
           <article className="cv2-msg cv2-me" data-pending={p.state}><p className="cv2-say">{p.text}</p>
-            <p className="cv2-time">{p.state === "sending" ? tx(l, "Ուղարկվում է", "Sending", "Отправляется") : tx(l, "Չուղարկվեց։", "Not sent.", "Не отправлено.")}</p>
+            <p className="cv2-time">{p.state === "sending" ? tx(l, "Ուղարկվում է", "Sending", "Отправляется") : p.state === "queued" ? offlineText(l, "queued") : tx(l, "Չուղարկվեց։", "Not sent.", "Не отправлено.")}</p>
             {p.state === "failed" && <button type="button" onClick={() => { newest(); deliver(p); }}>{tx(l, "Կրկին փորձել", "Try again", "Попробуйте снова")}</button>}
           </article>
           {emergencies[p.requestId]?.text === p.text && <ZoeEmergencyCard locale={l} request={emergencies[p.requestId].request} contained />}
@@ -408,13 +460,13 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
           aria-label={tx(l, "Ձեր հաղորդագրությունը", "Your message", "Ваше сообщение")}
           placeholder={locked ? say(l, FLOW.composerLocked) : tx(l, "Հարցրեք Զոյային…", "Ask Zoe…", "Спросите Зою…")}
           onPointerDown={()=>conversation.edit()}
-          onChange={event => { conversation.edit(); setText(event.target.value); if (notice) setNotice(null); }}
+          onChange={event => { conversation.edit(); voiceTurn.current = null; setText(event.target.value); if (notice) setNotice(null); }}
           onKeyDown={event => {
             if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
             if (!(event.metaKey || event.ctrlKey) && window.matchMedia("(pointer: coarse)").matches) return;
             event.preventDefault(); send("enter");
           }} />
-        {voice?.microphone && <Microphone locale={l} disabled={!initial || locked || menu || conversation.active} onBusy={setVoiceBusy} onTranscript={(value,receipt) => { state.setVoiceText(text ? `${text} ${value}` : value,receipt); input.current?.focus({preventScroll:true}); }} />}
+        {voice?.microphone && <Microphone locale={l} disabled={!initial || locked || menu || conversation.active} onBusy={setVoiceBusy} onTranscript={(value,receipt) => { voiceTurn.current = text ? null : { text: value.trim(), origin: "batch", urgent: false, ...(receipt ? { receipt } : {}) }; state.setVoiceText(text ? `${text} ${value}` : value,receipt); input.current?.focus({preventScroll:true}); }} />}
         {voice?.conversation && <ConversationToggle locale={l} conversation={conversation} disabled={!initial || locked || menu || voiceBusy || !consentClear || (!conversation.active && !!text.trim())} />}
         <button type="submit" disabled={!initial || !hydrated || locked || voiceBusy} aria-label={tx(l, "Ուղարկել", "Send", "Отправить")} onPointerDown={event => event.preventDefault()} onMouseDown={event => event.preventDefault()}><ArrowUp size={18} strokeWidth={2.4} aria-hidden /></button>
       </form>

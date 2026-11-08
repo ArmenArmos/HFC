@@ -56,7 +56,7 @@ const planRead=z.strictObject({offset:z.union([z.literal(-15),z.literal(0),z.lit
   times:z.array(z.string().regex(/^\d{2}:\d{2}$/)),startDate:z.string(),endDate:z.string().nullable(),active:z.boolean()}))}).nullable(),
  events:z.array(z.strictObject({medicationId:z.uuid(),dueAt:z.string(),status:z.enum(['taken','skipped']),revision:z.number().int(),recordedAt:z.string()}))});
 
-const bpRead=z.strictObject({week:bpWeekReadSchema,latest:z.strictObject({systolic:z.number().int(),diastolic:z.number().int(),pulse:z.number().int().nullable(),measuredAt:z.string(),entrySource:z.enum(['patient_text_entry','patient_voice_confirmed','patient_photo_confirmed','caregiver_reported']).nullable().optional()}).nullable()});
+const bpRead=z.strictObject({week:bpWeekReadSchema,latest:z.strictObject({systolic:z.number().int(),diastolic:z.number().int(),pulse:z.number().int().nullable(),measuredAt:z.string(),entrySource:z.enum(['patient_text_entry','patient_voice_confirmed','patient_voice_live_confirmed','patient_photo_confirmed','caregiver_reported']).nullable().optional()}).nullable()});
 const resultsRead=z.strictObject({publication:currentPublishedReviewSchema,results:z.array(z.strictObject({marker:z.string(),value:z.unknown(),unit:z.string().nullable(),referenceText:z.string().nullable(),collectedAt:z.string()}))});
 const planCardRead=z.strictObject({plan:z.strictObject({id:z.uuid(),clinician:z.string(),publishedAt:z.string(),instructions:z.string(),version:z.number().int().min(1).nullable(),
  medicines:z.array(z.strictObject({name:z.string(),dose:z.string(),times:z.array(z.string())})),review:z.strictObject({planId:z.string(),instructions:z.string()}).nullable()}).nullable()});

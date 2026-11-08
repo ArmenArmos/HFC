@@ -49,6 +49,7 @@ import {BMI_REQUEST_VERSION,bmiMeasurementReply,bmiMessageNumbers,bmiNumbers,bmi
 import {bpAwaitingRepeat,bpChatTurn,bpCrisisNotCurrent,bpCurrentVeryHigh,bpLevelGiven,bpSymptomAsserted,bpTypedSaves} from './bp-chat';
 import {BATCH_CORRECTION,BATCH_OTHER_PERSON} from './bp-parse';
 import {lowSugar,activityPermissionLine,atLeast,carefulLine,SELF_HARM_TODAY_TEXT,CAREFUL_FOLLOW_UP,CHEST_NOT_NOW_CONTEXT,DOCTOR_SOON_LINE,isCarefulAnswer,NOTHING_NEW_NO_103_LINE,healthReplyPrompt,HEALTH_SUMMARY_MAX_OUTPUT_TOKENS,HEALTH_SUMMARY_PROMPT,HEALTH_SUMMARY_WHY_PROMPT,healthReplySchema,healthSummaryOutputSchema,SUMMARY_UNAVAILABLE,zoeReplyBlock,type DoctorSummary,type HealthOutput,repairHealthJson,composeHealthAnswer,decideForward,HEALTH_ANSWER_MAX_CHARS,HEALTH_ANSWER_VERSION,HEALTH_SYSTEM_PROMPT,healthDataBlock,healthDataSchema,healthOutputSchema,SAME_DAY_LINE,asksForDoctor,autoLine,passedToDoctorLine,endsWithQuestion,freeVoiceClean,pendingAsk,RAW_REPLY_JSON,renderDoctorSummary,replyToAsk,sameDayFloor,sentLine,urgentStepsText,type Forward,type ForwardReason,type Urgency} from './health-answer';
+import {voicePromptVersion,voiceTurn,withVoiceStyle} from './voice-style';
 import {AGAIN,WORRIED,chatExemptPhrases,COMPLAINT,CRISIS_TEXT,FIXED_ONLY,isReceipt,latinArmenian,noLetters,REPEAT_TEXT,deflectionText,INJECTION_THROTTLE,MEMBER_DAILY_CAP_USD,MEMBER_SPEND_CAP_LINE,MEMBER_SPEND_CAP_LINE_CHAT_V2,chatFallback,chatIntent,chatOutputSchema,chatSystemPrompt,CONVERSATION_VERSION,ADVICE_ASK,fillName,firstName,isQuestion,shortReply,receiptText,startsWithGreeting,voiceClean,type ChatClass,type ChatIntent} from './conversation';
 
 /**
@@ -129,7 +130,8 @@ export const resumableIntakeSchema=z.strictObject({sheetId:z.string(),sheetVersi
  record:activeIntakeSchema.shape.record,idleMinutes:z.number().int().min(0)});
 export const zoeJobSchema=z.strictObject({
  runId:z.uuid(),memberId:z.uuid(),messageSeq:z.number().int(),displayName:z.string().nullable(),
- messages:z.array(z.strictObject({seq:z.number().int(),text:z.string(),minutesAgo:z.number().int()})).min(1),
+ /** voice: the message came from voice (a server-receipted recording or a Live turn); its reply uses the voice style addendum (WP V). */
+ messages:z.array(z.strictObject({seq:z.number().int(),text:z.string(),minutesAgo:z.number().int(),voice:z.literal(true).optional()})).min(1),
  replies:z.array(z.strictObject({body:z.string(),minutesAgo:z.number().int()})),
  /** Zoe's own earlier direct answers in this window (conversation context). */
  answers:z.array(z.strictObject({body:z.string(),minutesAgo:z.number().int()})).default([]),
@@ -1321,7 +1323,7 @@ export async function runZoeJob(input:z.input<typeof zoeJobSchema>|ZoeJob,deps:{
   const open=job.messages.filter(m=>m.seq>(job.conversation?.answeredThroughSeq??0));
   const memberBlock=`${block(open.map(m=>({seq:m.seq,text:redactText(m.text,{nameTokens:own}).text,minutesAgo:m.minutesAgo})),
    [],job.answers.slice(-2).map(a=>({...a,body:redactText(a.body,{nameTokens:own}).text})))}\n<chat_kind>${intent.classes.join(',')}</chat_kind>`;
-  const system=chatSystemPrompt(lang,chatV2);
+  const system=withVoiceStyle(chatSystemPrompt(lang,chatV2),voiceTurn(job));
   const callTokens={inputTokens:approxTokens(system)+approxTokens(memberBlock),outputTokens:400};
   // The chat schema's maximum reply plus room for the member's name.
   const b=budget(provider,fallback,callTokens,1,2000+80);
@@ -1330,8 +1332,8 @@ export async function runZoeJob(input:z.input<typeof zoeJobSchema>|ZoeJob,deps:{
   let result:ProviderResult|null=null,latencyMs=0,spentUsd=0;const usage={inputTokens:0,outputTokens:0};
   const call=async(p:ZoeProvider,attempt:number,isFallback:boolean)=>{
    const started=now();let r:ProviderResult;
-   whyPrompt=CONVERSATION_VERSION;
-   try{r=await p.complete({timeoutMs:callTimeout(),purpose:'conversation',promptVersion:CONVERSATION_VERSION,system,memberBlock,replyLanguage:lang,maxOutputTokens:400});}
+   whyPrompt=voicePromptVersion(CONVERSATION_VERSION,voiceTurn(job));
+   try{r=await p.complete({timeoutMs:callTimeout(),purpose:'conversation',promptVersion:whyPrompt,system,memberBlock,replyLanguage:lang,maxOutputTokens:400});}
    catch{r={kind:'error',errorClass:'unavailable',usage:null};}
    const ms=Math.round(now()-started);latencyMs+=ms;
    const u=r.usage??{inputTokens:0,outputTokens:0};usage.inputTokens+=u.inputTokens;usage.outputTokens+=u.outputTokens;
@@ -1924,8 +1926,8 @@ export async function runZoeJob(input:z.input<typeof zoeJobSchema>|ZoeJob,deps:{
    'noreon.zoe.free_style':`${FREE_STYLE_VERSION}:${style}`};
   const call=async(q:ZoeProvider,attempt:number,isFallback:boolean,feedback?:string,memberView?:string)=>{
    const started=now();let r:ProviderResult;const fast=fastFor(q)&&!fastFailed;
-   whyPrompt=`${HEALTH_ANSWER_VERSION}:${style}`;
-   try{r=await q.complete({timeoutMs:callTimeout(),purpose:'health_answer',promptVersion:whyPrompt,system:healthReplyPrompt(style,speed.split,scoped,chatCards,chatV2),memberBlock:feedback?`${memberView??(alertAlreadyGivenCheck()?alertView():block2)}\n${feedback}`:(alertAlreadyGivenCheck()?alertView():block2),replyLanguage:lang,maxOutputTokens:HEALTH_MAX_OUTPUT_TOKENS,
+   whyPrompt=voicePromptVersion(`${HEALTH_ANSWER_VERSION}:${style}`,voiceTurn(job));
+   try{r=await q.complete({timeoutMs:callTimeout(),purpose:'health_answer',promptVersion:whyPrompt,system:withVoiceStyle(healthReplyPrompt(style,speed.split,scoped,chatCards,chatV2),voiceTurn(job)),memberBlock:feedback?`${memberView??(alertAlreadyGivenCheck()?alertView():block2)}\n${feedback}`:(alertAlreadyGivenCheck()?alertView():block2),replyLanguage:lang,maxOutputTokens:HEALTH_MAX_OUTPUT_TOKENS,
     ...(speed.replyEffort?{effort:speed.replyEffort}:{}),...(fast?{fast:true}:{})});}
    catch{r={kind:'error',errorClass:'unavailable',usage:null};}
    // A fast-endpoint error (its own rate limit, an outage): later calls use the standard endpoint.

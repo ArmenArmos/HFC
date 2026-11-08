@@ -17,6 +17,7 @@ import * as locale from '@/lib/locale';
 import * as staffLocale from '@/lib/staff/staff-locale-copy';
 import * as staffServer from '@/lib/staff/staff-server-copy';
 import {selectFieldNativeStub} from './select-field-native-stub';
+import {realtimeStubs} from './realtime-test-stubs';
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
 const require=createRequire(import.meta.url);
 const member='a1000000-0000-4000-8000-000000000001',nurse='a1000000-0000-4000-8000-000000000002';
@@ -48,7 +49,7 @@ shared['@/components/staff/record-refresh']=load('components/staff/record-refres
 const tasks=load('components/staff/real-coordination-tasks.tsx',shared);
 const cards=load('components/staff/admin-action-cards.tsx',{...shared,'@/lib/admin-chat/card-actions':server,'./admin-booking-card':{AdminBookingCard:()=>null},'@/components/staff/real-coordination-tasks':tasks,'@/components/real-review/care-team-dialog':{CareTeamDialog:()=>null}});
 const AdminActionCards=cards.AdminActionCards as typeof import('../components/staff/admin-action-cards').AdminActionCards;
-const chat=load('components/staff/admin-chat.tsx',{...shared,'./admin-action-cards':cards,'@/lib/admin-chat/contracts':contracts});
+const chat=load('components/staff/admin-chat.tsx',{...shared,...await realtimeStubs(),'./admin-action-cards':cards,'@/lib/admin-chat/contracts':contracts});
 const AdminChat=chat.AdminChat as typeof import('../components/staff/admin-chat').AdminChat;
 const ready:contracts.AdminChatResult={kind:'ready',view:{intent:'operations',asOf:'2026-11-01T12:00:00Z',summary:null,items:[],unavailable:[],partial:[],disabled:[],notices:[]}};
 for(const l of ['en','hy','ru'] as const){

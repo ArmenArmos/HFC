@@ -14,6 +14,9 @@ import { readZoeConsents } from "@/lib/zoe/member";
 import type { PatientLocale } from "@/lib/patient/copy";
 import { getMeasurements } from "@/lib/patient/repository";
 import { buildOverview } from "./overview";
+import { createClient } from "@/lib/supabase/server";
+import { readMemberBpTarget, type BpTargetRpc } from "@/lib/bp-target/runtime";
+import { bpTargetsEnabled } from "@/lib/clinical-review/config";
 
 /** Each read stands alone: one that fails leaves its part unknown, and the rest of the view still opens. */
 const known = <T,>(read: Promise<T>) => read.catch(() => undefined);
@@ -23,6 +26,7 @@ export async function readOverview({ locale, name, questionnaireComplete }: { lo
     known(getCareData()), known(getMeasurements()), known(readOwnHistory()), known(readMemberBpWeek()), known(memberLdl()), known(readMemberMedicines()),
     known(readMemberCareTeam()), known(readZoeConsents()), known(getMemberLabStages()), known(getMemberBookingData({ summaryOnly: true })), known(readJourneyExtras()),
   ]);
+  const target = bpTargetsEnabled() ? await known((async () => readMemberBpTarget((await createClient()) as unknown as BpTargetRpc))()) : null;
   const now = new Date();
   const lab = labSamples ? memberLabSummary(labSamples) : undefined;
   const strip = journeyStripInput({
@@ -42,6 +46,7 @@ export async function readOverview({ locale, name, questionnaireComplete }: { lo
     clinicBp: history?.clinic.bp ?? null,
     bpWeek: bpWeek ?? null,
     ldl,
+    bpTarget: target ? { systolic: target.homeSystolicTarget, diastolic: target.homeDiastolicTarget } : null,
     medicines: medicines ?? null,
     uploaded: history?.documents ?? null,
     released: extras?.released ?? null,
