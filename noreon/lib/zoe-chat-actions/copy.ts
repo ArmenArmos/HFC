@@ -4,6 +4,7 @@ import {memberDoctorLabel,memberStaffName} from "@/lib/member-staff-name.mjs";
 import {CONSULT} from './consult-copy';
 import {LABS} from './labs-copy';
 import type {CardKind} from './registry';
+import {CAREGIVER,CARING,CONSENTS,INVITATION} from './caregiver-copy';
 
 /**
  * Zoe chat card copy. Armenian is primary, then English and Russian. UNAPPROVED v1: Armenian and Russian wording for
@@ -38,6 +39,8 @@ export const CHIP:Record<CardKind,L>={
  menu:c('Ինչ կարող եմ անել','What I can do','Что я могу сделать'),
  repeat:c('Կրկնել չափումը','Repeat the reading','Повторить измерение'),
  red_flags:c('Անվտանգության հարցեր','Safety questions','Вопросы безопасности'),
+ caregiver:c('Մարդիկ, ովքեր օգնում են ինձ','People who help me','Люди, которые мне помогают'),
+ consents:c('Իմ համաձայնությունները','My consents','Мои согласия'),
 };
 export const TITLE:Record<CardKind,L>={
  review:NEXT_STEP.review,next_step:NEXT_STEP.title,tests_needed:NEXT_STEP.tests,
@@ -59,7 +62,10 @@ export const TITLE:Record<CardKind,L>={
  menu:c('Ի՞նչ կցանկանայիք անել','What would you like to do?','Что вы хотите сделать?'),
  repeat:c('Կրկնենք չափումը','Let’s repeat the reading','Повторим измерение'),
  red_flags:c('Մի քանի հարց անվտանգության համար','A few safety questions','Несколько вопросов для безопасности'),
+ caregiver:CAREGIVER.title,
+ consents:CONSENTS.title,
 };
+export {CAREGIVER,CARING,CONSENTS,INVITATION};
 
 export const COMMON={
  quickActions:c('Արագ գործողություններ','Quick actions','Быстрые действия'),
@@ -387,8 +393,8 @@ export function sideEffectMessage(l:CardLocale,what:SideEffect,detail:string){
 export function allCopy():L[]{
  const sample=[COMMON.asShown('08:00'),DOSE.later('08:00'),DOSE.laterPlan('08:00'),DOSE.confirmTaken('X, 08:00'),DOSE.confirmMissed('X, 08:00'),BP.week(2,7,true),BP.week(2,7,false),BP.weekProgress(3,28),
   BP.confirm('120/80'),BP.pulse(70),BP.saved('120/80'),BP.last('120/80','1.1, 08:00'),LDL.goal('1.4','mmol/L'),LDL.goalPct('50'),LDL.latest('1.1'),LDL.lower('40'),LDL.onePartBody('1.4','mmol/L'),LDL.next('1.1'),LDL.withName('X'),LDL.visit('1.1, 08:00'),LDL.window('1.1','2.1'),BP.confirmLine('120/80'),RESULTS.published('1.1'),RESULTS.reference('1-2'),RESULTS.more(3),RESULTS.older(3),RESULTS.cut(3),PLAN.approvedBy('X','1.1'),PLAN.version(2),
-  VISIT.proposed('1.1, 08:00','X'),VISIT.confirmAccept('1.1, 08:00'),FLOW.within(4),FLOW.wait(60),FLOW.progress(1,5),FLOW.stripAnswer(1),FLOW.stripAnswer(2),PROFILE.said('X','7:00','22:00'),MEDICINES.statusLabel('X')];
- const fixed=[TG_WRITE,NOTICE,CHIP,TITLE,SIDE_EFFECT,COMMON,DOSE,TELEGRAM,BP,FLOW,FLAG_QUESTION,FLAG_MESSAGE,RESULTS,PLAN,VISIT,SIDE,MESSAGE,LDL,PROFILE,MEDICINES,ANAMNESIS,ONBOARDING].flatMap(o=>Object.values(o).filter((v):v is L=>typeof v==='object'&&v!==null&&'hy'in v));
+  VISIT.proposed('1.1, 08:00','X'),VISIT.confirmAccept('1.1, 08:00'),FLOW.within(4),FLOW.wait(60),FLOW.progress(1,5),FLOW.stripAnswer(1),FLOW.stripAnswer(2),PROFILE.said('X','7:00','22:00'),MEDICINES.statusLabel('X'),CAREGIVER.phoneEnds('107'),INVITATION.lead('X'),CARING.since('1.1')];
+ const fixed=[TG_WRITE,NOTICE,CHIP,TITLE,SIDE_EFFECT,COMMON,DOSE,TELEGRAM,BP,FLOW,FLAG_QUESTION,FLAG_MESSAGE,RESULTS,PLAN,VISIT,SIDE,MESSAGE,LDL,PROFILE,MEDICINES,ANAMNESIS,ONBOARDING,CAREGIVER,CAREGIVER.status,CONSENTS,INVITATION,CARING].flatMap(o=>Object.values(o).filter((v):v is L=>typeof v==='object'&&v!==null&&'hy'in v));
  return [...fixed,...sample];
 }
 export {LIVING_VISIT} from './living-visit-copy';

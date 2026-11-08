@@ -126,7 +126,7 @@ let newestCalls=0,answerResolve:(value:Response)=>void=()=>{},delayedFetch=false
 const histories=new Map<string,string[]>([[member,['A saved weeks ago']],[other,['B saved weeks ago']]]);
 let resolver:Record<string,unknown>={kind:'keep'};
 const componentSource=readFileSync('components/doctor-chat-v2/patient-chat.tsx','utf8');
-const componentModules:Record<string,unknown>={'@/lib/lab-ai/provenance':labProvenance,'@/lib/lab-ai/review-copy':await import('@/lib/lab-ai/review-copy'),'@/lib/lab-ai/analyte-names':await import('@/lib/lab-ai/analyte-names'),
+const componentModules:Record<string,unknown>={'@/lib/brand':await import('@/lib/brand'),'@/lib/lab-ai/provenance':labProvenance,'@/lib/lab-ai/review-copy':await import('@/lib/lab-ai/review-copy'),'@/lib/lab-ai/analyte-names':await import('@/lib/lab-ai/analyte-names'),
  // Voice is unavailable in these typed-chat fixtures; the dedicated voice UI check mounts its dispatch.
  '@/components/chat-v2/conversation':{useConversation:()=>({active:false,edit(){},sent(){}}),ConversationToggle:()=>null},
  '@/components/staff/voice-reply':await import('@/components/staff/voice-reply'),
@@ -1145,7 +1145,7 @@ for(const locale of ['en','hy','ru'] as const){
  function restoreLabAnswer(){
   resetZoe();patientHistory={kind:'history',turns:[{...saved,key:'restored-lab',seq:1,role:'zoe',text:'Earlier lab answer',content:answer}],conversations:[saved],target:saved};
  }
- const changed=copy.st(locale,'Lab values changed. Ask Zoe again for the current record.','Լաբորատոր արժեքները փոխվել են։ Ընթացիկ գրառման համար կրկին հարցրեք Զոյային։','Лабораторные значения изменились. Спросите Zoe ещё раз, чтобы прочитать актуальную запись.');
+ const changed=copy.st(locale,'Lab values changed. Ask Zoe again for the current record.','Լաբորատոր արժեքները փոխվել են։ Ընթացիկ գրառման համար կրկին հարցրեք Զոյային։','Лабораторные значения изменились. Спросите Зою ещё раз, чтобы прочитать актуальную запись.');
  const assertStaleLabHidden=()=>{
   assert.doesNotMatch(serialized(),/unreviewed|Not reviewed|Չվերանայված|Не проверено/i,'Restored answers must reconcile saved review status');
   assert.equal(screen!.root.findAllByType('button').filter(b=>b.children.join('')===review).length,0);

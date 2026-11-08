@@ -1,5 +1,8 @@
 import type { MetadataRoute } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { NOREON, NOREON_HY } from "@/lib/brand";
+import { parseLocale, pick, type Locale } from "@/lib/locale";
+import { staffLocaleCookie } from "@/lib/staff/staff-locale";
 import { backofficeHost } from "@/lib/staff/hosts";
 
 /**
@@ -29,14 +32,41 @@ import { backofficeHost } from "@/lib/staff/hosts";
  * colour the app actually paints. A manifest is JSON read by the operating
  * system, so it cannot reference a custom property; `pnpm check:tokens`
  * compares this literal against the stylesheet and fails if they drift.
+ *
+ * Name and description follow the reader's language cookie (the member app's
+ * `noreon_locale`, the staff screens' `noreon-staff-locale`) and are Armenian
+ * when none is set: «Նորեոն Հելթ», from `lib/brand.ts`.
  */
+const COPY = {
+  app: (l: Locale) => ({
+    name: pick(l, { hy: NOREON_HY.base, en: "Noreon, understand your health data", ru: NOREON.ru }),
+    short_name: pick(l, { hy: NOREON_HY.base, en: "Noreon", ru: NOREON.ru }),
+    description: pick(l, {
+      hy: `${NOREON_HY.definite} ձեր ամենօրյա առողջական չափումները դարձնում է միտումներ, որոնց հիման վրա կարող եք գործել։`,
+      en: "Noreon turns everyday health measurements into trends you can act on.",
+      ru: `${NOREON.ru} превращает ежедневные измерения здоровья в понятную динамику, по которой можно действовать.`,
+    }),
+  }),
+  backoffice: (l: Locale) => ({
+    name: pick(l, { hy: `${NOREON_HY.base}, աշխատակազմ`, en: "Noreon backoffice", ru: `${NOREON.ru}, для сотрудников` }),
+    short_name: pick(l, { hy: NOREON_HY.base, en: "Noreon", ru: NOREON.ru }),
+    description: pick(l, {
+      hy: `${NOREON_HY.genitive} աշխատակազմի հավելվածը։`,
+      en: "Noreon turns everyday health measurements into trends you can act on.",
+      ru: `Приложение ${NOREON.ru} для сотрудников.`,
+    }),
+  }),
+};
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const backoffice = backofficeHost((await headers()).get("host") ?? "");
+  const jar = await cookies();
+  const locale = parseLocale(jar.get(backoffice ? staffLocaleCookie : "noreon_locale")?.value, "hy");
+  const copy = (backoffice ? COPY.backoffice : COPY.app)(locale);
   return {
-    name: backoffice ? "Noreon backoffice" : "Noreon, understand your health data",
-    short_name: "Noreon",
-    description:
-      "Noreon turns everyday health measurements into trends you can act on.",
+    name: copy.name,
+    short_name: copy.short_name,
+    description: copy.description,
+    lang: locale,
     start_url: backoffice || process.env.NOREON_DEPLOYMENT_TARGET === "marketing" ? "/" : "/patient",
     scope: "/",
     display: "standalone",

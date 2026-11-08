@@ -155,7 +155,7 @@ const view=load('components/chat-v2/visit-card.tsx',{
  '@/components/patient/sign-in-ended':{SignInEnded:()=>null},'@/lib/zoe-chat-actions/labs-actions':{},
  '@/lib/zoe-chat-actions/booking-actions':{},'@/lib/zoe-chat-actions/actions':adapter,'@/lib/zoe-chat-actions/lab-visit-copy':labCopy,
  './use-card-save':{useCardSave:(_id:string,_l:string,onCard:(c:unknown)=>void)=>({busy:false,problem:null,opId:id,save:(run:()=>Promise<{card?:unknown}>)=>{submitted=run().then(r=>{if(r.card)onCard(r.card);return r;});}})},
- '@/components/patient/zoe-booking':{ZoeBooking:()=>null},'./dialog-turn':{},'./living-visit-card':{LivingVisitCard},
+ '@/components/patient/zoe-booking':{ZoeBooking:()=>null},'./dialog-turn':{},'./living-visit-card':{LivingVisitCard},'@/lib/brand':await import('@/lib/brand'),
 }) as typeof import('../components/chat-v2/visit-card');
 // Reproduced bug: a done card with A's receipt must still offer the different current proposal.
 const legacyAccepted= {...pending,state:'done' as const,outcome:{accepted:{proposalId:id,commandId:id}}};

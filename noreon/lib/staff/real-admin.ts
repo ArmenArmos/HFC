@@ -50,7 +50,7 @@ export async function getRealClinics(staff?: RealStaff) {
 
 export const realStaffDirectoryRowSchema = z.object({
   id: z.uuid(), name: z.string().min(1).max(160), email: z.email(),
-  role: z.enum(["doctor", "nurse"]), clinicId: z.uuid(), clinicName: z.string(), active: z.boolean(),
+  role: z.enum(["doctor", "nurse", "coordinator"]), specialty: z.enum(["family_physician", "cardiologist"]).nullable().optional(), clinicId: z.uuid(), clinicName: z.string(), active: z.boolean(),
   version: z.string().regex(/^[a-f0-9]{32}$/), assignmentCount: z.number().int().nonnegative().safe(),
   invitationId: z.uuid().optional().nullable(), generation: z.number().int().positive().safe().optional().nullable(),
   status: z.string(), sendStatus: z.string().optional().nullable(), expiresAt: z.iso.datetime({offset: true}).optional().nullable(),

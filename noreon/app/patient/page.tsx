@@ -10,6 +10,7 @@ import { captchaSiteKey } from "@/lib/captcha";
 import { continuePath } from "@/lib/patient/continue-path";
 import type { Route } from "next";
 import { parseLocale } from "@/lib/locale";
+import { noreonName } from "@/lib/brand";
 export default async function PatientEntry({ searchParams }: { searchParams?: Promise<{ locale?: string | string[]; next?: string | string[]; link?: string | string[]; view?: string | string[] }> }) {
   const params = await searchParams;
   // ?next= is only ever one of the allowed member pages (an expired Telegram link continues there).
@@ -20,7 +21,7 @@ export default async function PatientEntry({ searchParams }: { searchParams?: Pr
   const locale = parseLocale(requestedLocale, parseLocale(savedLocale, "hy"));
   if (!realRegistrationReady(process.env) && !testSigninEntryEnabled(process.env)) return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-6 px-6 py-12">
-      <p className="text-caption text-brand-teal">Noreon</p>
+      <p className="text-caption text-brand-teal">{noreonName(locale)}</p>
       <h1 className="text-h1">{tx(locale,"Գրանցումը՝ շուտով","Registration opens soon", "Регистрация скоро откроется")}</h1>
       <p className="text-body1">{tx(locale,"Հեռախոսահամարի հաստատումը նախապատրաստվում է։ Գրանցումը դեռ բաց չէ։","Phone verification is being prepared. Registration is not open yet.", "Подтверждение номера телефона готовится. Регистрация пока не открыта.")}</p>
       <a className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-body2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" href="mailto:info@noreon.health">{tx(locale,"Կապվել Նորեոն Հելթի հետ","Contact Noreon", "Связаться с Нореон Хелс")}</a>

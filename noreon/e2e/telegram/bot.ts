@@ -107,5 +107,8 @@ export async function zoeFinished(id: string) {
 }
 /** This person's conversation: source and text of each stored message. */
 export const stored = (id: string) => sql(`select coalesce(string_agg(m.source||':'||m.body,E'\\n' order by m.seq),'') from public.conversation_messages m join public.conversations c on c.id=m.conversation_id where c.member_id='${id}'`);
-export const zoeSaid = async (chat: number) => (await texts(chat)).filter((t) => t.startsWith("Zoe:"));
+/** Zoe signs her Telegram texts in the member's language (lib/brand.ts zoeSignature, _zoe_text_enqueue). */
+export const ZOE_SIGNATURES = ["Zoe: ", "Զոյա՝ ", "Зоя: "] as const;
+export const isZoeText = (t: string) => ZOE_SIGNATURES.some((s) => t.startsWith(s));
+export const zoeSaid = async (chat: number) => (await texts(chat)).filter(isZoeText);
 export const runs = (id: string) => sql(`select coalesce(string_agg(coalesce(outcome,state)||'/'||coalesce(reason_code,''),',' order by message_seq,started_at),'') from public.zoe_runs where member_id='${id}'`);

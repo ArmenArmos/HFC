@@ -33,6 +33,7 @@ const routeSource=readFileSync('app/patient/chat/page.tsx','utf8');
 const code=ts.transpileModule(routeSource,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
 new vm.Script(code,{filename:'app/patient/chat/page.tsx'}).runInNewContext({exports,process:{env},require(name:string){
  if(name==='react/jsx-runtime')return jsx;
+ if(name==='@/lib/patient/page-title')return {memberPageMetadata:async()=>({title:'Synthetic'})};
  if(name==='@/lib/bp-photo/config')return {bpPhotoEnabled:()=>false};
  if(name==='@/lib/member-push/config')return {memberPushConfig:()=>null};
  if(name==='@/lib/zoe-chat-actions/voice')return {voiceAvailable:()=>false};
@@ -54,6 +55,10 @@ new vm.Script(code,{filename:'app/patient/chat/page.tsx'}).runInNewContext({expo
  if(name==='@/lib/zoe/member-screen')return {zoeEmergencyCardEnabled:()=>emergencyEnabled,zoeEmergencyCheck:(value:screen.ZoeEmergencyCheck['intake'])=>screen.zoeEmergencyCheck(value,{NOREON_ZOE_EMERGENCY_CARD:'true',NOREON_ZOE_TEST_LEXICON:'true'})};
  if(name==='@/components/chat-v2/member-chat')return {MemberChat};
  if(name==='@/components/chat-v2/chat.css')return {};
+ // WP F: caregiver and consents switches stay off here; their own checks cover them.
+ if(name==='@/lib/caregivers/schema')return {caregiversEnabled:()=>false};
+ if(name==='@/lib/consents/schema')return {memberConsentsEnabled:()=>false};
+ if(name==='@/lib/caregivers/server')return {sessionCaregiverRpc:async()=>{throw Error('No caregiver read with the switch off');},readCaregiverInvitations:async()=>{throw Error('No caregiver read with the switch off');}};
  throw Error(`Unexpected route boundary: ${name}`);
 }});
 const page=exports.default as ()=>Promise<React.ReactElement<Record<string,unknown>>>;
@@ -293,7 +298,7 @@ console.log('Chat v2 scroll: actual hook preserves older history across identica
   '@/lib/chat/suggestions':suggestions,'@/lib/chat/tasks':tasks,
   '@/lib/bp-photo/copy':photoCopy,
   '@/lib/bp-photo/client':{prepareBpPhoto:async(file:unknown)=>file},
-  '@/lib/patient/copy':copy,'@/lib/patient/date-format':dates,
+  '@/lib/patient/copy':copy,'@/lib/patient/date-format':dates,'@/lib/brand':await import('@/lib/brand'),
   './next-step-card':{NextStepCard:()=>null,NextStepTurn:()=>null,ReviewCard:()=>null},
   './results-message-card':{ResultsMessageCard:()=>null,JourneyRecordCard:()=>null,JourneyRecordTurn:()=>null},
   '@/lib/zoe-chat-actions/next-step-copy':{NEXT_STEP:{}},
@@ -308,6 +313,8 @@ console.log('Chat v2 scroll: actual hook preserves older history across identica
   '@/lib/zoe-chat-actions/labs-actions':{openDocumentCard:()=>{throw Error('Unexpected document action in reading check');}},
   './plan-card':{PlanCard:()=>null,ConfirmedPlanTurn:()=>null},
   './dose-card':{DoseCard:()=>null,DoseTurn:()=>null},
+  // WP F: the caregiver, consents and invitation blocks render nothing here; with no invitations none is drawn.
+  './member-settings-cards':{CaregiverCard:()=>null,ConsentsCard:()=>null,CaregiverInvitations:()=>null},
   './dose-flow-cards':{DoseReasonCard:()=>null,DoseReasonTurn:()=>null,SamsCard:()=>null,SamsTurn:()=>null},
   '@/lib/zoe-chat-actions/everyday-contract':everyday,
   '@/lib/member-staff-name.mjs':staffNames,

@@ -226,7 +226,7 @@ test('sign-up language: a restored draft in another language than the page is wh
   await expect(page.locator('#patient-name')).toHaveValue('Fictional Signup');
 });
 
-for (const [id,label,heading] of [['hy','Հայերեն','Zoe-ն անջատված է'],['ru','Русский','Zoe для вас выключена'],['en','English','Zoe is off']] as const) test(`menu language switches the Zoe consent step at once, ${id}, at phone width`,async({page})=>{
+for (const [id,label,heading] of [['hy','Հայերեն','Զոյան անջատված է'],['ru','Русский','Зоя для вас выключена'],['en','English','Zoe is off']] as const) test(`menu language switches the Zoe consent step at once, ${id}, at phone width`,async({page})=>{
   await page.setViewportSize({width:375,height:700});
   await page.goto(fixture.url+(id==='en'?'/patient/chat?empty&consent&locale=ru':'/patient/chat?empty&consent'));
   const before=await page.locator('[data-zoe-chat-consent]').innerText();

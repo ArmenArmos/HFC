@@ -35,7 +35,7 @@ export const GET = withRouteLogging(async function GET(
     if (!(error instanceof Error) || !["unauthorized", "not_found", "disabled"].includes(error.message)) {
       const id = (await context.params).id;
       const retry = z.uuid().safeParse(id).success ? `/api/patient/reports/${id}/original` : "/patient/reports";
-      const locale = parseLocale(ctx?.locale, "en");
+      const locale = parseLocale(ctx?.locale, "hy");
       const title = pick(locale, {hy: "Բնօրինակը հիմա հասանելի չէ", en: "Your original report is temporarily unavailable", ru: "Оригинал вашего отчёта временно недоступен"});
       const message = pick(locale, {hy: "Փորձեք կրկին մի փոքր անց։ Ձեր պահված տվյալները չեն փոխվել։", en: "Try again in a moment. Your saved details have not changed.", ru: "Попробуйте снова чуть позже. Ваши сохранённые данные не изменились."});
       const label = pick(locale, {hy: "Կրկին ներբեռնել", en: "Try downloading again", ru: "Попробовать скачать снова"});

@@ -50,7 +50,8 @@ import {BRAND_NAMES_PROMPT_RULE} from '@/lib/brand';
 // 2.18: Armen's Tasks 14 to 17: when a level comes down in a chat, statin muscle pain, activity after a heart attack, stent or stroke, at most 3 questions. STAGING WORDING.
 // 2.20: multipart values and app-computed BMI from explicit height and weight in the newest message.
 // 2.21: categorical PDE5 + nitrate warning, including timing requests and symptomatic co-use.
-export const HEALTH_ANSWER_VERSION=`zoe-free-mode-2.21+${FREE_MODE_CONFIG_VERSION}`;
+// 2.22: brand names only (BRAND_NAMES_PROMPT_RULE; «Զոյա», «Նորեոն Հելթ» in the dialogue examples). Editorial, no clinical rule or wording changed.
+export const HEALTH_ANSWER_VERSION=`zoe-free-mode-2.22+${FREE_MODE_CONFIG_VERSION}`;
 /** The longest text a member sees from free mode, fixed lines included (Armenian runs about twice the English length). */
 export const HEALTH_ANSWER_MAX_CHARS=2400;
 const MODEL_REPLY_MAX_CHARS=2000;

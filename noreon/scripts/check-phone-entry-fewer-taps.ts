@@ -150,9 +150,9 @@ async function mount(locale='en'){
 }
 // 5. A first bot link explains itself; a repeated proof request and queued contact have visible feedback.
 for(const [locale,notReceived,pending] of [
- ['hy','Ձեր համարը Telegram-ից դեռ չենք ստացել։ Noreon բոտում սեղմեք Start, ապա «Կիսվել իմ համարով», հետո վերադարձեք այստեղ։','Ձեր համարը Telegram-ից ճանապարհին է։ Սպասեք մի քանի վայրկյան և նորից սեղմեք կոճակը։'],
+ ['hy','Ձեր համարը Telegram-ից դեռ չենք ստացել։ Նորեոն Հելթ բոտում սեղմեք Start, ապա «Կիսվել իմ համարով», հետո վերադարձեք այստեղ։','Ձեր համարը Telegram-ից ճանապարհին է։ Սպասեք մի քանի վայրկյան և նորից սեղմեք կոճակը։'],
  ['en',"We haven't received your number from Telegram yet. In the Noreon bot, press Start, then tap “Share my phone number”, then come back here.",'Your number is on its way from Telegram. Wait a few seconds, then tap the button again.'],
- ['ru','Мы ещё не получили ваш номер из Telegram. В боте Noreon нажмите «Запустить» (Start), затем «Поделиться номером телефона» и вернитесь сюда.','Ваш номер уже в пути из Telegram. Подождите несколько секунд и нажмите кнопку ещё раз.'],
+ ['ru','Мы ещё не получили ваш номер из Telegram. В боте Нореон Хелс нажмите «Запустить» (Start), затем «Поделиться номером телефона» и вернитесь сюда.','Ваш номер уже в пути из Telegram. Подождите несколько секунд и нажмите кнопку ещё раз.'],
 ]){
  const p=await mount(locale);
  const alerts=()=>p.root().findAllByProps({role:'alert'}).map(n=>n.children.join(''));
@@ -205,8 +205,8 @@ for (const allowed of [true,false]) {
 // QA 284: refused contacts need specific recovery guidance, never another account's number.
 for (const [locale, mismatch, foreign, stale, change, rightAccount] of [
  ['en', 'The Telegram account you shared from has a different phone number than the one you typed. Change the number here, or share from the Telegram account that uses this number.', 'You shared someone else’s contact or a forwarded contact card. In the Noreon bot, use the “Share my phone number” button to share your own number.', 'That contact share is out of date. Open the Noreon bot again and use the “Share my phone number” button to share your own number.', 'Change number', 'Share from the right Telegram account'],
- ['hy', 'Telegram-ի հաշիվը, որից կիսվել եք համարով, ունի Ձեր մուտքագրածից տարբեր հեռախոսահամար։ Փոխեք համարն այստեղ կամ կիսվեք այն Telegram հաշվից, որն օգտագործում է այս համարը։', 'Դուք կիսվել եք ուրիշի կոնտակտով կամ փոխանցված կոնտակտի քարտով։ Noreon բոտում սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։', 'Համարով կիսվելու այս փորձն այլևս չի գործում։ Կրկին բացեք Noreon բոտը և սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։', 'Փոխել համարը', 'Կիսվել ճիշտ Telegram հաշվից'],
- ['ru', 'В аккаунте Telegram, из которого вы поделились контактом, указан другой номер телефона, чем тот, который вы ввели. Измените номер здесь или поделитесь контактом из аккаунта Telegram с этим номером.', 'Вы отправили чужой контакт или пересланную карточку контакта. В боте Noreon нажмите «Поделиться номером телефона», чтобы отправить свой номер.', 'Этот контакт уже устарел. Снова откройте бота Noreon и нажмите «Поделиться номером телефона», чтобы отправить свой номер.', 'Изменить номер', 'Поделиться из нужного аккаунта Telegram'],
+ ['hy', 'Telegram-ի հաշիվը, որից կիսվել եք համարով, ունի Ձեր մուտքագրածից տարբեր հեռախոսահամար։ Փոխեք համարն այստեղ կամ կիսվեք այն Telegram հաշվից, որն օգտագործում է այս համարը։', 'Դուք կիսվել եք ուրիշի կոնտակտով կամ փոխանցված կոնտակտի քարտով։ Նորեոն Հելթ բոտում սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։', 'Համարով կիսվելու այս փորձն այլևս չի գործում։ Կրկին բացեք Նորեոն Հելթ բոտը և սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։', 'Փոխել համարը', 'Կիսվել ճիշտ Telegram հաշվից'],
+ ['ru', 'В аккаунте Telegram, из которого вы поделились контактом, указан другой номер телефона, чем тот, который вы ввели. Измените номер здесь или поделитесь контактом из аккаунта Telegram с этим номером.', 'Вы отправили чужой контакт или пересланную карточку контакта. В боте Нореон Хелс нажмите «Поделиться номером телефона», чтобы отправить свой номер.', 'Этот контакт уже устарел. Снова откройте бота Нореон Хелс и нажмите «Поделиться номером телефона», чтобы отправить свой номер.', 'Изменить номер', 'Поделиться из нужного аккаунта Telegram'],
 ]) {
  for (const [refusal, message] of [['phone_mismatch', mismatch], ['not_own_contact', foreign], ['stale', stale]]) {
   const url='https://t.me/noreon_stub_bot?start=refused';

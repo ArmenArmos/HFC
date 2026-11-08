@@ -19,16 +19,17 @@ export const BACKOFFICE_HOSTS: readonly string[] = Object.freeze(["backoffice.no
 export function backofficeHost(host: string) {
   return BACKOFFICE_HOSTS.includes(host.toLowerCase().split(":")[0]);
 }
-export function staffHostAllowed(host: string, role?: StaffPortal | "nurse", env: Environment = process.env) {
+export function staffHostAllowed(host: string, role?: StaffPortal | "nurse" | "coordinator", env: Environment = process.env) {
   const portal = staffPortalForHost(host);
   // One staff domain (Khikar, 17 Oct): backoffice serves every staff role, detected at sign-in.
   // doctors.noreon.health stays doctor/nurse only until its permanent redirect to backoffice.
   if (portal === "admin") return true;
-  if (portal) return !role || portal === (role === "nurse" ? "doctor" : role);
+  // A care coordinator works logistics, so belongs with the backoffice portal, never the doctors' host.
+  if (portal) return !role || portal === (role === "nurse" ? "doctor" : role === "coordinator" ? "admin" : role);
   return env.NODE_ENV !== "production" && /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
 }
 /** Legacy workspaces require shared demo mode, including existing staff aliases during rollout. */
-export function demoStaffHostAllowed(host: string, role?: StaffPortal | "nurse", env: Environment = process.env) {
+export function demoStaffHostAllowed(host: string, role?: StaffPortal | "nurse" | "coordinator", env: Environment = process.env) {
   if (env.NEXT_PUBLIC_PATIENT_DEMO !== "true" || env.NOREON_SHARED_DEMO !== "true" || env.NOREON_DEPLOYMENT_TARGET === "app" || env.NOREON_DEPLOYMENT_TARGET === "marketing") return false;
   const name = host.toLowerCase().split(":")[0];
   // The legacy demo keeps its portal split: on backoffice only the admin demo exists (review F-3).

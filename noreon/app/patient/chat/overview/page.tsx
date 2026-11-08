@@ -5,10 +5,11 @@ import { patientPresentation } from "@/lib/patient/presentation";
 import { requireRegisteredForRender } from "@/lib/patient/render-data";
 import { memberOverviewEnabled } from "@/lib/patient/zoe-app-v3";
 import { zoeEmergencyCardEnabled } from "@/lib/zoe/member-screen";
+import { memberPageMetadata } from "@/lib/patient/page-title";
 import "@/components/chat-v2/chat.css";
 import "@/components/chat-v2/overview.css";
 
-export const metadata = { title: "Noreon overview" };
+export const generateMetadata = () => memberPageMetadata("overview");
 
 export default async function MemberOverviewPage() {
   if (!memberOverviewEnabled()) notFound();

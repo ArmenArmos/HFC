@@ -337,10 +337,10 @@ for (const { name, who, locale, size } of variants) {
         await test.step("D337: hand back on the existing conversation page", async () => {
           await open(page, `/staff/real/conversations/${memberId}?locale=${locale}`);
           await expect(page.getByRole("heading", { name: t("You are answering this member", "Դուք եք պատասխանում այս անդամին"), exact: true })).toBeVisible();
-          await page.getByRole("button", { name: t("Hand back to Zoe", "Վերադարձնել Զոյին"), exact: true }).click();
+          await page.getByRole("button", { name: t("Hand back to Zoe", "Վերադարձնել Զոյային"), exact: true }).click();
           await expect.poll(() => sql(`select doctor_mode from public.zoe_doctor_mode where member_id='${memberId}'`)).toBe("f");
           await openZoe(member);
-          await expect(member.locator('[data-zoe-thread]')).toContainText(t("Zoe is with you again.", "Zoe-ն կրկին ձեզ հետ է։"));
+          await expect(member.locator('[data-zoe-thread]')).toContainText(t("Zoe is with you again.", "Զոյան կրկին ձեզ հետ է։"));
         });
       } finally {
         sql(`update public.zoe_settings set conversational_replies_enabled=${previous.replies},consent_collection_enabled=${previous.collection},

@@ -195,7 +195,7 @@ for(const [locale,line] of [['en','Nothing needs your attention right now.'],['h
  const props={initial:emptyDay,selected:null,doctorId:doctor,locale,decisionsEnabled:false};
  const html=renderToStaticMarkup(React.createElement(Home,props));
  assert.ok(html.includes(line)&&html.includes('zk-from'),'An empty doctor landing has a localized Zoe turn');
- assert.ok(html.includes(({en:'Ask Zoe…',hy:'Հարցրեք Զոյային…',ru:'Спросите Zoe…'})[locale]),'The doctor composer uses the resolved locale');
+ assert.ok(html.includes(({en:'Ask Zoe…',hy:'Հարցրեք Զոյային…',ru:'Спросите Зою…'})[locale]),'The doctor composer uses the resolved locale');
  for(const initial of [{kind:'unavailable'} as const,{...emptyDay,day:{...emptyDay.day,ldl:null}},{...emptyDay,day:{...emptyDay.day,urgentCapped:true}}]){
   assert.ok(!renderToStaticMarkup(React.createElement(Home,{...props,initial})).includes(line),'Failed reads never claim nothing is waiting');
  }

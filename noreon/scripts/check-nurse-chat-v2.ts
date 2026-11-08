@@ -303,7 +303,7 @@ modules['@/lib/staff-zoe/small-talk']=load('lib/staff-zoe/small-talk.ts');
 modules['@/lib/nurse-chat/action-intent']=load('lib/nurse-chat/action-intent.ts');
 modules['@/lib/nurse-chat/measurement-intent']=load('lib/nurse-chat/measurement-intent.ts');
 modules['@/lib/nurse-chat/measure-card']=load('lib/nurse-chat/measure-card.ts');
-modules['@/lib/clinical/rules/bp-check']=bpCheck;modules['@/lib/clinical/rules/bp-words']=bpWords;modules['@/lib/locale']=localeModule;
+modules['@/lib/clinical/rules/bp-check']=bpCheck;modules['@/lib/clinical/rules/bp-words']=bpWords;modules['@/lib/locale']=localeModule;modules['@/lib/brand']=await import('@/lib/brand');
 modules['@/lib/care-alerts/contracts']=careAlertContracts;
 const alertCommands:Record<string,unknown>[]=[];
 let alertCommandResult:unknown={ok:false,code:'unavailable'};
@@ -1751,7 +1751,7 @@ for(const locale of ['en','hy','ru'] as const){
  for(const [title,kind,want,sourceConversationId,origin] of [
   ['From the doctor','contact-followup',{en:'From the doctor',hy:'Բժշկից',ru:'От врача'},member.id,'doctor_handover'],
   ['Nurse handoff','doctor-referral',{en:'Nurse handoff',hy:'Փոխանցում բուժքրոջից',ru:'Передача от медсестры'},null,'nurse_handoff'],
-  ['Mild side effect from Zoe','contact-followup',{en:'Mild side effect from Zoe',hy:'Թեթև կողմնակի ազդեցություն՝ Զոյայից',ru:'Лёгкий побочный эффект от Zoe'},null,'zoe_side_effect'],
+  ['Mild side effect from Zoe','contact-followup',{en:'Mild side effect from Zoe',hy:'Թեթև կողմնակի ազդեցություն՝ Զոյայից',ru:'Лёгкий побочный эффект от Зои'},null,'zoe_side_effect'],
   ['Side effect reported: dizziness','contact-followup',{en:'Side effect reported: dizziness',hy:'Հաղորդվել է կողմնակի ազդեցություն՝ գլխապտույտ',ru:'Сообщён побочный эффект: головокружение'},null,'zoe_side_effect'],
   ['Collect blood pressure log','evidence-collection',{en:'Collect blood pressure log',hy:'Collect blood pressure log',ru:'Collect blood pressure log'},null,null],
   ['Call about the results','contact-followup',{en:'Call about the results',hy:'Call about the results',ru:'Call about the results'},null,null],

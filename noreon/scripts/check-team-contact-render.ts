@@ -45,7 +45,7 @@ const help=load('app/patient/help/page.tsx');
 for(locale of ['en','hy']) {
  {
   const contact=renderToStaticMarkup(await page({searchParams:Promise.resolve({section:'contact'})}));
-  assert.match(contact,locale==='en' ? /<h1[^>]*>Contact Noreon<\/h1>/ : /<h1[^>]*>Կապվել Noreon-ի հետ<\/h1>/);
+  assert.match(contact,locale==='en' ? /<h1[^>]*>Contact Noreon<\/h1>/ : /<h1[^>]*>Կապվել Նորեոն Հելթի հետ<\/h1>/);
   assert.match(contact,/href="\/patient\/zoe"/);
   assert.doesNotMatch(contact,/mailto:/,'QA N-09: Telegram-only, no email contact');
   assert.doesNotMatch(contact,/href="\/patient\/team"/,'Contact must not direct members to unavailable Zoe chat');
@@ -57,7 +57,7 @@ for(locale of ['en','hy']) {
   assert.match(contact,locale==='en' ? /Message your care team/ : /Գրել խնամքի թիմին/);
  }
  const realDefault=renderToStaticMarkup(await page({searchParams:Promise.resolve({})}));
- assert.match(realDefault,locale==='en' ? /<h1[^>]*>Contact Noreon<\/h1>/ : /<h1[^>]*>Կապվել Noreon-ի հետ<\/h1>/,'Real Contact team opens direct contact by default');
+ assert.match(realDefault,locale==='en' ? /<h1[^>]*>Contact Noreon<\/h1>/ : /<h1[^>]*>Կապվել Նորեոն Հելթի հետ<\/h1>/,'Real Contact team opens direct contact by default');
  assert.match(realDefault,/href="\/patient\/zoe"/);
  assert.doesNotMatch(realDefault,/mailto:/);
  assert.doesNotMatch(realDefault,/href="tel:103"/);
@@ -71,7 +71,7 @@ for(locale of ['en','hy']) {
   assert.match(helpHtml,/href="\/patient\/zoe"/);
   assert.doesNotMatch(helpHtml,/mailto:/);
   assert.match(helpHtml,/href="\/patient\/team\?section=contact"/);
-  assert.match(helpHtml,locale==='en'?/Write to your care team in the Zoe chat/:/Գրեք ձեր խնամքի թիմին Zoe-ի զրույցում/);
+  assert.match(helpHtml,locale==='en'?/Write to your care team in the Zoe chat/:/Գրեք ձեր խնամքի թիմին Զոյայի զրույցում/);
   assert.match(helpHtml,locale==='en'?/does not notify a doctor or emergency service/:/չի ծանուցում բժշկին կամ շտապ օգնությանը/);
   signedIn=false;
   const signedOutHelp=renderToStaticMarkup(await help({searchParams:Promise.resolve({locale})}));
@@ -85,13 +85,13 @@ for(locale of ['en','hy']) {
 for(locale of ['en','hy']){
  contact={mode:'none'};
  for(const html of [renderToStaticMarkup(await page({searchParams:Promise.resolve({section:'contact'})})),renderToStaticMarkup(await help({searchParams:Promise.resolve({})}))]){
-  assert.doesNotMatch(html,/Zoe chat|Zoe-ի զրույցում|href="\/patient\/zoe"|mailto:/,'No chat promise or email when no route is on');
+  assert.doesNotMatch(html,/Zoe chat|Զոյայի զրույցում|href="\/patient\/zoe"|mailto:/,'No chat promise or email when no route is on');
   assert.match(html,locale==='en'?/is not switched on yet/:/դեռ միացված չէ/);
   assert.match(html,locale==='en'?/call 103/i:/զանգահարեք 103/);
  }
  contact={mode:'telegram',href:'https://t.me/noreon_test_bot'};
  const tg=renderToStaticMarkup(await page({searchParams:Promise.resolve({section:'contact'})}));
- assert.match(tg,/href="https:\/\/t.me\/noreon_test_bot"/);assert.match(tg,locale==='en'?/on Telegram/:/Telegram-ով/);assert.doesNotMatch(tg,/Zoe chat|Zoe-ի զրույցում/);
+ assert.match(tg,/href="https:\/\/t.me\/noreon_test_bot"/);assert.match(tg,locale==='en'?/on Telegram/:/Telegram-ով/);assert.doesNotMatch(tg,/Zoe chat|Զոյայի զրույցում/);
  contact={mode:'connect',href:'/patient/account/telegram'};
  assert.match(renderToStaticMarkup(await help({searchParams:Promise.resolve({})})),/href="\/patient\/account\/telegram"/);
  contact={mode:'chat',href:'/patient/zoe'};

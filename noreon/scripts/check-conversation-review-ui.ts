@@ -74,7 +74,7 @@ const source:ZoeReplyDraftView={runId:id(20),draftId:id(2),messageSeq:1,version:
 for(const locale of ['en','hy','ru'] as const){
  await act(async()=>{tree=create(React.createElement(ConversationReview,{memberId:id(10),doctorName:'Assigned doctor',initial:data,ports,locale,replyDrafts:[source]}));});
  const html=JSON.stringify(tree.toJSON());
- assert.ok(html.includes({en:'How Zoe prepared this draft',hy:'Ինչպես է Zoe-ն պատրաստել այս սևագիրը',ru:'Как Zoe подготовила этот черновик'}[locale]));
+ assert.ok(html.includes({en:'How Zoe prepared this draft',hy:'Ինչպես է Զոյան պատրաստել այս սևագիրը',ru:'Как Зоя подготовила этот черновик'}[locale]));
  if(locale!=='en')assert.doesNotMatch(html,/How Zoe prepared this draft|What the member asked|Care instructions/);
  assert.ok(html.includes(source.asked));assert.ok(html.includes(source.quoted[0].text),'Source quotes stay verbatim');
  assert.ok(html.includes('14:08'));assert.doesNotMatch(html,/\b(?:AM|PM)\b/);

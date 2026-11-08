@@ -105,7 +105,7 @@ assert.equal(html, '<div class="max-w-2xl space-y-3 text-body1" data-lesson-body
 for (const l of LESSONS) assert.ok(!renderToStaticMarkup(createElement(LessonBody, { lines: l.body.hy })).includes("- "), `${l.id}: no stray list markers`);
 
 // Member offers show fixed text and actions without editorial labels; staff preview may identify a draft.
-for (const [locale, line] of [["en", "Zoe suggests a one-minute lesson"], ["hy", "Zoe-ն առաջարկում է մեկ րոպեանոց դաս"]] as const) {
+for (const [locale, line] of [["en", "Zoe suggests a one-minute lesson"], ["hy", "Զոյան առաջարկում է մեկ րոպեանոց դաս"]] as const) {
   const card = renderToStaticMarkup(createElement(LessonOfferCard, { lessonId: "salt-less", title: "Less salt", draft: true, locale }));
   assert.ok(card.includes(line) && card.includes('href="/patient/learn/salt-less"') && !card.includes("data-lesson-draft"), `${locale}: offer card`);
   assert.ok(!renderToStaticMarkup(createElement(LessonOfferCard, { lessonId: "salt-less", title: "Less salt", draft: false, locale })).includes("data-lesson-draft"), `${locale}: no badge on approved`);

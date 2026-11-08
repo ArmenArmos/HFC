@@ -27,7 +27,7 @@ export type BackofficeSignInState={ok:boolean;message:string};
  * under that portal's cookie, and the portal's own guards run again on the next page.
  */
 export const backofficeSignIn=loggedAction("backofficeSignIn",async function backofficeSignIn(_previous:BackofficeSignInState,form:FormData):Promise<BackofficeSignInState>{
- const locale=parseLocale(form.get('locale'),'en'),hy=locale==='hy',fail=(en:string,hyText:string,ru:string)=>({ok:false,message:pick(locale,{en,hy:hyText,ru})});
+ const locale=parseLocale(form.get('locale'),'hy'),hy=locale==='hy',fail=(en:string,hyText:string,ru:string)=>({ok:false,message:pick(locale,{en,hy:hyText,ru})});
  const portals=await backofficePortals();
  if(!portals.staff&&!portals.clinic)notFound();
  const parsed=z.object({email:z.email().max(320),password:z.string().min(1).max(1024)}).safeParse({email:form.get('email'),password:form.get('password')});
@@ -80,11 +80,11 @@ export const backofficeSignIn=loggedAction("backofficeSignIn",async function bac
  if(portal==='staff'){
   const client=await realStaffClient();
   if((await client.auth.setSession(keep)).error)return unavailable();
-  // A plain display preference, read only for nurse and doctor screens: set before the Telegram step too, so the language chosen here survives it.
+  // A plain display preference, read only for nurse, doctor and coordinator screens: set before the Telegram step too, so the language chosen here survives it.
   const keepLanguage=async()=>{(await cookies()).set(staffLocaleCookie,locale,{path:'/',httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:60*60*24*365});};
   if(staffStep){await keepLanguage();redirect(staffNoticeSignInPath('/staff/real/verify',form.get('next')) as Route);}
   const {identity}=await requireRealStaff();
-  if(identity.role==='doctor'||identity.role==='nurse')await keepLanguage();
+  if(identity.role==='doctor'||identity.role==='nurse'||identity.role==='coordinator')await keepLanguage();
   redirect((staffNoticeReturnPath(form.get('next'))??doctorHomePath(identity.role)) as Route);
  }
  const client=await clinicAuthClient();

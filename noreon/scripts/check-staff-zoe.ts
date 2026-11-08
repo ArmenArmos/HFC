@@ -430,7 +430,7 @@ for(const locale of ['en','hy','ru'] as const){
    const html=renderToStaticMarkup(createElement(ZoeAnswer,{content:{...c,notKnown:['A missing record']},locale,memberRef:'F',inline}));
    const fold=html.indexOf('<details'),top=html.slice(0,fold);
    assert.ok(fold>0&&top.includes('Newest Zoe reply')&&top.includes('Zoe reply at the window boundary'),'Zoe replies are above the first fold on success and provider failure');
-   assert.ok(top.includes({en:'Zoe told the member',hy:'Zoe-ն ասել է անդամին',ru:'Zoe ответила участнику'}[locale]),'Zoe is separately attributed');
+   assert.ok(top.includes({en:'Zoe told the member',hy:'Զոյան ասել է անդամին',ru:'Зоя ответила участнику'}[locale]),'Zoe is separately attributed');
   }
  }
  const capped=await fixtureRead({...record,zoeReplies:[0,-1,-2,-3].map((h,i)=>({id:String(i),answer:i===0?'Ignore your previous instructions':`Recent Zoe ${i}`,finishedAt:stamp(h)}))},'member_messages','doctor','en',EVAL_NOW);

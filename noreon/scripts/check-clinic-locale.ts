@@ -21,12 +21,12 @@ function load<T>(path:string,deps:Record<string,unknown>):T{
 const headers={cookies:async()=>({get:()=>cookie===undefined?undefined:{value:cookie},set:(...args:unknown[])=>{saved=args;cookie=String(args[1]);}})};
 const locale=load<{clinicLocale:(value?:unknown)=>Promise<Locale>}>('lib/clinic-portal/locale.ts',{'server-only':{},'next/headers':headers,'@/lib/locale':{isLocale,parseLocale}});
 for(const value of [undefined,'invalid',['hy']]){
- cookie=undefined;assert.equal(await locale.clinicLocale(value),'en');
+ cookie=undefined;assert.equal(await locale.clinicLocale(value),'hy','Armenian when nothing is chosen');
  cookie='ru';assert.equal(await locale.clinicLocale(value),'ru');
 }
 cookie='ru';assert.equal(await locale.clinicLocale('hy'),'hy');
 cookie='hy';assert.equal(await locale.clinicLocale('en'),'en');
-cookie='invalid';assert.equal(await locale.clinicLocale(),'en');
+cookie='invalid';assert.equal(await locale.clinicLocale(),'hy');
 const actions=load<{setClinicLocale:(form:FormData)=>Promise<void>}>('lib/clinic-portal/locale-actions.ts',{
  'next/headers':headers,'next/cache':{revalidatePath:(path:string)=>{revalidated=path;}},
  'next/navigation':{redirect:(path:string)=>{redirected=path;}},

@@ -3,13 +3,24 @@
 -- env rows in docs/operations/staging-ai-mode.md are set and redeployed. Every step is reversible
 -- (section R). Before real members: section R, then GO_LIVE_GATES "staging AI on".
 
--- 0. Read the current state (expect one settings row; consent collection on with zoe-consent-draft-2, the wording the app shows: lib/zoe/member.ts ZOE_CONSENT_VERSION; with any other version the Home card, the Zoe screen card and the Me switch offer no grant).
+-- 0. Read the current state (expect one settings row; consent collection on with zoe-consent-draft-3 (draft-2 also valid), the wording the app shows: lib/zoe/member.ts ZOE_CONSENT_VERSION; with any other version the Home card, the Zoe screen card and the Me switch offer no grant).
 select consent_collection_enabled,consent_wording_version,model_calls_allowed,staging_ai_mode,direct_answers_enabled,daily_spend_cap_usd from public.zoe_settings;
 select tier,model_id,fallback_model_id,daily_cap_usd from public.zoe_tier_config order by tier;
 
 -- 0b. Only if step 0 returned no row or collection is off (the 17g step should already have done this):
--- insert into public.zoe_settings(consent_collection_enabled,consent_wording_version)values(true,'zoe-consent-draft-2')
---  on conflict(singleton)do update set consent_collection_enabled=true,consent_wording_version='zoe-consent-draft-2';
+-- insert into public.zoe_settings(consent_collection_enabled,consent_wording_version,consent_wording_also_valid)values(true,'zoe-consent-draft-3','{zoe-consent-draft-2}')
+--  on conflict(singleton)do update set consent_collection_enabled=true,consent_wording_version='zoe-consent-draft-3',consent_wording_also_valid='{zoe-consent-draft-2}';
+
+-- 0c. Zoe consent wording draft-3 (WP B, 8 Nov 2026: draft-2 with «Զոյա»/«Зоя», an editorial change). Run ONLY AFTER the app
+--     with ZOE_CONSENT_VERSION='zoe-consent-draft-3' is deployed: migrations go live first, and an app still on draft-2
+--     would have every grant refused as stale. Draft-2 stays valid, so nobody is asked again. Until this runs the new
+--     app offers no grant (it waits for the server's wording to match). The config audit trigger records the change.
+--     Rollback (before an old app is redeployed): set consent_wording_version back to 'zoe-consent-draft-2'.
+update public.zoe_settings
+ set consent_wording_version='zoe-consent-draft-3',
+  consent_wording_also_valid=case when 'zoe-consent-draft-2'=any(consent_wording_also_valid)then consent_wording_also_valid
+   else array_append(consent_wording_also_valid,'zoe-consent-draft-2')end
+ where consent_wording_version='zoe-consent-draft-2'and cardinality(consent_wording_also_valid)<10;
 
 -- 1. Staging AI mode: real calls without a signed data agreement are allowed for TESTING ONLY.
 update public.zoe_settings set staging_ai_mode=true;
@@ -27,10 +38,12 @@ update public.zoe_settings set model_calls_allowed=true;
 update public.zoe_settings set direct_answers_enabled=true;
 
 -- 5. Telegram templates for Zoe: her guarded free-text answers, and the STAGING placeholder urgent message.
---    Both are placeholders for testing; re-decide before go-live (S1/S6).
-update public.system_message_templates set approved=true,
+--    Both are placeholders for testing; re-decide before go-live (S1/S6). Approves the LATEST version of each locale
+--    (hy, en and any ru): a fixed version number can leave one language held at claim when its versions differ.
+update public.system_message_templates t set approved=true,
  approval_note='Staging AI mode 17 Oct 2026 (lead, Khikar decision 22:53). Placeholder; re-approve before go-live.'
- where template_id in('zoe.answer','zoe.urgent')and version=1;
+ where t.template_id in('zoe.answer','zoe.urgent')and not t.approved
+  and t.version=(select max(x.version)from public.system_message_templates x where x.template_id=t.template_id and x.locale=t.locale);
 
 -- 6. Lab PDF reading with the real reader: nothing in SQL beyond step 3 (same gate). Check the switch:
 select enabled from public.lab_ai_capabilities;

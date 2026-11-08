@@ -5,7 +5,7 @@ import type {ChatItem,ZoeThread} from '@/lib/zoe/app-chat-contracts';
 import {cardIntent} from './intent';
 import {emergencyWasCleared,flagItem,redOutcome,RED_FLAG_QUESTIONS} from './bp-flow';
 import {SAMS_QUESTIONS,samsItem} from './dose-flow';
-import {doseItem,zoeCardsSchema,type CardKind,type ValidCard,type ZoeCard,type ZoeCards} from './registry';
+import {doseItem,MEMBER_SETTINGS_KINDS,zoeCardsSchema,type CardKind,type ValidCard,type ZoeCard,type ZoeCards} from './registry';
 
 /** Where the chat reads its cards (app/api/patient/zoe/cards): a plain GET, like the thread. */
 export const ZOE_CARDS_URL='/api/patient/zoe/cards';
@@ -158,9 +158,10 @@ export function withoutCardReplies(items:readonly ChatItem[],opened:ReadonlySet<
 
 /**
  * The card Zoe offers for the member's newest message, when the database says Zoe's pipeline cleared it (clearedSeq)
- * and its words ask for one. Never for any other message, and nothing opens until the member taps.
+ * and its words ask for one. Never for any other message, and nothing opens until the member taps. A member settings
+ * card (caregiver, consents) is offered only when this chat has it switched on (settingsKinds, from the server's flags).
  */
-export function cardOffer(thread:Pick<ZoeThread,'messages'>,cards:Pick<ZoeCards,'enabled'|'clearedSeq'|'readingSeq'>):{kind:CardKind;seq:number}|null{
+export function cardOffer(thread:Pick<ZoeThread,'messages'>,cards:Pick<ZoeCards,'enabled'|'clearedSeq'|'readingSeq'>,settingsKinds:readonly CardKind[]=[]):{kind:CardKind;seq:number}|null{
  if(!cards.enabled)return null;
  const newest=thread.messages.at(-1);
  if(!newest)return null;
@@ -168,6 +169,7 @@ export function cardOffer(thread:Pick<ZoeThread,'messages'>,cards:Pick<ZoeCards,
  if(newest.seq===(cards.readingSeq??cards.clearedSeq)&&(typedReading(newest.text)||cardIntent(newest.text)==='bp'))return {kind:'bp',seq:newest.seq};
  if(newest.seq!==cards.clearedSeq)return null;
  const kind=cardIntent(newest.text);
+ if(kind&&MEMBER_SETTINGS_KINDS.includes(kind)&&!settingsKinds.includes(kind))return null;
  return kind?{kind,seq:newest.seq}:null;
 }
 

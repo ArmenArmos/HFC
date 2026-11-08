@@ -77,6 +77,8 @@ function load<T>(path: string): T {
       if (name === "@/lib/zoe-chat-actions/labs-actions") return {openDocumentCard:()=>{throw Error('Unexpected document action in anamnesis check');}};
       if (name === "./plan-card") return {PlanCard:()=>null,ConfirmedPlanTurn:()=>null};
       if (name === "./dose-card") return {DoseCard:()=>null,DoseTurn:()=>null};
+      // WP F: caregiver, consents and invitation blocks (none drawn in this check).
+      if (name === "./member-settings-cards") return {CaregiverCard:()=>null,ConsentsCard:()=>null,CaregiverInvitations:()=>null};
       if (name === "./dose-flow-cards") return {DoseReasonCard:()=>null,DoseReasonTurn:()=>null,SamsCard:()=>null,SamsTurn:()=>null};
       if (name === "./menu") return {ChatMenu:(props:Record<string,unknown>)=>React.createElement('aside',{...props,'data-chat-menu':true})};
       if (name === "@/components/patient/zoe-chat-consent") return {ZoeChatConsent:({onResolved}:{onResolved:()=>void})=>React.createElement("button",{"data-consent-resolve":true,onClick:onResolved},"Resolve consent")};

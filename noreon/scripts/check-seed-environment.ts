@@ -53,7 +53,7 @@ const expect:Record<string,Record<string,unknown>>={
  conversation_policy:{version:'go-live-1',grant_seconds:3600,intent_seconds:600,intake_window_seconds:60,intake_max_messages:50,
   synthetic_engine:false,delivery_enabled:true,app_chat_enabled:false},
  clinic_portal_capabilities:{storage_enabled:true,result_attach_enabled:false,clinic_admin_full_access:false},
- zoe_settings:{consent_collection_enabled:true,consent_wording_version:'zoe-consent-draft-2',consent_wording_also_valid:[],
+ zoe_settings:{consent_collection_enabled:true,consent_wording_version:'zoe-consent-draft-3',consent_wording_also_valid:['zoe-consent-draft-2'],
   daily_spend_cap_usd:10,staging_ai_mode:true,model_calls_allowed:false,direct_answers_enabled:false,
   conversational_replies_enabled:false,symptom_intake_enabled:false,health_answers_enabled:false,coach_enabled:false},
  care_alert_settings:{enabled:false,telegram_delivery:false,sandbox_test_accounts:false},

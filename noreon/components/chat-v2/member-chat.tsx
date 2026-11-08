@@ -1,6 +1,6 @@
 "use client";
 import {ReportedBpLabel} from "./reported-bp-label";
-import { zoeName } from "@/lib/brand";
+import { noreonName, zoeName } from "@/lib/brand";
 import {CARD_REPLY_LOST} from '@/lib/zoe-chat-actions/thread-events';
 import {NextStepCard,NextStepTurn,ReviewCard} from './next-step-card';
 import {ResultsMessageCard,JourneyRecordCard,JourneyRecordTurn} from './results-message-card';
@@ -37,7 +37,7 @@ import {STAGE_CLASSES} from "@/lib/patient/journey-stage";
 import type { JourneyStage } from "@/lib/patient/journey-stage";
 import { ChatSuggestions } from "@/components/conversation/chat-suggestions";
 import { suggestionsFor } from "@/lib/chat/suggestions";
-import { NO_CARDS, type ZoeCard, type ZoeCards } from "@/lib/zoe-chat-actions/registry";
+import { NO_CARDS, type CardKind, type ZoeCard, type ZoeCards } from "@/lib/zoe-chat-actions/registry";
 import { cardTurns, dialogThread, savedBp, savedMedicines, savedProfile, upsertCard, withoutCardReplies, type DialogEntry } from "@/lib/zoe-chat-actions/thread";
 import { contextStrip, flowOf, openFlags, redOutcome } from "@/lib/zoe-chat-actions/bp-flow";
 import { COMMON, FLOW, MESSAGE, ONBOARDING, say } from "@/lib/zoe-chat-actions/copy";
@@ -46,6 +46,8 @@ import { Anamnesis, type QuestionnaireTurn } from "./anamnesis";
 import { ReadingCard, SavedReading } from "./reading-card";
 import { ContextStripView, FlagsTurn, RedFlagCard } from "./bp-flow-cards";
 import { ProfileCard, SavedProfileTurn } from "./profile-card";
+import { CaregiverCard, CaregiverInvitations, ConsentsCard } from "./member-settings-cards";
+import type { CaregiverInvitation } from "@/lib/caregivers/schema";
 import { MedicinesCard, SavedMedicinesTurn } from "./medicines-card";
 import { PlanCard, ConfirmedPlanTurn } from "./plan-card";
 import { DoseCard, DoseTurn } from "./dose-card";
@@ -75,6 +77,9 @@ type Props = {
   /** The next-step switch needs the saved completion and journey facts from the server. */
   refreshOnComplete?: boolean;
   emergencyCheck?: ZoeEmergencyCheck | null; consent?: { directAnswers: boolean } | null;
+  /** WP F: which member settings cards the menu offers (server flags), and this phone account's pending caregiver invitations. */
+  settings?: { caregivers: boolean; consents: boolean };
+  caregiverInvitations?: CaregiverInvitation[];
 };
 const empty: ZoeThread = { ok: true, version: 0, ack: null, zoeReplies: false, settledSeq: 0, messages: [], replies: [], answers: [] };
 const COMPOSER_LINES = 5;
@@ -84,7 +89,7 @@ function fitComposer(field: HTMLTextAreaElement) {
   field.style.height = `${Math.min(field.scrollHeight, line * COMPOSER_LINES)}px`;
 }
 /** The cards the new chat draws: the reading and the blood pressure flow it leads to, then the onboarding, labs and continuation blocks. Other kinds stay ordinary messages. */
-const SHOWN_KINDS = new Set(["bp", "repeat", "red_flags", "profile", "medicines", "document", "visit", "prep", "fasting", "symptom_gate", "consult_questions", "dose", "ask", "sams"]);
+const SHOWN_KINDS = new Set(["bp", "repeat", "red_flags", "profile", "medicines", "document", "visit", "prep", "fasting", "symptom_gate", "consult_questions", "dose", "ask", "sams", "caregiver", "consents"]);
 const NEXT_STEP_KINDS = new Set(["review", "next_step", "tests_needed", "results", "message", "plan"]);
 const SHOWN = (card: ZoeCard, v3: boolean) => SHOWN_KINDS.has(card.kind) || (v3 && NEXT_STEP_KINDS.has(card.kind));
 const stamp = (at: string, locale: PatientLocale) => formatMemberDate(at, locale, { timeZone: "Asia/Yerevan", hour: "2-digit", minute: "2-digit" });
@@ -166,6 +171,13 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
         return replaced ? null : entry.card.snapshot.v3 === undefined ? <JourneyRecordCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct}/> : <PlanCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct} onRefresh={onPlan} />;
       }
       if (entry.card.kind === "profile") return <ProfileCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct} />;
+      if (entry.card.kind === "caregiver" || entry.card.kind === "consents") {
+        // A newer card of the same kind shows the current record; the older one, with what was done on it, stays above.
+        const replaced = whole.some(other => other.type === "card" && other.card.kind === entry.card.kind && Date.parse(other.card.at) > Date.parse(entry.card.at));
+        if (replaced && !Object.keys(entry.card.outcome).length) return null;
+        return entry.card.kind === "caregiver" ? <CaregiverCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct} />
+          : <ConsentsCard key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct} />;
+      }
       if (entry.card.kind === "medicines") {
         // Finished on the older card, or replaced by a newer one: nothing to fill in here.
         const replaced = whole.some(other => other.type !== "item" && other.card.kind === "medicines" && Date.parse(other.card.at) > Date.parse(entry.card.at));
@@ -208,7 +220,7 @@ export function MemberChat(props: Props) {
     : <ChatSession {...props} onSignedOut={setSignedOut} />;
 }
 
-function ChatSession({ locale, memberName, revision, initial, voice, cards: initialCards = NO_CARDS, onboarding, emergencyCheck, consent, assessment, emergencyCard = false, memberPush, nextStep, overview = false, bpPhoto = false, refreshOnComplete = false, onSignedOut }: Props & { onSignedOut: (locale: PatientLocale) => void }) {
+function ChatSession({ locale, memberName, revision, initial, voice, cards: initialCards = NO_CARDS, onboarding, emergencyCheck, consent, assessment, emergencyCard = false, memberPush, nextStep, overview = false, bpPhoto = false, refreshOnComplete = false, settings, caregiverInvitations = [], onSignedOut }: Props & { onSignedOut: (locale: PatientLocale) => void }) {
   const [l, setLocale] = useState(locale);
   const [consentResolved, setConsentResolved] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
@@ -228,7 +240,9 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
   const [voiceBusy, setVoiceBusy] = useState(false);
   const fillQuestion = useRef<((text: string) => boolean) | null>(null);
   const fillOpenQuestion = useCallback((text: string) => fillQuestion.current?.(text) ?? false, []);
-  const state = useZoeThread<HTMLTextAreaElement>({ initial: initial ?? empty, emergencyCheck, cards: initialCards, bpOnly: true, onboarding: !!onboarding, fillOpenQuestion });
+  // WP F: the member settings cards the server switched on (the menu opens them; an offer names only these).
+  const settingsKinds = useMemo<CardKind[]>(() => [...(settings?.caregivers ? ["caregiver" as const] : []), ...(settings?.consents ? ["consents" as const] : [])], [settings?.caregivers, settings?.consents]);
+  const state = useZoeThread<HTMLTextAreaElement>({ initial: initial ?? empty, emergencyCheck, cards: initialCards, bpOnly: true, onboarding: !!onboarding, fillOpenQuestion, settingsKinds });
   const { items, thread, emergencies: threadEmergencies, shown, input, text, setText, notice, setNotice, submit, deliver, cards, setCards, focusCard, focusVersion, opening, openCard, offer } = state;
   // A yes on a safety card opens 103 from the card's saved outcome, the same card a typed urgent message gets, under the member's message.
   const emergencies = useMemo(() => ({ ...threadEmergencies, ...Object.fromEntries(cards.cards.flatMap(card => {
@@ -329,13 +343,14 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
   const initials = memberName.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("");
   return <VoicePlayback enabled={!!voice} locale={l}><main className="cv2-root" lang={l} data-chat-v2>
     <header className="cv2-header">
-      <h1><i className="cv2-orb" aria-hidden />Noreon</h1>
+      <h1><i className="cv2-orb" aria-hidden />{noreonName(l)}</h1>
       <Call103 size="pill" className="cv2-help" label={tx(l, "Զանգահարել 103", "Call 103", "Позвонить 103")}><Phone size={14} aria-hidden />103</Call103>
       <button type="button" className="cv2-avatar" onClick={() => setMenu(true)} aria-label={tx(l, "Բացել մենյուն", "Open menu", "Открыть меню")}><span>{initials || "N"}</span></button>
     </header>
     <div className="cv2-greet"><h2>{zoeName(l)}</h2><p>{tx(l, "ԱԲ օգնական, ոչ բժիշկ", "AI assistant, not a doctor", "ИИ-помощник, не врач")}</p></div>
-    <section className="cv2-thread" ref={threadRef} role="log" aria-live="polite" aria-label={tx(l, "Զրույց", "Conversation", "Переписка")} data-zoe-thread tabIndex={0}>
+    <section className="cv2-thread" ref={threadRef} role="log" aria-live="polite" aria-relevant="additions" aria-label={tx(l, "Զրույց Զոյայի հետ", "Conversation with Zoe", "Переписка с Зоей")} data-zoe-thread tabIndex={0}>
       <div className="cv2-messages" ref={contentRef}>
+        <CaregiverInvitations invitations={caregiverInvitations} locale={l} />
         {!items.length && !shown.length && <article className="cv2-msg cv2-zoe"><p className="cv2-say cv2-welcome">{tx(l, `Բարև, ${memberName}։ Ինչպե՞ս կարող եմ օգնել այսօր։`, `Hello, ${memberName}. How can I help today?`, `Здравствуйте, ${memberName}. Чем я могу помочь сегодня?`)}</p></article>}
         {!showAnamnesis && <Messages onMessage={onMessage} bpPhoto={bpPhoto} onPlan={onPlan} journeyEnabled={!!onboarding} stepsDisabled={cards.nextStepStatus==='unavailable'||!!openFlags(cards.cards)} entries={visibleEntries} focusCard={focusCard} canFocus={isFollowing} onCard={onCard} onAct={onAct} onQuestions={onQuestions} locale={l} emergencies={emergencies} messages={thread.messages} tasks={cards.tasks} offerMedicines={offerMedicines} />}
         {consent && <article className="cv2-msg cv2-zoe cv2-consent"><ZoeChatConsent locale={l} directAnswers={consent.directAnswers} shownText={!!onboarding} onResolved={accepted => { setConsentResolved(true); setConsentAccepted(accepted === true); }} /></article>}
@@ -404,6 +419,6 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
         <button type="submit" disabled={!initial || !hydrated || locked || voiceBusy} aria-label={tx(l, "Ուղարկել", "Send", "Отправить")} onPointerDown={event => event.preventDefault()} onMouseDown={event => event.preventDefault()}><ArrowUp size={18} strokeWidth={2.4} aria-hidden /></button>
       </form>
     </footer>
-    {menu && <ChatMenu previousChat={!!onboarding} overview={overview} onPlan={onboarding && cards.enabled ? () => { newest(); onPlan(); } : undefined} onResults={onboarding&&cards.enabled?()=>{newest();openCard("results",null);}:undefined} onMessage={onboarding&&cards.enabled?onMessage:undefined} locale={l} revision={languageRevision} disabled={questionnairePending || menuBusy} onBusy={setMenuBusy} onLocale={(next, savedRevision) => { setLocale(next); setLanguageRevision(savedRevision); }} onClose={() => setMenu(false)} onSignedOut={() => onSignedOut(l)} onConsult={onboarding && cards.enabled ? () => { newest(); openCard("symptom_gate", null); } : undefined} onQuestions={onboarding && cards.enabled ? onQuestions : undefined} onVisit={onboarding && cards.enabled ? () => { newest(); openCard("visit", null); } : undefined} onMedicines={onboarding && cards.enabled ? () => { newest(); openCard("medicines", null); } : undefined} />}
+    {menu && <ChatMenu previousChat={!!onboarding} overview={overview} onPlan={onboarding && cards.enabled ? () => { newest(); onPlan(); } : undefined} onResults={onboarding&&cards.enabled?()=>{newest();openCard("results",null);}:undefined} onMessage={onboarding&&cards.enabled?onMessage:undefined} locale={l} revision={languageRevision} disabled={questionnairePending || menuBusy} onBusy={setMenuBusy} onLocale={(next, savedRevision) => { setLocale(next); setLanguageRevision(savedRevision); }} onClose={() => setMenu(false)} onSignedOut={() => onSignedOut(l)} onConsult={onboarding && cards.enabled ? () => { newest(); openCard("symptom_gate", null); } : undefined} onQuestions={onboarding && cards.enabled ? onQuestions : undefined} onVisit={onboarding && cards.enabled ? () => { newest(); openCard("visit", null); } : undefined} onMedicines={onboarding && cards.enabled ? () => { newest(); openCard("medicines", null); } : undefined} onCaregivers={onboarding && cards.enabled && settings?.caregivers ? () => { newest(); openCard("caregiver", null); } : undefined} onConsents={onboarding && cards.enabled && settings?.consents ? () => { newest(); openCard("consents", null); } : undefined} caring={!!settings?.caregivers} />}
   </main></VoicePlayback>;
 }

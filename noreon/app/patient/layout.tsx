@@ -10,12 +10,15 @@ import "./member-home.css";
 import "./member-chat.css";
 import { MemberChatModeProvider } from "@/components/patient/member-chat-mode";
 import { memberChatOnlyEnabled } from "@/lib/patient/member-chat-config";
-export const metadata: Metadata = {
-  title: "Noreon · Your health",
-  robots: { index: false, follow: false },
-  // Next serves its manifest convention at the app root, including sign-in.
-  manifest: "/manifest.webmanifest",
-};
+import { memberPageMetadata } from "@/lib/patient/page-title";
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    ...(await memberPageMetadata("home")),
+    robots: { index: false, follow: false },
+    // Next serves its manifest convention at the app root, including sign-in.
+    manifest: "/manifest.webmanifest",
+  };
+}
 // The member app draws under the iPhone home indicator so its bottom tab bar can
 // pad itself with env(safe-area-inset-*); without viewport-fit=cover those insets
 // read as zero in the installed app (Khikar, 17 Oct).

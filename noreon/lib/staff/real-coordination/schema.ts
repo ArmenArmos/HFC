@@ -25,7 +25,8 @@ export const memberOptionsSchema=z.array(z.object({id:z.uuid(),name:z.string().n
 export type CoordinationTask=z.infer<typeof taskSchema>;
 export type CoordinationSnapshot=z.infer<typeof taskSnapshotSchema>;
 export type CoordinationMember=z.infer<typeof memberOptionsSchema>[number];
-export type CoordinationActor={id:string;role:'admin'|'doctor'|'nurse'};
+/** A care coordinator reads coordination tasks only; the database refuses every task command for them. */
+export type CoordinationActor={id:string;role:'admin'|'doctor'|'nurse'|'coordinator'};
 export type CoordinationResult={ok:true;id:string;revision:number;status:CoordinationTask['status']}|{ok:false;error:string;uncertain?:boolean};
 
 export const taskPageSchema=z.object({tasks:z.array(taskSchema),nextCursor:cursorSchema.nullable()});

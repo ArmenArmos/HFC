@@ -12,7 +12,7 @@ import{ResultAttach}from'@/components/clinic-portal/result-attach';
 export const maxDuration=300;
 export default async function ClinicResultsPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<Record<string,string|string[]|undefined>>}){
  if(!resultAttachEnabled())notFound();
- const context=await requireRealAdmin(),{id}=await params,locale=parseLocale((await searchParams).locale,'en'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
+ const context=await requireRealAdmin(),{id}=await params,locale=parseLocale((await searchParams).locale,'hy'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
  if(!z.uuid().safeParse(id).success)notFound();
  const result=await readResultAttachPage(context.client as unknown as ClinicRpc,id);
  if(result.status!=='loaded')return <div className="space-y-4"><h1 className="text-h1">{t('Clinic lab results','Կլինիկայի լաբորատոր արդյունքները','Результаты анализов клиники')}</h1><p role="alert" className="text-body2">{t('Clinic uploads are unavailable. Reload to try again.','Կլինիկայի ֆայլերն անհասանելի են։ Նորից փորձելու համար թարմացրեք։','Файлы клиники недоступны. Обновите, чтобы попробовать снова.')}</p></div>;

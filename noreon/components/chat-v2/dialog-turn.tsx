@@ -13,7 +13,7 @@ export function DialogTurn({ action, time, locale, children }: { action: string 
     <article className="cv2-msg cv2-zoe" data-turn-reply>
       <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(locale)}</p>
       <div ref={content} className="cv2-say cv2-turn-reply">{children}</div>
-      <Speaker text={() => content.current?.innerText ?? ""} />
+      <Speaker text={() => content.current?.innerText ?? ""} locale={locale} />
       {stamp}
     </article>
   </>;

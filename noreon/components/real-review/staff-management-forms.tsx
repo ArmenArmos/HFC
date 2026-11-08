@@ -12,10 +12,12 @@ import {SelectField} from '@/components/ui/select-field';
 import {AddStaffForm, ReissueDoctorInvitationForm, ClinicSelect, type ClinicOption} from './admin-forms';
 
 type State = {ok: boolean; message: string; operationCreated?: boolean; outcomeUnknown?: boolean; submittedVersion?: string};
-export type RealStaffRow = {id: string; name: string; email: string; role: 'doctor' | 'nurse'; clinicId: string; clinicName: string; active: boolean; version: string; assignmentCount: number; status: string; invitationId?: string; generation?: number; sendStatus?: string; expiresAt?: string};
+export type RealStaffRow = {id: string; name: string; email: string; role: 'doctor' | 'nurse' | 'coordinator'; specialty?: 'family_physician' | 'cardiologist' | null; clinicId: string; clinicName: string; active: boolean; version: string; assignmentCount: number; status: string; invitationId?: string; generation?: number; sendStatus?: string; expiresAt?: string};
 const initial: State = {ok: false, message: ''};
 const inputClass = 'mt-1 min-h-11 w-full rounded-md border bg-background px-3 py-2 text-body2 focus-visible:outline-2 focus-visible:outline-ring';
 const buttonClass = 'inline-flex min-h-11 items-center justify-center rounded-md border px-4 py-2 text-body2 font-medium hover:bg-muted disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-ring';
+/** WP F: care coordinators and the physician specialty in the staff list. */
+const staffRoleLabel=(staff: Pick<RealStaffRow,'role'|'specialty'>)=>staff.role === 'nurse' ? 'Nurse' : staff.role === 'coordinator' ? 'Care coordinator' : staff.specialty === 'cardiologist' ? 'Cardiologist' : 'Family physician';
 function Feedback({state}: {state: State}) {return state.message ? <p role={state.ok ? 'status' : 'alert'} className="text-caption">{state.message}</p> : null;}
 function useManagementAction(serverAction: (previous: State, form: FormData) => Promise<State>, onSubmit?: () => void) {
   const router = useRouter();
@@ -49,7 +51,7 @@ export function EditRealStaffForm({staff, clinics, requestId}: {staff: RealStaff
   const availableClinics = clinics.filter(clinic => clinic.active || clinic.id === editor.baseline.clinicId);
   return <form action={action} className="space-y-3" aria-label={`Edit ${staff.name}`} aria-busy={pending}>
     <input type="hidden" name="staffId" value={staff.id}/><input type="hidden" name="expectedVersion" value={editor.baseline.version}/><input type="hidden" name="requestId" value={editor.requestId}/>
-    <p className="text-caption text-muted-foreground">{staff.role === 'nurse' ? 'Nurse' : 'Doctor'} · {staff.email}</p>
+    <p className="text-caption text-muted-foreground">{staffRoleLabel(staff)} · {staff.email}</p>
     <fieldset disabled={pending || unknown || completed} className="grid min-w-0 gap-3 sm:grid-cols-2">
       <label className="min-w-0 text-body2">Full name<input name="name" value={editor.name} onChange={event => setEditor({...editor, name: event.target.value})} required maxLength={160} className={inputClass}/></label>
       <div className="min-w-0"><ClinicSelect clinics={availableClinics} value={editor.clinicId} onChange={clinicId => setEditor({...editor, clinicId})} disabled={pending || unknown || completed || clinicBlocked}/></div>
@@ -104,7 +106,7 @@ type DirectoryRecord = {staff: RealStaffRow; editRequestId: string; removeReques
 type RecoverySummary = {id: string; staffId: string; generation: number; status: string; dispatchState: string; issuedAt: string; expiresAt: string; failureCategory: string | null};
 export function RealStaffDirectory({clinics, records, recoveries = [], ready, requestId, telegram = false, telegramInvites = false, telegramRecovery = false, telegramStatuses = {}}: {telegramStatuses?: Record<string, StaffTelegramStatus>; clinics: ClinicOption[]; records: DirectoryRecord[]; recoveries?: RecoverySummary[]; ready: boolean; requestId: string; telegram?: boolean; telegramRecovery?: boolean; telegramInvites?: boolean}) {
   const [query, setQuery] = useState('');
-  const [role, setRole] = useState<'all' | 'doctor' | 'nurse'>('all');
+  const [role, setRole] = useState<'all' | 'doctor' | 'nurse' | 'coordinator'>('all');
   const [status, setStatus] = useState('current');
   const term = query.trim().toLowerCase();
   const shown = records.filter(({staff}) => {
@@ -113,7 +115,7 @@ export function RealStaffDirectory({clinics, records, recoveries = [], ready, re
     return (role === 'all' || role === staff.role) && (status === 'all' || (status === 'current' ? !removed : status === 'removed' ? removed : !removed && available === (status === 'active'))) && `${staff.name} ${staff.email} ${staff.clinicName}`.toLowerCase().includes(term);
   });
   return <div className="space-y-6">
-    <nav aria-label="Clinical team roles" className="flex flex-wrap gap-2">{([['all','All staff'],['doctor','Doctors'],['nurse','Nurses']] as const).map(([value,label]) => <button key={value} type="button" aria-pressed={role === value} onClick={() => setRole(value)} className={`inline-flex min-h-11 items-center rounded-md border px-4 text-body2 ${role === value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>{label}</button>)}</nav>
+    <nav aria-label="Clinical team roles" className="flex flex-wrap gap-2">{([['all','All staff'],['doctor','Doctors'],['nurse','Nurses'],['coordinator','Coordinators']] as const).map(([value,label]) => <button key={value} type="button" aria-pressed={role === value} onClick={() => setRole(value)} className={`inline-flex min-h-11 items-center rounded-md border px-4 text-body2 ${role === value ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>{label}</button>)}</nav>
     <details className="rounded-xl border bg-background p-5">
       <summary className="flex min-h-11 cursor-pointer items-center gap-2 text-body2 font-semibold text-primary"><Plus className="size-4" aria-hidden/>Add a doctor or nurse</summary>
       <div className="max-w-3xl border-t pt-5"><AddStaffForm clinics={clinics} ready={ready} requestId={requestId} telegram={telegramInvites}/></div>
@@ -140,7 +142,7 @@ export function RealStaffDirectory({clinics, records, recoveries = [], ready, re
             <div className="min-w-0 flex-1">
               <h2 className="break-words text-body1 font-semibold">{staff.name}</h2>
               <p className="break-all text-caption text-muted-foreground">{staff.email}</p>
-              <p className="mt-1 break-words text-caption">{staff.role === 'nurse' ? 'Nurse' : 'Doctor'} · {staff.clinicName}</p>
+              <p className="mt-1 break-words text-caption">{staffRoleLabel(staff)} · {staff.clinicName}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className={`${chip} ${available ? 'bg-surface-subtle-teal text-foreground' : 'bg-muted text-muted-foreground'}`}>{staffStatus(staff,clinicActive)}</span>
                 {telegramStatus && <span className={`${chip} gap-1.5 ${telegramStatus.enrolled ? 'bg-surface-subtle-teal text-foreground' : 'bg-muted text-muted-foreground'}`}><Send className="size-3.5 shrink-0" aria-hidden/>{telegramStatus.enrolled ? 'Telegram connected' : telegramStatus.pendingLink ? 'Telegram link not used yet' : 'Telegram not connected'}</span>}

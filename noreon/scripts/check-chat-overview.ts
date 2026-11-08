@@ -27,6 +27,7 @@ new vm.Script(code,{filename:'app/patient/chat/overview/page.tsx'}).runInNewCont
  if(name==='@/lib/patient/render-data')return {requireRegisteredForRender:async()=>{calls.push('registration');return {profile:{locale:'hy',name:'Synthetic'},assessment:{completedAt:null}};}};
  if(name==='@/lib/patient/zoe-app-v3')return {memberOverviewEnabled:()=>memberOverviewEnabled(env)};
  if(name==='@/lib/zoe/member-screen')return {zoeEmergencyCardEnabled:()=>emergencyCard};
+ if(name==='@/lib/patient/page-title')return {memberPageMetadata:async()=>({title:'Synthetic'})};
  if(name.endsWith('.css'))return {};
  throw Error(`Unexpected route boundary: ${name}`);
 }});

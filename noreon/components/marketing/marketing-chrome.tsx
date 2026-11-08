@@ -200,7 +200,7 @@ export function MarketingChrome({ children }: { children: ReactNode }) {
               </p>
               <p className="text-muted-foreground mt-4 text-caption text-pretty">
                 {t({
-                  hy: "Նորեոնը գործարկում է Հայաստանում գրանցված «ՆՈՐԵՈՆ ՀԵԼԹ» ՓԲԸ-ն։",
+                  hy: "Նորեոն Հելթը գործարկում է Հայաստանում գրանցված «ՆՈՐԵՈՆ ՀԵԼԹ» ՓԲԸ-ն։",
                   en: 'Noreon is operated by “NOREON HEALTH” CJSC, registered in Armenia.',
                 })}
               </p>

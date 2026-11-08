@@ -10,6 +10,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {act, create, type ReactTestRenderer} from 'react-test-renderer';
 import {normalizePhone,armenianNationalDigits,armenianPhoneFromNational,foreignInternationalNumber} from '@/lib/patient/validation';
 import * as realLocaleModule from '@/lib/locale';
+import * as brandModule from '@/lib/brand';
 const continuePathModule=await import('@/lib/patient/continue-path');
 // The CAPTCHA setting (NOREON_CAPTCHA_ENABLED, 19 Oct; replaced the 17 Oct staging switch): for every
 // combination, with and without the pre-launch staging marker, exercise the
@@ -92,7 +93,8 @@ try{
    if(name.endsWith('/button'))return {Button:({children,variant,size,...props}:{children:React.ReactNode;variant?:string;size?:string})=>{void variant;void size;return React.createElement('button',props,children);}};
    if(name.endsWith('/input'))return {Input:(props:object)=>React.createElement('input',props)};
    if(name.endsWith('/label'))return {Label:(props:object)=>React.createElement('label',props)};
-   if(name==='@/lib/clinic-portal/locale')return {clinicLocale:async(value:unknown)=>realLocaleModule.parseLocale(value,'en')};
+   if(name==='@/lib/clinic-portal/locale')return {clinicLocale:async(value:unknown)=>realLocaleModule.parseLocale(value,'hy')};
+   if(name==='@/lib/brand')return brandModule;
    if(name==='@/lib/locale')return realLocaleModule;throw Error(`Unexpected boundary ${name} in ${path}`);
   }});
   return exports;
@@ -144,7 +146,7 @@ try{
   const phone=await requestPhoneCode('+37499000001');
   assert.equal(phone.ok,!c.required,label('member code request without token'));
   assert.equal(auth.otp.length,c.required?0:1,label('member request reaches Auth only when CAPTCHA is off'));
-  assert.equal((await backofficeSignIn({ok:false,message:''},form())).message,c.required?'Complete the sign-in verification.':'Sign-in was unsuccessful. Check your details or contact your administrator.',label('staff and clinic sign-in without token'));
+  assert.equal((await backofficeSignIn({ok:false,message:''},form())).message,c.required?'Անցեք մուտքի ստուգումը։':'Մուտքը չհաջողվեց։ Ստուգեք տվյալները կամ կապվեք ադմինիստրատորի հետ։',label('staff and clinic sign-in without token (no locale field: Armenian, the default)'));
   assert.equal(auth.password.length,c.required?0:1,label('password sign-in reaches Auth only when CAPTCHA is off'));
   if(c.required){
    // With a token, behaviour is unchanged: it is forwarded to Auth.
@@ -164,7 +166,7 @@ try{
    assert.doesNotMatch(html,/client-env-decoy/,label(`${page} never reads the public key in the client`));
    if(c.required)assert.match(html,new RegExp(`data-captcha="${SITE}"`),label(`${page} renders the widget`));
    else assert.doesNotMatch(html,/data-captcha/,label(`${page} renders no widget`));
-   assert.equal(/<button[^>]*disabled=""[^>]*>Sign in/.test(html),c.required,label(`${page} Sign in waits for a token only when required`));
+   assert.equal(/<button[^>]*disabled=""[^>]*>Մուտք գործել/.test(html),c.required,label(`${page} Sign in waits for a token only when required`));
   }
   const member=await pages.member({}) as React.ReactElement<{siteKey:string}>;
   assert.equal(member.props.siteKey,c.required?SITE:'',label('member page passes the decided key'));

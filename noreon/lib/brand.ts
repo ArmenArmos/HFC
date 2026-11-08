@@ -56,6 +56,21 @@ export function noreonName(locale: Locale): string {
 }
 
 /**
+ * Zoe's signature at the head of a Telegram text, so her messages are never taken for the doctor's:
+ * «Զոյա՝ » (Armenian marks a label with the abbreviation mark ՝), «Зоя: », "Zoe: ". The database signs
+ * Zoe's free texts the same way (_zoe_text_enqueue, _zoe_mode_notify).
+ */
+const ZOE_SIGNATURE = Object.freeze({
+  hy: `${ZOE_HY.base}՝ `,
+  en: `${ZOE.en}: `,
+  ru: `${ZOE.ru}: `,
+} as const satisfies Record<Locale, string>);
+
+export function zoeSignature(locale: Locale): string {
+  return ZOE_SIGNATURE[locale] ?? ZOE_SIGNATURE.hy;
+}
+
+/**
  * One line for model system prompts (English): how Zoe writes her own name and the service's name in
  * each reply language. Models otherwise transliterate «Zoe» ad hoc («Զոի», «Զոե», "Zoe-ն").
  */

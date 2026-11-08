@@ -8,7 +8,7 @@ import {completeRecovery,sendRecoveryCode} from './staff-recovery';
 /** Recovery-link holder actions (T-auth B-3); shared by the staff and clinic pages. */
 export type RecoveryStepState={ok:boolean;message:string};
 const ids=(form:FormData)=>z.object({recoveryId:z.uuid(),token:z.string().regex(/^[A-Za-z0-9_-]{32}$/)}).safeParse({recoveryId:form.get('recoveryId'),token:form.get('token')});
-const tr=(form:FormData)=>(en:string,hy:string,ru:string)=>pick(parseLocale(form.get('locale'),'en'),{en,hy,ru});
+const tr=(form:FormData)=>(en:string,hy:string,ru:string)=>pick(parseLocale(form.get('locale'),'hy'),{en,hy,ru});
 
 export const sendTelegramRecoveryCode=loggedAction("sendTelegramRecoveryCode",async function sendTelegramRecoveryCode(_previous:RecoveryStepState,form:FormData):Promise<RecoveryStepState>{
  const t=tr(form),input=ids(form);
@@ -21,7 +21,7 @@ export const sendTelegramRecoveryCode=loggedAction("sendTelegramRecoveryCode",as
 });
 
 export const completeTelegramRecovery=loggedAction("completeTelegramRecovery",async function completeTelegramRecovery(_previous:RecoveryStepState,form:FormData):Promise<RecoveryStepState>{
- const t=tr(form),input=ids(form),locale=parseLocale(form.get('locale'),'en');
+ const t=tr(form),input=ids(form),locale=parseLocale(form.get('locale'),'hy');
  if(!input.success)return {ok:false,message:t('This reset link is not valid. Ask your administrator to send a new one.','Վերականգնման հղումը վավեր չէ։ Խնդրեք ադմինիստրատորին ուղարկել նորը։', 'Эта ссылка для сброса недействительна. Попросите администратора отправить новую.')};
  const fields=z.object({code:z.string().regex(/^\d{6}$/),password:z.string().min(12).max(128),confirmation:z.string()}).safeParse({code:form.get('code'),password:form.get('password'),confirmation:form.get('confirmation')});
  if(!fields.success)return {ok:false,message:t('Enter the 6-digit code and a password of at least 12 characters.','Մուտքագրեք 6 նիշանոց կոդը և առնվազն 12 նիշանոց գաղտնաբառ։', 'Введите 6-значный код и пароль длиной не менее 12 символов.')};

@@ -1,6 +1,6 @@
 import { asPerson, desktop, expect, open, openZoe, sql, staffSignIn, test } from "../fixtures";
 import { FAKE_REPLY } from "./config.mjs";
-import { answerTo, askForDoseCard, deliver, doctorReplies, dueNow, failNext, person, pressUpdate, say, sent, sweep, texts, zoeFinished } from "./bot";
+import { answerTo, askForDoseCard, deliver, doctorReplies, dueNow, failNext, isZoeText, person, pressUpdate, say, sent, sweep, texts, zoeFinished } from "./bot";
 
 test("a lost send is never repeated and shows as not delivered", async ({ browser }) => {
   const member = person("tgFail"), reply = "A doctor's reply that gets lost.";
@@ -11,7 +11,7 @@ test("a lost send is never repeated and shows as not delivered", async ({ browse
     await say(member.chat, "What does a high cholesterol reading mean?");
     await zoeFinished(member.id);
     await sweep();
-    const zoe = (await sent(member.chat)).filter((c) => String(c.body.text).startsWith("Zoe:"));
+    const zoe = (await sent(member.chat)).filter((c) => isZoeText(String(c.body.text)));
     expect(zoe, "one attempt only").toHaveLength(1);
     expect(zoe[0].failed).toBe("drop");
     expect(sql(`select state from public.system_messages where member_id='${member.id}' and template_id like 'zoe.%' order by created_at desc limit 1`)).toBe("unknown");

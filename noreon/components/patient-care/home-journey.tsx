@@ -3,6 +3,7 @@ import { Check, ChevronRight, Stethoscope } from "lucide-react";
 import type { PatientLocale } from "@/lib/patient/copy";
 import { JOURNEY_STAGES, STAGE_LABEL } from "@/lib/patient-care/journey-strip";
 import { CareLink, copy } from "./common";
+import { zoeName } from "@/lib/brand";
 
 /** Where you are: questionnaire → tests → results → plan (Khikar, 17 Oct). */
 export function HomeJourneyStrip({ current, locale: l }: { current: number; locale: PatientLocale }) {
@@ -104,7 +105,7 @@ export function HomeZoeCard({ locale: l }: { locale: PatientLocale }) {
         <span className="journey-orb" aria-hidden />
         <div className="min-w-0">
           <h2 id="home-zoe-title" className="text-h2">
-            Zoe <span className="text-body2 font-normal text-muted-foreground">· {copy(l, "your care assistant", "ձեր խնամքի օգնականը", "ваш помощник в лечении")}</span>
+            {zoeName(l)} <span className="text-body2 font-normal text-muted-foreground">· {copy(l, "your care assistant", "ձեր խնամքի օգնականը", "ваш помощник в лечении")}</span>
           </h2>
           <p className="text-body2">
             {copy(

@@ -6,7 +6,7 @@ import{clinicHostAllowed,clinicPortalEnabled}from'./config';
 /** Cookie refresh only. Membership/current-session authority remains mandatory
  * in the route and every RPC. Never touches patient or Noreon staff cookies. */
 export async function updateClinicSession(request:NextRequest){
- const locale=parseLocale(request.nextUrl.searchParams.get('locale'),parseLocale(request.cookies.get('noreon-clinic-locale')?.value,'en'));
+ const locale=parseLocale(request.nextUrl.searchParams.get('locale'),parseLocale(request.cookies.get('noreon-clinic-locale')?.value,'hy'));
  const t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
  if(!clinicPortalEnabled()||!clinicHostAllowed(request.headers.get('host')??request.nextUrl.host))return new NextResponse(t('Not found','Չի գտնվել','Не найдено'),{status:404});
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

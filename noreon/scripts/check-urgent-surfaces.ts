@@ -72,7 +72,7 @@ assert.equal(whoNeedsMe(day).p0Total,5);
 
 // Render the actual pages/components with only auth, IO and unrelated sections replaced.
 const empty=()=>null;
-const modules:Record<string,unknown>={'@/lib/lab-ai/provenance':labProvenance,'@/components/staff/upload-identity-check':{UploadIdentityChecks},
+const modules:Record<string,unknown>={'@/lib/brand':await import('@/lib/brand'),'@/lib/lab-ai/provenance':labProvenance,'@/components/staff/upload-identity-check':{UploadIdentityChecks},
  'react':React,'react/jsx-runtime':jsx,'lucide-react':icons,
  '@/lib/staff/member-identity':memberIdentity,
  '@/lib/staff/chat-member-identity-actions':{readStaffChatMemberIdentities:async()=>[]},

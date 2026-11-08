@@ -311,7 +311,7 @@ for(const locale of ['en','hy'] as const){
  assert.doesNotMatch(unanswered,/STAGING|tel:103/,'No STAGING label or 103 in the chat');
  assert.equal((html.match(/data-zoe-bubble="answer"/g)??[]).length,1);
  const answerBubble=html.slice(html.indexOf('data-zoe-bubble="answer"'),html.indexOf('Zoe logistics answer'));
- assert.ok(answerBubble.includes(locale==='en'?'Zoe · AI assistant':'Zoe · ԱԲ օգնական')&&!answerBubble.includes('Dr Synthetic'),'Zoe’s answer is labelled as Zoe, never as the doctor');
+ assert.ok(answerBubble.includes(locale==='en'?'Zoe · AI assistant':'Զոյա · ԱԲ օգնական')&&!answerBubble.includes('Dr Synthetic'),'Zoe’s answer is labelled as Zoe, never as the doctor');
  assert.ok(html.includes(locale==='en'?'via Telegram':'Telegram-ով'),'Telegram messages are marked');
  for(const href of ['/patient/service','/patient/reports','/patient/measurements/new'])assert.ok(html.includes(`href="${href}"`),`chip ${href}`);
  assert.ok(html.includes(locale==='en'?'Write to your doctor':'Գրել ձեր բժշկին'),'Write-to-doctor chip');

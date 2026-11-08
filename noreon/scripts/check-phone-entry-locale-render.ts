@@ -8,6 +8,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {tx} from '@/lib/patient/copy';
 import {normalizePhone,armenianNationalDigits,armenianPhoneFromNational,foreignInternationalNumber} from '@/lib/patient/validation';
 import * as realLocaleModule from '@/lib/locale';
+import * as realBrandModule from '@/lib/brand';
 const continuePathModule=await import('@/lib/patient/continue-path');
 let cookie:string|undefined;
 let identity:object|null=null;
@@ -41,7 +42,7 @@ const load=(path:string):Record<string,unknown>=>{
   if(name.endsWith('/button')) return {Button:({children,variant,size,...props}:{children:React.ReactNode;variant?:string;size?:string})=>{void variant;void size;return React.createElement('button',props,children);}};
   if(name.endsWith('/input')) return {Input:(props:React.InputHTMLAttributes<HTMLInputElement>)=>React.createElement('input',props)};
   if(name.endsWith('/label')) return {Label:(props:React.LabelHTMLAttributes<HTMLLabelElement>)=>React.createElement('label',props)};
-  if(name==='@/lib/locale')return realLocaleModule;throw new Error(`Unexpected boundary ${name}`);
+  if(name==='@/lib/locale')return realLocaleModule;if(name==='@/lib/brand')return realBrandModule;throw new Error(`Unexpected boundary ${name}`);
  }});
  return exports;
 };
@@ -50,11 +51,11 @@ const Entry=load('components/patient/phone-entry.tsx').PhoneEntry as React.Compo
 for(cookie of ['en','hy',undefined,'invalid']) {
  const html=renderToStaticMarkup(await Page({}));
  const english=cookie==='en';
- assert.match(html,english?/Welcome to Noreon/:/Բարի գալուստ Noreon/,'Fresh signed-out render must respect saved language and default HY');
+ assert.match(html,english?/Welcome to Noreon/:/Բարի գալուստ Նորեոն Հելթ/,'Fresh signed-out render must respect saved language and default HY');
  assert.match(html,english?/data-locale="en"/:/data-locale="hy"/);
 }
 assert.match(renderToStaticMarkup(React.createElement(Entry,{initialLocale:'en'})),/Welcome to Noreon/);
-assert.match(renderToStaticMarkup(React.createElement(Entry,{})),/Բարի գալուստ Noreon/);
+assert.match(renderToStaticMarkup(React.createElement(Entry,{})),/Բարի գալուստ Նորեոն Հելթ/);
 assert.equal(captchaKey,undefined,'Welcome does not mount CAPTCHA before Continue');
 assert.doesNotMatch(renderToStaticMarkup(React.createElement(Entry,{initialLocale:'en'})),/data-captcha/);
 assert.match(renderToStaticMarkup(React.createElement(Entry,{initialLocale:'en'})),/Sign in or create your account/);
@@ -66,7 +67,7 @@ for(const gate of [true,false]) {
  for(const [saved,requested,english] of [['hy','en',true],['en','hy',false],['en','invalid',true],['hy',['en','hy'],false]] as const) {
   cookie=saved;
   const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({locale:requested as string|string[]})}));
-  assert.match(html,gate?(english?/Welcome to Noreon/:/Բարի գալուստ Noreon/):(english?/Registration opens soon/:/Գրանցումը՝ շուտով/),'Native fallback language must reach the actual entry screen; invalid or repeated preferences fall back to saved locale');
+  assert.match(html,gate?(english?/Welcome to Noreon/:/Բարի գալուստ Նորեոն Հելթ/):(english?/Registration opens soon/:/Գրանցումը՝ շուտով/),'Native fallback language must reach the actual entry screen; invalid or repeated preferences fall back to saved locale');
   if(!gate) assert.doesNotMatch(html,/<form/,'Language links cannot enable registration');
  }
 }
@@ -80,7 +81,7 @@ for(cookie of ['en','hy',undefined,'invalid']) {
  assert.match(closed,english?/<h1[^>]*>Registration opens soon<\/h1>/:/<h1[^>]*>Գրանցումը՝ շուտով<\/h1>/);
  assert.match(closed,english?/Phone verification is being prepared\. Registration is not open yet\./:/Հեռախոսահամարի հաստատումը նախապատրաստվում է։ Գրանցումը դեռ բաց չէ։/);
  assert.match(closed,/mailto:info@noreon.health/);
- assert.match(closed,english?/Contact Noreon/:/Կապվել Noreon-ի հետ/);
+ assert.match(closed,english?/Contact Noreon/:/Կապվել Նորեոն Հելթի հետ/);
  assert.doesNotMatch(closed,/Your health, in one place/);
  assert.doesNotMatch(closed,/<form/);
 }

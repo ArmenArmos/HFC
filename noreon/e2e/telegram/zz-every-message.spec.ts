@@ -1,6 +1,6 @@
 // Runs last (zz): scans every message the fake Telegram saw during the run against Telegram's limits and the voice rules.
 import { expect, test } from "../fixtures";
-import { allCalls } from "./bot";
+import { allCalls, isZoeText } from "./bot";
 import { problems } from "./cards-lib";
 import { telegramPeople, chatOf, FAKE_REPLY } from "./config.mjs";
 
@@ -10,7 +10,7 @@ test("every message the app sent in this run keeps the limits and the member's l
   const bad: string[] = [];
   for (const c of calls) {
     // The placeholder templates are not card text; only card messages are held to the language rule.
-    const isCard = c.method !== "answerCallbackQuery" && (c.body.text ?? "").startsWith("Zoe:") && !Object.values(FAKE_REPLY).some((r) => (c.body.text ?? "").includes(r));
+    const isCard = c.method !== "answerCallbackQuery" && isZoeText(c.body.text ?? "") && !Object.values(FAKE_REPLY).some((r) => (c.body.text ?? "").includes(r));
     for (const p of problems(c, isCard ? lang.get(c.body.chat_id ?? 0) : undefined)) bad.push(`${c.method} chat ${c.body.chat_id}: ${p} :: ${(c.body.text ?? "").slice(0, 80).replaceAll("\n", " | ")}`);
   }
   expect(bad).toEqual([]);

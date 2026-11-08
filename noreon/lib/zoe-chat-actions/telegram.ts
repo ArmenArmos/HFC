@@ -6,6 +6,7 @@ import {assessLdl,formatMmol,formatPercent,ldlOnePartMet,ldlReductionShown} from
 import {BP,CHIP,COMMON,DOSE,LDL,PLAN,RESULTS,SIDE,SIDE_EFFECT,SIDE_EFFECTS,TELEGRAM,TG_WRITE,TITLE,VISIT,bpText,say,type CardLocale,type SideEffect} from './copy';
 import {TELEGRAM_CARD_KINDS,TELEGRAM_MENU_KINDS,doseItem,type CardButtonAction,type ValidCard,type ZoeCard} from './registry';
 import {LIVING_VISIT} from './living-visit';
+import {zoeSignature} from '@/lib/brand';
 
 /**
  * A card as a Telegram message: plain text (never parse_mode) and buttons. The same immutable snapshot and recorded
@@ -20,7 +21,7 @@ const MAX_TEXT=4096;
 const PREP_MAX=1500;
 const fmt=(iso:string,o:Intl.DateTimeFormatOptions)=>new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Yerevan',...o}).format(new Date(iso));
 const shownAt=(iso:string)=>`${fmt(iso,{day:'2-digit',month:'2-digit',year:'numeric'}).replaceAll('/','.')}, ${fmt(iso,{hour:'2-digit',minute:'2-digit',hourCycle:'h23'})}`;
-const head=(card:ZoeCard,l:CardLocale,title:string)=>`Zoe: ${title}\n${say(l,COMMON.asShown(shownAt(card.at)))}`;
+const head=(card:ZoeCard,l:CardLocale,title:string)=>`${zoeSignature(l)}${title}\n${say(l,COMMON.asShown(shownAt(card.at)))}`;
 
 function doseView(card:Extract<ValidCard,{kind:'dose'}>,l:CardLocale):TelegramCardView{
  const top=head(card,l,say(l,TITLE.dose)),s=card.snapshot;
@@ -154,7 +155,7 @@ export function askAnswered(c:typeof MEDICINE_ASK_COPY['en'],reason:string){
 }
 function askView(card:Extract<ValidCard,{kind:'ask'}>,l:CardLocale):TelegramCardView{
  const c=MEDICINE_ASK_COPY[l],s=card.snapshot,when=askWhen(s.dueAt,new Date(card.at),l);
- const top=`Zoe: ${c.title}\n${s.trigger==='skipped'?c.skipped(s.name,when):c.missed(s.name,when)}`;
+ const top=`${zoeSignature(l)}${c.title}\n${s.trigger==='skipped'?c.skipped(s.name,when):c.missed(s.name,when)}`;
  const done=card.outcome.answer as {reason?:string}|undefined;
  if(done?.reason)return {text:`${top}\n\n${c.reasons[done.reason as AskReason]??''}\n\n${askAnswered(c,done.reason)}`,rows:[]};
  if(card.state==='done')return {text:`${top}\n\n${say(l,COMMON.closed)}`,rows:[]};
@@ -183,9 +184,9 @@ export function telegramCardView(card:ZoeCard,l:CardLocale):TelegramCardView|nul
  // The list of tasks: nothing recorded on it, so there is no "current" to show.
  if(card.kind==='ask')return askView(card,l);
  if(card.kind==='side_effect')return sideEffectView(card,l);
- if(card.kind==='message')return {text:`Zoe: ${say(l,TITLE.message)}\n\n${say(l,TG_WRITE.message)}`,rows:[]};
- if(card.kind==='menu'&&card.snapshot.line&&!card.snapshot.kinds)return {text:`Zoe: ${memberInstruction(card.snapshot.line,l)}`,rows:[]};
- if(card.kind==='menu')return {text:`Zoe: ${say(l,TITLE.menu)}`,rows:TELEGRAM_MENU_KINDS.map(kind=>[{label:say(l,CHIP[kind]),action:'open_card',item:{kind}}])};
+ if(card.kind==='message')return {text:`${zoeSignature(l)}${say(l,TITLE.message)}\n\n${say(l,TG_WRITE.message)}`,rows:[]};
+ if(card.kind==='menu'&&card.snapshot.line&&!card.snapshot.kinds)return {text:`${zoeSignature(l)}${memberInstruction(card.snapshot.line,l)}`,rows:[]};
+ if(card.kind==='menu')return {text:`${zoeSignature(l)}${say(l,TITLE.menu)}`,rows:TELEGRAM_MENU_KINDS.map(kind=>[{label:say(l,CHIP[kind]),action:'open_card',item:{kind}}])};
  const view=card.kind==='dose'?doseView(card,l):card.kind==='bp'?bpView(card,l):card.kind==='results'?resultsView(card,l):card.kind==='plan'?planView(card,l):card.kind==='ldl'?ldlView(card,l):card.kind==='visit'?visitView(card,l):null;
  return view&&{...view,rows:[...view.rows,[{label:say(l,COMMON.showCurrent),action:'show_current',item:{}}]]};
 }

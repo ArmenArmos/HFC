@@ -90,7 +90,7 @@ select pg_temp.ok(exists(select 1 from jsonb_array_elements(public.conversation_
 reset role;
 select pg_temp.ok(not has_function_privilege('service_role','public._channel_inbox_receive_media(public.channel_inbox)','execute')and not has_function_privilege('authenticated','public._channel_inbox_receive_media(public.channel_inbox)','execute'),'Media handler is internal only');
 select pg_temp.ok((select template_id='telegram.media_to_app'and body like '%103%'from public.system_messages where member_id='d1300000-0000-4000-8000-000000000007'),'Approved wording takes over the reply, and keeps 103');
-select pg_temp.ok((select count(distinct locale)=2 from public.system_message_templates where template_id='telegram.media_to_app'),'The reply exists in both Telegram languages');
+select pg_temp.ok((select array_agg(distinct locale)@>array['en','hy']from public.system_message_templates where template_id='telegram.media_to_app'),'The reply exists in both Telegram languages');
 select pg_temp.ok(exists(select 1 from public.conversation_trace_events e where e.member_id='d1300000-0000-4000-8000-000000000007'and e.name='auto_ack.decided'and e.outcome='queued'and e.rule_id='telegram.media_to_app')
  and not exists(select 1 from public.conversation_trace_events e where e.member_id='d1300000-0000-4000-8000-000000000007'and e.name='auto_ack.decided'and e.outcome='skipped'),'The trace records the reply that was queued, and no false skip');
 \echo PASS telegram media: identifiers only, conversation advances, queued reply held, one alert and one held text-only reply per window, doctor told (rolled back)

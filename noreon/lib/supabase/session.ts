@@ -25,6 +25,8 @@ const PROTECTED_PREFIXES = [
   "/patient/measurements",
   "/patient/account",
   "/patient/example",
+  // WP F: the caregiver surface (members cared for, invitations).
+  "/patient/caring",
 ];
 
 /**

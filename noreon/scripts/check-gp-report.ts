@@ -51,7 +51,9 @@ const source=fixtureSource();
 const report=build(source);
 // Snapshot of the fictional report built by main with the switch off, taken after #518 changed which tests the report lists
 // (3 Nov: main and this branch with the switch off hash the same). It proves the switch adds nothing when off.
-assert.equal(createHash('sha256').update(JSON.stringify(report)).digest('hex'),'46aec3fa3306ddd974453f75583ecb8442300d8fd82b5e55c4c870064e31f5c8','switch-off report remains byte-identical');
+// Re-taken 8 Nov after the Armenian brand names (Noreon-ի -> Նորեոն Հելթի, WP B); mapping the names back gives the
+// 3 Nov hash 46aec3fa3306ddd974453f75583ecb8442300d8fd82b5e55c4c870064e31f5c8, so nothing else changed.
+assert.equal(createHash('sha256').update(JSON.stringify(report)).digest('hex'),'fa0ddea7fb762301d76e7053230051e9837ea7fd3849d7f357fb256aa88dd688','switch-off report remains byte-identical');
 assert.deepEqual(buildGpReport({memberId:FIXTURE_MEMBER,token:'a'.repeat(32),readAt:FIXTURE_READ_AT,source,versions:[],resultsAssessment:false}),report);
 const phase2=buildGpReport({memberId:FIXTURE_MEMBER,token:'a'.repeat(32),readAt:FIXTURE_READ_AT,source,versions:[],resultsAssessment:true});
 assert.ok(phase2.results);

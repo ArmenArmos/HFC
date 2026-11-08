@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { EmailSubmission } from "@/lib/messaging/brevo-email";
 
 export const invitationContextSchema = z.object({
-  role: z.enum(["doctor", "nurse"]),
+  role: z.enum(["doctor", "nurse", "coordinator"]), specialty: z.enum(["family_physician", "cardiologist"]).nullable().optional(),
   id: z.uuid(), generation: z.number().int().positive().safe(), operationId: z.uuid(),
   expectedAuthUserId: z.uuid(), authUserId: z.uuid().nullable(), email: z.email().max(320), name: z.string().min(1).max(160),
   clinicId: z.uuid(), issuerId: z.uuid(), status: z.enum(["pending", "verified", "accepted", "revoked"]),
@@ -22,7 +22,7 @@ export type InvitationDispatch = {
   bind(id: string): Promise<InvitationContext>;
   generateLink(email: string, type: "invite" | "recovery"): Promise<{ userId: string; tokenHash: string }>;
   storeToken(digest: string, type: "invite" | "recovery"): Promise<InvitationContext>;
-  send(input: { name: string; email: string; url: string; role: "doctor" | "nurse" }): Promise<EmailSubmission>;
+  send(input: { name: string; email: string; url: string; role: "doctor" | "nurse" | "coordinator" }): Promise<EmailSubmission>;
   record(result: EmailSubmission): Promise<void>;
 };
 export type StaffAdminActionState = { ok: boolean; message: string; reservationCreated?:boolean; operationCreated?:boolean; outcomeUnknown?:boolean };

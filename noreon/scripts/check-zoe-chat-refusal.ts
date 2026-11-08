@@ -173,9 +173,9 @@ for (const locale of ['en', 'hy'] as const) {
  await type(tree, 'Question again');
  await submit(tree);
  assert.equal(routedToDoctor, true, 'Doctor mode routes the stored message to the doctor');
- assert.ok(!text(tree.root).includes(locale === 'en' ? 'Zoe is writing a reply' : 'Zoe-ն պատասխան է գրում'), 'Settled doctor message never shows Zoe typing');
+ assert.ok(!text(tree.root).includes(locale === 'en' ? 'Zoe is writing a reply' : 'Զոյան պատասխան է գրում'), 'Settled doctor message never shows Zoe typing');
  assert.ok(text(tree.root).includes(locale === 'en' ? 'Sent to your doctor. They will answer here.' : 'Ուղարկված է ձեր բժշկին։ Պատասխանը կստանաք այստեղ։'), 'Doctor send confirms where the reply will appear');
- assert.equal(box(tree).props.placeholder, locale === 'en' ? 'Write to Zoe…' : 'Գրեք Zoe-ին…', 'Stored message resets the hint');
+ assert.equal(box(tree).props.placeholder, locale === 'en' ? 'Write to Zoe…' : 'Գրեք Զոյային…', 'Stored message resets the hint');
  await act(async () => tree.unmount());
 }
 

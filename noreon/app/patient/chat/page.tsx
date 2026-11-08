@@ -18,9 +18,13 @@ import { MemberChat, type MemberChatNextStep } from "@/components/chat-v2/member
 import { readJourneyStage } from "@/lib/patient/journey-read";
 import { STAGE_CLASSES, STAGE_LINKS } from "@/lib/patient/journey-stage";
 import { memberJourneyStep } from "@/lib/patient-care/journey-step";
+import { caregiversEnabled } from "@/lib/caregivers/schema";
+import { memberConsentsEnabled } from "@/lib/consents/schema";
+import { readCaregiverInvitations, sessionCaregiverRpc } from "@/lib/caregivers/server";
+import { memberPageMetadata } from "@/lib/patient/page-title";
 import "@/components/chat-v2/chat.css";
 
-export const metadata = { title: "Noreon chat" };
+export const generateMetadata = () => memberPageMetadata("chat");
 
 export default async function MemberChatPage() {
   if (process.env.NOREON_MEMBER_CHAT_V2 !== "true") notFound();
@@ -54,7 +58,10 @@ export default async function MemberChatPage() {
   const onboarding = v3 ? { profileRequest: await readProfileOffer(cards, !!prompt?.zoeScreen) } : undefined;
   const push = memberPushConfig();
   const voiceOn = access.kind === "chat" && v3 && await voiceAvailable();
-  return <MemberChat bpPhoto={bpPhotoEnabled()} voice={access.kind === "chat" && v3 ? { microphone: voiceOn, conversation: voiceOn } : undefined} {...(stepOn ? { nextStep, refreshOnComplete: true } : {})} cards={cards} onboarding={onboarding} overview={zoeAppV3Enabled()} locale={profile.locale} memberName={profile.name} revision={assessment.revision}
+  // WP F (dark): the member settings cards, and invitations to help someone else, shown at the top of the conversation.
+  const settings = v3 ? { caregivers: caregiversEnabled(), consents: memberConsentsEnabled() } : undefined;
+  const invitations = settings?.caregivers ? await readCaregiverInvitations(await sessionCaregiverRpc()) : null;
+  return <MemberChat settings={settings} caregiverInvitations={invitations?.ok ? invitations.data.invitations : []} bpPhoto={bpPhotoEnabled()} voice={access.kind === "chat" && v3 ? { microphone: voiceOn, conversation: voiceOn } : undefined} {...(stepOn ? { nextStep, refreshOnComplete: true } : {})} cards={cards} onboarding={onboarding} overview={zoeAppV3Enabled()} locale={profile.locale} memberName={profile.name} revision={assessment.revision}
     assessment={assessment} emergencyCard={emergencyCard}
     memberPush={push && access.kind === "chat" ? { publicKey: push.publicKey } : null}
     initial={access.kind === "chat" ? access.thread : null} emergencyCheck={emergencyCheck}

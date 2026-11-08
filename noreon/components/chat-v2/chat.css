@@ -7,17 +7,21 @@
   --cv2-zone-green:#1B6B45; --cv2-zone-green-bg:#E3F3EA; --cv2-zone-yellow:#6E5200; --cv2-zone-yellow-bg:#FFF3CC; --cv2-zone-orange:#9A3D00; --cv2-zone-orange-bg:#FFE7D6; --cv2-zone-red:#C62828; --cv2-zone-red-bg:#FDE8E8;
   --cv2-pill:999px; --cv2-bubble:18px; --cv2-tail:4px; --cv2-composer:30px;
   --cv2-shadow:0 1px 2px rgba(17,17,20,.04);
+  /* Elderly-friendly floor (WP B): every control is at least the design system's 44px control height,
+     and message text reads at 18px. Both follow the root font size, so the Me text-size preference scales them. */
+  --cv2-target:var(--control-height-md, 2.75rem); --cv2-text:1.125rem;
   --cv2-orb:radial-gradient(circle at 32% 26%,#FFFFFF 0%,rgba(255,255,255,.75) 14%,rgba(255,255,255,0) 42%),radial-gradient(circle at 22% 72%,#8FB8FF 0%,rgba(143,184,255,0) 58%),radial-gradient(circle at 78% 28%,#9FE8E0 0%,rgba(159,232,224,0) 56%),radial-gradient(circle at 72% 78%,#BFC4F7 0%,rgba(191,196,247,0) 58%),radial-gradient(circle at 50% 50%,#F7FAFF 0%,#EEF3FB 100%);
   --cv2-orb-shadow:inset 0 0 0 1.5px #FFFFFF,inset 0 -2px 6px rgba(120,140,200,.16),0 2px 6px rgba(60,90,160,.16);
   font-family:var(--font-inter, Inter),var(--font-armenian, 'Noto Sans Armenian'),system-ui,sans-serif;
-  color:var(--cv2-ink); font-size:15.5px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  color:var(--cv2-ink); font-size:var(--cv2-text); line-height:1.5; -webkit-font-smoothing:antialiased;
 }
 html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; overflow:clip!important; overscroll-behavior:none; }
 .cv2-root { position:fixed; inset:var(--chat-view-top,0px) 0 auto; height:100dvh; height:var(--chat-view-height,100dvh); min-height:0; display:flex; flex-direction:column; overflow:clip; background:var(--cv2-canvas); isolation:isolate; }
 .cv2-root *, .cv2-menu * { box-sizing:border-box; }
 .cv2-root p, .cv2-root h1, .cv2-root h2 { margin:0; }
 .cv2-root button, .cv2-menu button { cursor:pointer; font:inherit; border:0; -webkit-tap-highlight-color:transparent; }
-.cv2-root button:focus-visible, .cv2-root textarea:focus-visible, .cv2-menu button:focus-visible { outline:2px solid var(--cv2-blue); outline-offset:2px; }
+.cv2-root button:focus-visible, .cv2-root textarea:focus-visible, .cv2-menu button:focus-visible,
+.cv2-root :is(a[href], summary, select, input, [tabindex="0"]):focus-visible, .cv2-menu :is(a[href], summary, select, input):focus-visible { outline:3px solid var(--cv2-blue); outline-offset:2px; }
 .cv2-root button:disabled, .cv2-menu button:disabled { opacity:.5; cursor:default; }
 .cv2-header { display:flex; flex:none; align-items:center; gap:10px; padding:calc(8px + env(safe-area-inset-top)) 16px 10px; background:var(--cv2-white); border-bottom:1px solid var(--cv2-hair); }
 .cv2-header h1 { display:flex; align-items:center; gap:10px; flex:1; font-size:17px; font-weight:800; letter-spacing:-.03em; line-height:1; }
@@ -32,7 +36,9 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-thread { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:10px 16px 14px; overscroll-behavior:contain; overflow-anchor:none; scrollbar-width:thin; }
 .cv2-messages { display:flex; flex-direction:column; gap:8px; min-height:100%; }
 .cv2-messages > * { flex:none; }
-.cv2-msg { position:relative; min-width:0; font-size:15.5px; line-height:1.45; overflow-wrap:anywhere; }
+.cv2-msg { position:relative; min-width:0; font-size:var(--cv2-text); line-height:1.5; overflow-wrap:anywhere; }
+/* Every control inside a message or card is a full touch target. */
+.cv2-root .cv2-msg :is(button, summary, select, [role=button]), .cv2-root .cv2-msg a[href]:is(.cv2-link, .cv2-next-link, [class*="button"]) { min-height:var(--cv2-target); min-width:var(--cv2-target); }
 .cv2-zoe { align-self:flex-start; margin-top:10px; width:100%; }
 .cv2-say { white-space:pre-wrap; }
 .cv2-zoe .cv2-say { width:fit-content; max-width:92%; padding:12px 14px; background:var(--cv2-white); border-radius:var(--cv2-bubble) var(--cv2-bubble) var(--cv2-bubble) var(--cv2-tail); }
@@ -40,10 +46,10 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-doctor .cv2-say { background:var(--cv2-blue-soft); }
 .cv2-me { align-self:flex-end; background:var(--cv2-blue); color:var(--cv2-white); padding:11px 15px; border-radius:var(--cv2-bubble) var(--cv2-bubble) var(--cv2-tail) var(--cv2-bubble); margin-top:12px; max-width:86%; }
 .cv2-me + .cv2-me { margin-top:4px; }
-.cv2-from { display:flex; align-items:center; gap:7px; margin:0 0 5px 2px!important; font-size:12.5px; font-weight:700; }
-.cv2-time { font-size:12px; color:var(--cv2-muted); margin:3px 0 0 2px!important; font-weight:500; }
+.cv2-from { display:flex; align-items:center; gap:7px; margin:0 0 5px 2px!important; font-size:.9375rem; font-weight:700; }
+.cv2-time { font-size:.875rem; color:var(--cv2-muted); margin:3px 0 0 2px!important; font-weight:500; }
 .cv2-me .cv2-time { text-align:right; color:color-mix(in srgb,var(--cv2-white) 75%,transparent); }
-.cv2-me button { background:transparent; color:inherit; min-height:44px; text-decoration:underline; }
+.cv2-me button { background:transparent; color:inherit; min-height:var(--cv2-target); text-decoration:underline; }
 .cv2-next-link { display:inline-flex; align-items:center; min-height:48px; padding:8px 0; color:var(--cv2-blue-text); text-decoration:underline; }
 .cv2-next-link:focus-visible { outline:2px solid var(--cv2-blue); outline-offset:2px; }
 .cv2-zoe .cv2-welcome { font-size:22px; font-weight:700; line-height:1.2; letter-spacing:-.03em; padding:14px 16px; }
@@ -60,13 +66,13 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-composer textarea { display:block; flex:1; width:100%; min-width:0; height:42px; border:0; padding:10px 0; resize:none; overflow-y:auto; background:transparent; font-weight:500; font-family:inherit; font-size:16px; line-height:22px; color:var(--cv2-ink); }
 .cv2-composer textarea::placeholder { color:var(--cv2-muted); font-weight:500; }
 .cv2-composer textarea:focus { outline:none; }
-.cv2-composer button { width:44px; height:44px; flex:none; display:grid; place-items:center; border-radius:var(--cv2-pill); background:var(--cv2-white); color:var(--cv2-ink); }
+.cv2-composer button { width:var(--cv2-target); height:var(--cv2-target); flex:none; display:grid; place-items:center; border-radius:var(--cv2-pill); background:var(--cv2-white); color:var(--cv2-ink); }
 .cv2-composer button[type=submit] { background:var(--cv2-blue); color:var(--cv2-white); }
 .cv2-new { position:absolute; bottom:94px; left:50%; transform:translateX(-50%); min-height:44px; padding:8px 14px; border-radius:var(--cv2-pill); background:var(--cv2-white); color:var(--cv2-blue-text); box-shadow:var(--cv2-shadow); white-space:nowrap; }
 .cv2-consent { max-width:92%; padding:12px 14px; background:var(--cv2-white); border-radius:var(--cv2-bubble) var(--cv2-bubble) var(--cv2-bubble) var(--cv2-tail); }
 .cv2-consent .journey-card { padding:0; border:0; background:transparent; box-shadow:none; }
 .cv2-consent header > span { display:none; }
-.cv2-consent h2 { font-size:15.5px; font-weight:700; line-height:1.45; }
+.cv2-consent h2 { font-size:var(--cv2-text); font-weight:700; line-height:1.45; }
 .cv2-menu { position:fixed; top:auto; bottom:0; width:100%; max-width:480px; max-height:90dvh; overflow:auto; margin:auto auto 0; padding:24px 20px max(24px,env(safe-area-inset-bottom)); border:0; border-radius:var(--radius-xl) var(--radius-xl) 0 0; background:var(--cv2-white); }
 .cv2-menu:focus { outline:none; }
 .cv2-menu::backdrop { background:color-mix(in srgb,var(--cv2-ink) 30%,transparent); }
@@ -98,7 +104,7 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-push button { min-height:44px; padding:8px 12px; margin-top:8px; border-radius:var(--radius-md); background:var(--cv2-blue-soft); color:var(--cv2-blue-text); white-space:normal; }
 .cv2-push button + button { margin-left:8px; background:transparent; }
 
-.cv2-reading { max-width:34rem; padding:16px; background:var(--cv2-white); border-radius:var(--radius-2xl); font-size:14.5px; }
+.cv2-reading { max-width:34rem; padding:16px; background:var(--cv2-white); border-radius:var(--radius-2xl); font-size:1rem; }
 .cv2-reading h3 { display:flex; align-items:center; gap:8px; margin:0 0 6px; font-size:16px; font-weight:700; letter-spacing:-.02em; }
 .cv2-reading-week { color:var(--cv2-muted); font-size:12px; margin-bottom:8px!important; }
 .cv2-reading-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:8px; }
@@ -115,7 +121,7 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-turn-reply .cv2-reading-week { margin-bottom:0!important; }
 .cv2-turn-reply [data-zoe-bp-saved] { font-weight:700; }
 .cv2-bottom [data-chat-suggestions] { margin-bottom:8px; }
-.cv2-root [data-chat-suggestions] button { min-height:44px; max-width:100%; white-space:normal; padding:8px 14px; border:1px solid var(--cv2-hair); border-radius:var(--cv2-pill); background:var(--cv2-white); color:var(--cv2-ink); font-size:13px; text-align:start; }
+.cv2-root [data-chat-suggestions] button { min-height:var(--cv2-target); min-width:var(--cv2-target); max-width:100%; white-space:normal; padding:8px 14px; border:1px solid var(--cv2-dots); border-radius:var(--cv2-pill); background:var(--cv2-white); color:var(--cv2-ink); font-size:1rem; text-align:start; }
 
 /* Blood pressure flow. A zone is always an icon and words, never a colour alone. */
 .cv2-zone { display:inline-flex; align-items:center; gap:5px; padding:3px 9px 3px 7px; border-radius:var(--cv2-pill); font-size:12.5px; font-weight:700; line-height:1.3; }
@@ -166,7 +172,7 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-med { display:grid; gap:8px; padding:12px 0; border-top:1px solid var(--cv2-hair); }
 .cv2-med > p:first-child { font-weight:700; }
 .cv2-root .cv2-block .cv2-reading-save { margin-top:0; }
-.cv2-root .cv2-link { min-height:44px; padding:0; background:transparent; color:var(--cv2-blue-text); font-weight:600; text-decoration:underline; text-align:start; }
+.cv2-root .cv2-link { min-height:var(--cv2-target); padding:0; background:transparent; color:var(--cv2-blue-text); font-weight:600; text-decoration:underline; text-align:start; }
 .cv2-reading [role=alert] { color:var(--cv2-alert); }
 
 /* Voice controls reuse the prototype palette and have no motion. */
@@ -220,3 +226,8 @@ html:has(.cv2-root), body:has(.cv2-root) { height:100%; min-height:0!important; 
 .cv2-composer .cv2-conversation { background:var(--cv2-blue-soft); color:var(--cv2-blue-text); }
 .cv2-composer .cv2-conversation[aria-pressed=true] { background:var(--cv2-blue); color:var(--cv2-white); }
 .cv2-conversation:focus-visible { outline:2px solid var(--cv2-blue); outline-offset:2px; }
+
+/* Reduced motion (WP B): nothing in the chat moves for a member who asked the system for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .cv2-root *, .cv2-root *::before, .cv2-root *::after, .cv2-menu, .cv2-menu * { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
+}

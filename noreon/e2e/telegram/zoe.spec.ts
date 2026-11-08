@@ -61,7 +61,7 @@ test("consent withdrawn: the message waits for the doctor and no AI runs", async
 
   const { page } = await asPerson(browser, "tgConsent", desktop);
   await open(page, "/patient/account/telegram");
-  await page.getByRole("switch", { name: "Zoe-ն կարող է կարդալ իմ հաղորդագրությունները" }).click({ force: true });
+  await page.getByRole("switch", { name: "Զոյան կարող է կարդալ իմ հաղորդագրությունները" }).click({ force: true });
   await expect(page.getByText("Ձեր ընտրությունը պահպանված է։")).toBeVisible();
 
   const message = "Երկրորդ հարցս համաձայնությունը հանելուց հետո";

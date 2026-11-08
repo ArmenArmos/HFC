@@ -34,11 +34,12 @@ export default async function RealReviewLayout({children}: {children: React.Reac
   // Admin conversation reading follows its database switch; an unreadable switch hides the link.
   const adminConversations = admin && (await client.rpc('admin_conversation_read_enabled').then(r => r.data === true, () => false));
   const nurse = identity.role === 'nurse';
+  const coordinator = identity.role === 'coordinator';
   // Doctor Zoe (dark): its database switch; a failed read hides the link.
   const staffZoe = !admin && (await Promise.resolve().then(() => client.rpc('staff_zoe_status' as never)).then(r => r.data === true, () => false));
   const locale = await staffLocale(identity.role);
   const t = (en: string, hy: string, ru: string) => st(locale, en, hy, ru);
-  const nav=<StaffNavigation admin={admin} nurse={nurse} real telegram={telegramEnabled()} bpDevices={bpDevicesEnabled()} trace={traceViewEnabled()} alerts={careAlertsEnabled()} catalog={pilotCatalogEnabled()} payments={pilotPaymentsEnabled()} cohort={gmDashboardEnabled()} consultations={doctorCompletionEnabled()} visitSlots={!homeRequestsOnly()} aiSettings={zoeAiSettingsEnabled()} messageOperations={messageOperationsPageEnabled()} adminConversations={adminConversations} nurseVisits={nurseVisits} nurseChat={nurseChatEnabled()} adminChat={adminChatEnabled()} staffZoe={staffZoe} careQueue={zoeAppV3Enabled()} locale={locale}/>;
+  const nav=<StaffNavigation admin={admin} nurse={nurse} real telegram={telegramEnabled()} bpDevices={bpDevicesEnabled()} trace={traceViewEnabled()} alerts={careAlertsEnabled()} catalog={pilotCatalogEnabled()} payments={pilotPaymentsEnabled()} cohort={gmDashboardEnabled()} consultations={doctorCompletionEnabled()} visitSlots={!homeRequestsOnly()} aiSettings={zoeAiSettingsEnabled()} messageOperations={messageOperationsPageEnabled()} adminConversations={adminConversations} nurseVisits={nurseVisits} nurseChat={nurseChatEnabled()} adminChat={adminChatEnabled()} staffZoe={staffZoe} careQueue={zoeAppV3Enabled()} coordinator={coordinator} locale={locale}/>;
   const actions=<>
       {!admin && <StaffLocaleSwitch locale={locale}/>}
       <span className="text-caption text-muted-foreground">{identity.name}</span>
@@ -50,8 +51,8 @@ export default async function RealReviewLayout({children}: {children: React.Reac
     skipLabel={t('Skip to content', 'Անցնել բովանդակությանը','Перейти к содержимому')}
     menuLabel={t('Menu', 'Ընտրացանկ','Меню')}
     brandHref={doctorHomePath(identity.role)}
-    badge={admin ? t('Operations', 'Գործերի կառավարում', 'Операционная работа') : t('Clinical', 'Կլինիկական','Медицинская работа')}
-    sidebarHeader={<p>{admin ? t('Backoffice', 'Վարչական վահանակ', 'Административная панель') : nurse ? t('Nurse workspace', 'Բուժքրոջ աշխատատարածք','Рабочее пространство медсестры') : t('Doctor workspace', 'Բժշկի աշխատատարածք','Рабочее пространство врача')}</p>}
+    badge={admin ? t('Operations', 'Գործերի կառավարում', 'Операционная работа') : coordinator ? t('Coordination', 'Համակարգում', 'Координация') : t('Clinical', 'Կլինիկական','Медицинская работа')}
+    sidebarHeader={<p>{admin ? t('Backoffice', 'Վարչական վահանակ', 'Административная панель') : coordinator ? t('Care coordination', 'Խնամքի համակարգում', 'Координация помощи') : nurse ? t('Nurse workspace', 'Բուժքրոջ աշխատատարածք','Рабочее пространство медсестры') : t('Doctor workspace', 'Բժշկի աշխատատարածք','Рабочее пространство врача')}</p>}
     nav={nav}
     title={admin ? t('Noreon operations', 'Նորեոն Հելթի գործերի կառավարում', 'Операционная работа Нореон Хелс') : t('Clinical workspace', 'Կլինիկական աշխատատարածք','Медицинское рабочее пространство')}
     actions={actions}

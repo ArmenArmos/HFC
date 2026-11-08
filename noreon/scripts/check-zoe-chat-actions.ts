@@ -85,6 +85,11 @@ console.log(`side-effect texts: ${LOCALES.length*(SIDE_EFFECTS.length-1)} choice
 
 // ---------------------------------------------------------------- 2. Registry, migration, copy, pages
 const sqlKinds=read('supabase/migrations/20261104160300_zoe_v3_next_step.sql').match(/kind in\(([^)]*)\)/)![1]!.split(',').map(s=>s.trim().replace(/'/g,''));
+// Later migrations widen the live check in place (WP F: widen_in_check(...,'zoe_chat_cards_kind_check','kind',array[...])).
+for(const file of readdirSync('supabase/migrations').filter(f=>f>'20261104160300').sort()){
+ for(const m of read(`supabase/migrations/${file}`).matchAll(/widen_in_check\('public\.zoe_chat_cards','zoe_chat_cards_kind_check','kind',array\[([^\]]*)\]\)/g))
+  sqlKinds.push(...m[1]!.split(',').map(s=>s.trim().replace(/'/g,'')).filter(k=>!sqlKinds.includes(k)));
+}
 assert.deepEqual([...sqlKinds].sort(),[...CARD_KINDS].sort(),'the migration and the registry list the same kinds');
 for(const k of CARD_KINDS){assert.ok(SNAPSHOTS[k]&&CHIP[k]&&TITLE[k]&&CARD_PAGE[k],`${k} is complete`);}
 // Snapshots are strict: an unknown field makes a card unreadable instead of being shown.

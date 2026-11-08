@@ -153,7 +153,7 @@ for (locale of ["en", "hy"] as const) {
     const html = await parity("zoe/urgent", state, state === "no-request" ? {} : { request: "recorded-request" });
     assert.ok(html.includes("data-zoe-emergency-content") && html.includes('href="tel:103"'));
     contains(html, "Call 103 now. Do not wait for this service.", "Զանգահարեք 103 հիմա։ Մի սպասեք այս ծառայությանը։");
-    assert.equal(html.includes(text("We have told the Noreon", "Մենք տեղեկացրել ենք Noreon")), state === "alerted");
+    assert.equal(html.includes(text("We have told the Noreon", "Մենք տեղեկացրել ենք Նորեոն Հելթի")), state === "alerted");
     assert.equal(html.includes(text("A doctor or emergency service has not been notified", "Բժիշկը կամ շտապ օգնությունը այս ծառայության միջոցով չեն ծանուցվել")), state === "unalerted", "Unknown, pending and unrelated requests make no notification claim");
   }
   history = null; readings = null; results = null;
@@ -185,7 +185,7 @@ for (locale of ["en", "hy"] as const) {
     consentFails = contactFails = state === "failed";
     consentPresent = contactPresent = state === "normal";
     html = await parity("account", state);
-    contains(html, "Telegram and Zoe are not for emergencies.", "Telegram-ը և Zoe-ն շտապ օգնության համար չեն։");
+    contains(html, "Telegram and Zoe are not for emergencies.", "Telegram-ը և Զոյան շտապ օգնության համար չեն։");
     assert.equal(html.includes('id="my-consents"'), state === "normal");
     assert.ok(html.includes('aria-pressed="true"'), "Saved language/text preferences remain selected");
   }

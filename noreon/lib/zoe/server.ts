@@ -25,7 +25,7 @@ export type ZoeRpc=(name:string,args:Record<string,unknown>)=>Promise<unknown>;
 const reserveResult=z.union([z.object({ok:z.literal(true)}),z.object({ok:z.literal(false),code:z.string()})]);
 const finishResult=z.object({ok:z.boolean(),outcome:z.string().optional(),code:z.string().optional()});
 const contextResult=z.array(z.object({runId:z.uuid(),enabled:z.boolean(),doctorName:z.string().max(120).nullable(),answeredThroughSeq:z.number().int(),
- memberSpentTodayUsd:z.number().min(0),memberDailyCapUsd:z.number().min(0).max(10).nullable().optional(),injectionsLast24h:z.number().int().min(0),locale:z.enum(['en','hy']).nullable().default(null)}));
+ memberSpentTodayUsd:z.number().min(0),memberDailyCapUsd:z.number().min(0).max(10).nullable().optional(),injectionsLast24h:z.number().int().min(0),locale:z.enum(['en','hy','ru']).nullable().default(null)}));
 
 /**
  * Conversational replies (zoe_run_context, 20261018121002): per claimed run the switch, the doctor's name

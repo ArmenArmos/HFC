@@ -16,6 +16,7 @@ import * as copy from "@/lib/zoe-chat-actions/copy";
 import * as threadHelpers from "@/lib/zoe-chat-actions/thread";
 import * as everydayContract from "@/lib/zoe-chat-actions/everyday-contract";
 import { tx } from "@/lib/patient/copy";
+import { zoeName } from "@/lib/brand";
 
 // Run the real chat effects with supplied DOM geometry and IO. No network or mutations.
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -78,8 +79,8 @@ await act(async () => renderer!.unmount());
 
 for (const [locale, invitation, disclosure, placeholder] of [
   ["en", "I’m Zoe, your AI assistant.", "AI assistant, not a doctor", "Ask Zoe…"],
-  ["hy", "Ես Zoe-ն եմ՝ ձեր ԱԲ օգնականը", "ԱԲ օգնական, ոչ բժիշկ", "Հարցրեք Zoe-ին…"],
-  ["ru", "Я Zoe, ваш ИИ-помощник.", "ИИ-помощник, не врач", "Спросите Zoe…"],
+  ["hy", "Ես Զոյան եմ՝ ձեր ԱԲ օգնականը", "ԱԲ օգնական, ոչ բժիշկ", "Հարցրեք Զոյային…"],
+  ["ru", "Я Зоя, ваш ИИ-помощник.", "ИИ-помощник, не врач", "Спросите Зою…"],
 ]) {
   await act(async () => { renderer = create(React.createElement(Chat, {
     locale, initial: empty, upload: false, chatOnly: true,
@@ -126,7 +127,7 @@ for (const [locale, disclosure] of [["en", "AI assistant, not a doctor"], ["hy",
       createNodeMock: () => ({ style: {}, scrollHeight: 60, scrollTop: 0, getBoundingClientRect: () => ({top:0}) }),
     }); });
     const bubble = renderer!.root.findByProps({ "data-zoe-bubble": kind });
-    assert.ok(bubble.findAllByType("p").some(p => p.children.join("") === `Zoe · ${disclosure}`), `${locale}/${kind}: explicit AI disclosure`);
+    assert.ok(bubble.findAllByType("p").some(p => p.children.join("") === `${zoeName(locale)} · ${disclosure}`), `${locale}/${kind}: explicit AI disclosure`);
     await act(async () => renderer!.unmount());
   }
 }

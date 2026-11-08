@@ -11,7 +11,7 @@ import {StaffTelegramVerifyForm} from '@/components/real-review/staff-telegram-v
 import {SigninLanguageLinks} from '@/components/real-review/signin-language';
 export default async function StaffTelegramVerifyPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
  if(!realReviewEnabled(process.env)||!staffTelegramSigninEnabled())notFound();
- const params=await searchParams,next=staffNoticeReturnPath(params.next),locale=parseLocale(params.locale,'en');
+ const params=await searchParams,next=staffNoticeReturnPath(params.next),locale=parseLocale(params.locale,'hy');
  const state=await readStaffSigninState();
  if(!state||!state.staffEligible){const login=new URL(staffNoticeSignInPath('/staff/real/login',next),'https://backoffice.noreon.health');if(locale!=='en')login.searchParams.set('locale',locale);redirect(`${login.pathname}${login.search}` as Route);}
  if(!state.required||state.admitted){if(next)redirect(next as Route);if(!doctorChatHomeEnabled())redirect('/staff/real/members');const {identity}=await requireRealStaffForRender();redirect(doctorHomePath(identity.role));}

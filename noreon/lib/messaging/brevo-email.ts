@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 
 const configSchema = z.object({ apiKey: z.string().min(20).max(1024), sender: z.email().max(320), origin: z.url().max(200) });
-const inputSchema = z.object({ role: z.enum(["doctor", "nurse"]).default("doctor"), name: z.string().trim().min(1).max(180), email: z.email().max(320), url: z.url().max(1500) });
+const inputSchema = z.object({ role: z.enum(["doctor", "nurse", "coordinator"]).default("doctor"), name: z.string().trim().min(1).max(180), email: z.email().max(320), url: z.url().max(1500) });
 export type BrevoEmailConfig = z.infer<typeof configSchema>;
 export type EmailSubmission = { status: "accepted"; reference: string } | { status: "failed" | "unknown" };
 export function doctorInvitationOrigin(env: Record<string, string | undefined> = process.env) {

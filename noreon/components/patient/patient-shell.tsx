@@ -20,7 +20,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { tx, type PatientLocale } from "@/lib/patient/copy";
 import { MainNavigationContent } from "@/components/patient/navigation-pending";
 import { sweepSignupDrafts } from "@/lib/patient/signup-draft";
-import { zoeName } from "@/lib/brand";
+import { noreonName, zoeName } from "@/lib/brand";
 type ShellProps = {
   children: ReactNode; locale?: PatientLocale; navigation?: boolean; emergency?: boolean; memberName?: string;
 };
@@ -113,9 +113,10 @@ function PatientShellView({
           <Link
             href={chatOnly ? "/patient/zoe" : navigation ? "/patient/dashboard" : "/patient"}
             className="inline-flex min-h-11 items-center"
-            aria-label="Noreon"
+            aria-label={noreonName(locale)}
+            data-brand-link
           >
-            {chatOnly ? <span className="member-chat-brand"><span className="member-home-orb" aria-hidden />Noreon</span> : <Image
+            {chatOnly ? <span className="member-chat-brand"><span className="member-home-orb" aria-hidden />{noreonName(locale)}</span> : <Image
               src="/brand/logo/noreon-wordmark-navy.svg"
               alt="Noreon"
               width={120}

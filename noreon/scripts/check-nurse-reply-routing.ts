@@ -18,7 +18,7 @@ const cases=[
  {route:{telegramLinked:true,telegramSendingEnabled:false},handoff:false,reason:['Telegram sending is switched off','Telegram-ով ուղարկումն անջատված է','Отправка в Telegram отключена']},
  {route:{telegramLinked:false,telegramSendingEnabled:false},handoff:false,reason:['Telegram sending is switched off','Telegram-ով ուղարկումն անջատված է','Отправка в Telegram отключена']},
  {route:{telegramLinked:true,telegramSendingEnabled:true,canSend:false},handoff:true,reason:['Member app chat is switched off','Անդամի հավելվածի զրույցն անջատված է','Чат участника в приложении отключён']},
- {route:{},handoff:false,reason:['Your nurse replies go to the Noreon app','Ձեր՝ որպես բուժքրոջ պատասխանները հասնում են Noreon հավելված','Ваши ответы как медсестры поступают в приложение Noreon']},
+ {route:{},handoff:false,reason:['Your nurse replies go to the Noreon app','Ձեր՝ որպես բուժքրոջ պատասխանները հասնում են Նորեոն Հելթ հավելված','Ваши ответы как медсестры поступают в приложение Нореон Хелс']},
 ];
 for(const [index,locale] of (['en','hy','ru'] as const).entries())for(const scenario of cases){
  const data=nurseWorkspaceSchema.parse({...base,...scenario.route});

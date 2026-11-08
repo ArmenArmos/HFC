@@ -1,4 +1,7 @@
 import {randomUUID} from 'node:crypto';
+import {redirect} from 'next/navigation';
+import type {Route} from 'next';
+import {doctorHomePath} from '@/lib/staff-zoe/workspace-config';
 import {directorySchema} from '@/lib/patient-care/clinical-case-repository';
 import {requireRealStaffForRender} from '@/lib/staff/real-staff-render';
 import {MemberSearch} from '@/components/real-review/member-search';
@@ -14,6 +17,8 @@ import {FirstNoteQueue} from '@/components/staff/first-note-queue';
 
 export default async function RealQueuePage(){
  const {client,identity}=await requireRealStaffForRender();
+ // The member list is clinical: a care coordinator works from the logistics queue instead.
+ if(identity.role==='coordinator')redirect(doctorHomePath('coordinator') as Route);
  // Three independent reads, each scoped by the database: run them together.
  const [locale,result,directory,nurseDirectory]=await Promise.all([
   staffLocale(identity.role),

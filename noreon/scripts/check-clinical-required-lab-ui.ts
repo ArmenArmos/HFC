@@ -256,7 +256,7 @@ for(const locale of ['en','hy','ru'] as const){
  let tree!:ReturnType<typeof create>;
  await act(async()=>{tree=create(React.createElement(RealReviewControls,props));});
  const form=()=>forms(tree,'consultation-decision')[0];
- const attribution=staffLocaleCopy.st(locale,"Zoe's proposal",'Զոյայի առաջարկը','Предложение Zoe');
+ const attribution=staffLocaleCopy.st(locale,"Zoe's proposal",'Զոյայի առաջարկը','Предложение Зои');
  assert.equal(form().findByType('select').props.value,'not-required');
  assert.equal(form().findByType('textarea').props.value,'No consultation is needed.');
  assert.ok(text(tree).includes(attribution));

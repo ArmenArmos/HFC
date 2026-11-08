@@ -7,6 +7,8 @@ import {documentSnapshot,labAppointmentSnapshot,symptomGateSnapshot,consultQuest
 import {planDetailsSchema} from './plan';
 import {EVERYDAY_VIEWS} from './everyday-contract';
 import {livingVisitSnapshot} from './living-visit';
+import {caregiverCardSnapshot} from '@/lib/caregivers/schema';
+import {consentsCardSnapshot} from '@/lib/consents/schema';
 export {findLivingVisit} from './living-visit';
 
 /**
@@ -21,14 +23,16 @@ export {findLivingVisit} from './living-visit';
  * and copy in copy.ts, a snapshot builder in server.ts, a renderer in components/patient/zoe-cards, optional intent
  * words in intent.ts, and the kind to the zoe_chat_cards check in a new migration.
  */
-export const CARD_KINDS=['dose','bp','results','plan','visit','side_effect','message','ldl','ask','menu','medicines','account','repeat','red_flags','profile','document','prep','fasting','symptom_gate','consult_questions','sams','next_step','tests_needed','review']as const;
+export const CARD_KINDS=['dose','bp','results','plan','visit','side_effect','message','ldl','ask','menu','medicines','account','repeat','red_flags','profile','document','prep','fasting','symptom_gate','consult_questions','sams','next_step','tests_needed','review','caregiver','consents']as const;
 export type CardKind=typeof CARD_KINDS[number];
 /** App-only PR 7 blocks; hidden from classic reads when V3 is off. */
 export const V3_LAB_CARD_KINDS:readonly CardKind[]=['document','prep','fasting','symptom_gate','consult_questions'];
 /** App-only continuation blocks, hidden when V3 is off. */
 export const V3_NEXT_STEP_KINDS:readonly CardKind[]=['next_step','tests_needed','review'];
+/** WP F: the member's caregivers and consents, opened from the menu or typed words in the new chat only (no chip, no Telegram). */
+export const MEMBER_SETTINGS_KINDS:readonly CardKind[]=['caregiver','consents'];
 /** What the chat's chips open; the menu lists these, it is not one of them. */
-export const CHIP_KINDS=CARD_KINDS.filter((k):k is Exclude<CardKind,'menu'|'ask'|'repeat'|'red_flags'|'profile'|'document'|'prep'|'fasting'|'symptom_gate'|'consult_questions'|'sams'|'next_step'|'tests_needed'|'review'>=>k!=='menu'&&k!=='ask'&&k!=='repeat'&&k!=='red_flags'&&k!=='profile'&&k!=='document'&&k!=='prep'&&k!=='fasting'&&k!=='symptom_gate'&&k!=='consult_questions'&&k!=='sams'&&!V3_NEXT_STEP_KINDS.includes(k));
+export const CHIP_KINDS=CARD_KINDS.filter((k):k is Exclude<CardKind,'menu'|'ask'|'repeat'|'red_flags'|'profile'|'document'|'prep'|'fasting'|'symptom_gate'|'consult_questions'|'sams'|'next_step'|'tests_needed'|'review'|'caregiver'|'consents'>=>k!=='menu'&&k!=='ask'&&k!=='repeat'&&k!=='red_flags'&&k!=='profile'&&k!=='document'&&k!=='prep'&&k!=='fasting'&&k!=='symptom_gate'&&k!=='consult_questions'&&k!=='sams'&&!V3_NEXT_STEP_KINDS.includes(k)&&!MEMBER_SETTINGS_KINDS.includes(k));
 /** Posted by the blood pressure flow after a reading, never opened from the browser. */
 export const FLOW_KINDS:readonly CardKind[]=['repeat','red_flags','sams'];
 export const isCardKind=(v:unknown):v is CardKind=>typeof v==='string'&&(CARD_KINDS as readonly string[]).includes(v);
@@ -50,7 +54,7 @@ export const doseSnapshot=z.strictObject({v:z.literal(1),v3:z.literal(true).opti
   status:z.enum(['taken','skipped','due','upcoming']),revision:z.number().int().min(0),
   // A dose from the published plan, with its plan; absent on a self-reported medicine and on cards from before plan doses.
   planId:z.uuid().optional()})).max(24)});
-const bpReading=z.strictObject({systolic:z.number().int(),diastolic:z.number().int(),pulse:z.number().int().nullable(),measuredAt:iso,entrySource:z.enum(['patient_text_entry','patient_voice_confirmed','patient_photo_confirmed']).nullable().optional()});
+const bpReading=z.strictObject({systolic:z.number().int(),diastolic:z.number().int(),pulse:z.number().int().nullable(),measuredAt:iso,entrySource:z.enum(['patient_text_entry','patient_voice_confirmed','patient_photo_confirmed','caregiver_reported']).nullable().optional()});
 export const bpWeekSlot=z.strictObject({weekId:z.uuid(),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),slot:z.enum(['morning','evening']),time:z.string().regex(/^\d{2}:\d{2}$/),day:z.number().int().min(1),days:z.number().int().min(1),saved:z.number().int().min(0),expected:z.number().int().min(0)});
 const follows=z.strictObject({cardId:z.uuid(),item:z.string().min(1).max(100)});
 /** Persisted provenance for follow-up forms, read identically on every device. */
@@ -103,12 +107,12 @@ export const redFlagsSnapshot=z.strictObject({v:z.literal(1),episodeId:z.string(
 const hhmm=z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 export const profileSnapshot=z.strictObject({v:z.literal(1),wake:hhmm,sleep:hhmm});
 
-export const SNAPSHOTS={review:z.strictObject({v:z.literal(1)}),next_step:nextStepSnapshot,tests_needed:testsNeededSnapshot,dose:doseSnapshot,bp:bpSnapshot,results:resultsSnapshot,plan:planSnapshot,visit:visitSnapshot,side_effect:sideEffectSnapshot,message:messageSnapshot,ldl:ldlSnapshot,ask:askSnapshot,menu:menuSnapshot,medicines:settingsSnapshot,account:settingsSnapshot,repeat:repeatSnapshot,red_flags:redFlagsSnapshot,profile:profileSnapshot,document:documentSnapshot,prep:labAppointmentSnapshot,fasting:labAppointmentSnapshot,symptom_gate:symptomGateSnapshot,consult_questions:consultQuestionsSnapshot,sams:z.strictObject({v:z.literal(1),episodeId:z.uuid()})}as const satisfies Record<CardKind,z.ZodType>;
+export const SNAPSHOTS={review:z.strictObject({v:z.literal(1)}),next_step:nextStepSnapshot,tests_needed:testsNeededSnapshot,dose:doseSnapshot,bp:bpSnapshot,results:resultsSnapshot,plan:planSnapshot,visit:visitSnapshot,side_effect:sideEffectSnapshot,message:messageSnapshot,ldl:ldlSnapshot,ask:askSnapshot,menu:menuSnapshot,medicines:settingsSnapshot,account:settingsSnapshot,repeat:repeatSnapshot,red_flags:redFlagsSnapshot,profile:profileSnapshot,document:documentSnapshot,prep:labAppointmentSnapshot,fasting:labAppointmentSnapshot,symptom_gate:symptomGateSnapshot,consult_questions:consultQuestionsSnapshot,sams:z.strictObject({v:z.literal(1),episodeId:z.uuid()}),caregiver:caregiverCardSnapshot,consents:consentsCardSnapshot}as const satisfies Record<CardKind,z.ZodType>;
 export type Snapshot<K extends CardKind>=z.infer<typeof SNAPSHOTS[K]>;
 
 /** The page that holds the current record for each card ("See current"). */
 export const CARD_PAGE:Record<CardKind,string>={review:'/patient/review',next_step:'/patient/chat',tests_needed:'/patient/service',dose:'/patient/medicines',bp:'/patient/measurements',results:'/patient/results',plan:'/patient/care',
- visit:'/patient/service',side_effect:'/patient/zoe',message:'/patient/zoe',ldl:'/patient/progress',ask:'/patient/zoe',menu:'/patient/zoe',medicines:'/patient/medicines',account:'/patient/account',repeat:'/patient/measurements',red_flags:'/patient/zoe',profile:'/patient/account',document:'/patient/progress/earlier',prep:'/patient/service',fasting:'/patient/service',symptom_gate:'/patient/zoe',consult_questions:'/patient/zoe',sams:'/patient/zoe'};
+ visit:'/patient/service',side_effect:'/patient/zoe',message:'/patient/zoe',ldl:'/patient/progress',ask:'/patient/zoe',menu:'/patient/zoe',medicines:'/patient/medicines',account:'/patient/account',repeat:'/patient/measurements',red_flags:'/patient/zoe',profile:'/patient/account',document:'/patient/progress/earlier',prep:'/patient/service',fasting:'/patient/service',symptom_gate:'/patient/zoe',consult_questions:'/patient/zoe',sams:'/patient/zoe',caregiver:'/patient/chat',consents:'/patient/chat'};
 
 // Not strict: the GET route sends the parsed card back (with its 'valid' mark), and the client parses it again.
 const cardBase=z.object({id:z.uuid(),requestId:z.uuid(),source:z.enum(['chip','typed']),sourceSeq:z.number().int().positive().nullable(),

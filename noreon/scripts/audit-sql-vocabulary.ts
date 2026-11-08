@@ -122,6 +122,8 @@ export function auditSqlVocabulary(sql:string){
   _system_message_audit:['@states','k'],_conversation_audit:['conversation','k'],
   _telegram_audit:['telegram','k'],_telegram_auth_audit:['telegram_auth','k'],
   _clinic_schedule_audit:['clinic','kind'],_access_audit_record:['access','p_surface'],_access_audit_record_as:['access','p_surface'],
+  // WP F: a caregiver's read or write, recorded in access_audit and the caregiver trail; every caller is scanned.
+  _caregiver_audit:['access','p_surface'],
   _test_signin_audit:['telegram_auth',"'test_signin.'||p_action||'.'||p_outcome"],
  };
  const write=(source:string,value:string|undefined,at:number)=>{
@@ -178,6 +180,8 @@ export function auditSqlVocabulary(sql:string){
  // are exempt. Legacy function-definition patches are pinned as whole blocks
  // so changing their generated SQL requires reviewing the exemption again.
  const schemaPatches:Record<string,string>={
+  'c41881cdf4de9261b26d64464c8f0433f74cf0e9bdf207d1249e3620fd219178':'Schema-only queued exact-text function patches (WP F: 20261108063420_rbac_roles_foundation, 20261108063720_member_caregivers_consents)',
+  'fbcda5a97004f745c54279c2802899921dc5da4e2f97fae41dccddf4e6340796':'Schema-only pg_get_functiondef append: public._audit_source_rows gains member_consents and member_caregiver_events (WP F)',
   'b15b794fe2f07ab3db6b676001538ad3bf1f7ac4ff80748be206cfe0099d7fe7':'Schema-only pg_get_functiondef patch: public.zoe_chat_card_post(uuid,uuid,text,text,bigint,jsonb)',
   'e2f7be5bfa8510d0d52cb22c4fda5864b6029a9ed42158b20068de363c3182ab':'Schema-only pg_get_functiondef patch: public.conversation_member_thread()',
   '97e429bf3036e759bbd2241f682d8372a167ed09c6148b7fadfbf8eab587b2f8':'Schema-only pg_get_functiondef patch: public.zoe_run_finish(uuid,jsonb)',

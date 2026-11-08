@@ -10,7 +10,7 @@ import {st} from '@/lib/staff/staff-locale-copy';
 import {sendStaffCode,verifyStaffCode} from '@/lib/telegram-auth/staff-signin';
 
 export type StaffVerifyState={status:'idle'|'sent'|'error';message:string};
-const say=(form:FormData|undefined)=>(en:string,hy:string,ru:string)=>st(parseLocale(form?.get('locale'),'en'),en,hy,ru);
+const say=(form:FormData|undefined)=>(en:string,hy:string,ru:string)=>st(parseLocale(form?.get('locale'),'hy'),en,hy,ru);
 
 export const sendStaffTelegramCode=loggedAction("sendStaffTelegramCode",async function sendStaffTelegramCode(_previous:StaffVerifyState,form?:FormData):Promise<StaffVerifyState>{
  const t=say(form);

@@ -12,7 +12,7 @@
 --
 -- Draft wording: the consent texts the hashes refer to live in lib/consents/copy.ts and are not yet legally approved.
 
-create function pg_temp.widen_in_check(p_table regclass,p_constraint text,p_column text,p_add text[])returns void
+create or replace function pg_temp.widen_in_check(p_table regclass,p_constraint text,p_column text,p_add text[])returns void
 language plpgsql as $$
 declare def text;vals text[];
 begin
@@ -24,15 +24,10 @@ begin
  execute format('alter table %s drop constraint %I',p_table,p_constraint);
  execute format('alter table %s add constraint %I check(%I in(%s))',p_table,p_constraint,p_column,(select string_agg(quote_literal(v),',')from unnest(vals)v));
 end$$;
-create function pg_temp.patch_function(p_fn regprocedure,p_old text,p_new text)returns void
-language plpgsql as $$
-declare def text:=pg_get_functiondef(p_fn);
-begin
- if position(p_old in def)=0 or cardinality(string_to_array(def,p_old))<>2 then
-  raise exception 'Unexpected definition of %',p_fn;
- end if;
- execute replace(def,p_old,p_new);
-end$$;
+-- Function patches (exact text replacements of live definitions) are queued here and applied by one DO block at the
+-- end of this migration, each asserting that its target text occurs exactly once.
+drop table if exists pg_temp.function_patches;
+create temp table function_patches(n serial primary key,fn regprocedure not null,old text not null,new text not null);
 
 -- History rows may only go when their member's account itself is deleted (the cascade), as zoe_consents does.
 create function public._member_history_immutable()returns trigger
@@ -73,7 +68,7 @@ create table public.member_consents(
  wording_version text not null constraint member_consents_wording_version_check check(wording_version ~ '^[a-z0-9-]{1,64}$'),
  text_hash text not null constraint member_consents_text_hash_check check(text_hash ~ '^[a-f0-9]{64}$'),
  method text not null constraint member_consents_method_check check(method in('tap','voice')),
- source text not null constraint member_consents_source_check check(source in('chat_card','settings','enrolment','caregiver_invite','caregiver_revoke','telegram')),
+ source text not null constraint member_consents_source_check check(source in('chat_card','settings','enrolment','caregiver_invite','caregiver_scopes','caregiver_revoke','telegram')),
  recorded_at timestamptz not null default clock_timestamp()
 );
 create index member_consents_member on public.member_consents(member_id,kind,id desc);
@@ -167,8 +162,10 @@ create table public.member_caregivers(
  constraint member_caregivers_revoked_shape check((status='revoked')=(revoked_at is not null)),
  constraint member_caregivers_declined_shape check((status='declined')=(declined_at is not null))
 );
--- One live link per member and phone number; one active link per member and caregiver account.
-create unique index member_caregivers_live_phone on public.member_caregivers(member_id,phone)where status in('pending','active');
+-- One active link per member and phone number, and per member and caregiver account. A pending invitation is live for
+-- 14 days only (_caregiver_link_live), which an index predicate cannot express: the invite function checks it under the
+-- member's lock instead.
+create unique index member_caregivers_active_phone on public.member_caregivers(member_id,phone)where status='active';
 create unique index member_caregivers_active_account on public.member_caregivers(member_id,caregiver_user_id)where status='active';
 create index member_caregivers_caregiver on public.member_caregivers(caregiver_user_id)where status='active';
 create index member_caregivers_pending_phone on public.member_caregivers(phone)where status='pending';
@@ -176,7 +173,8 @@ alter table public.member_caregivers enable row level security;
 revoke all on public.member_caregivers from public,anon,authenticated,service_role;
 grant select on public.member_caregivers to authenticated;
 create policy member_caregivers_member on public.member_caregivers for select to authenticated using((select auth.uid())=member_id);
-create policy member_caregivers_caregiver on public.member_caregivers for select to authenticated using((select auth.uid())=caregiver_user_id);
+-- A caregiver sees its own link only while it is active: revocation ends that too.
+create policy member_caregivers_caregiver on public.member_caregivers for select to authenticated using((select auth.uid())=caregiver_user_id and status='active');
 comment on table public.member_caregivers is
  'Caregivers a member authorised, by phone number, with explicit scopes. Written only through member_caregiver_* and caregiver_invitation_* functions; delegated access checks _caregiver_can.';
 
@@ -185,7 +183,7 @@ create table public.member_caregiver_events(
  link_id uuid not null references public.member_caregivers(id) on delete cascade,
  member_id uuid not null references auth.users(id) on delete cascade,
  actor_id uuid,
- actor_kind text not null constraint member_caregiver_events_actor_check check(actor_kind in('member','caregiver')),
+ actor_kind text not null constraint member_caregiver_events_actor_check check(actor_kind in('member','caregiver','system')),
  kind text not null constraint member_caregiver_events_kind_check check(kind in('invited','scopes_updated','revoked','accepted','declined','members_read','plan_read','readings_read','bp_logged')),
  detail jsonb not null default '{}'::jsonb constraint member_caregiver_events_detail_check check(jsonb_typeof(detail)='object'and octet_length(detail::text)<=2048),
  at timestamptz not null default clock_timestamp()
@@ -199,6 +197,23 @@ create policy member_caregiver_events_own on public.member_caregiver_events for 
 create trigger member_caregiver_events_append_only before update or delete on public.member_caregiver_events for each row execute function public._member_history_immutable();
 comment on table public.member_caregiver_events is 'Append-only trail of every caregiver link change and every caregiver read or write. Ids and codes only.';
 
+-- A caregiver account that is deleted ends its active links: the delete's "set null" on caregiver_user_id revokes the
+-- link in the same statement, so account erasure is never blocked by member_caregivers_active_shape. The link's trail
+-- records it as a system revocation. It is not the member's decision, so member_consents is left as the member set it.
+create function public._member_caregiver_account_gone()returns trigger
+language plpgsql security definer set search_path=''as $$
+begin
+ if old.caregiver_user_id is not null and new.caregiver_user_id is null and old.status='active'then
+  new.status:='revoked';new.revoked_at:=clock_timestamp();new.revision:=old.revision+1;
+  insert into public.member_caregiver_events(link_id,member_id,actor_id,actor_kind,kind,detail)
+   values(old.id,old.member_id,null,'system','revoked',jsonb_build_object('reason','caregiver_account_deleted'));
+ end if;
+ return new;
+end$$;
+revoke all on function public._member_caregiver_account_gone()from public,anon,authenticated,service_role;
+create trigger member_caregivers_account_gone before update of caregiver_user_id on public.member_caregivers
+ for each row execute function public._member_caregiver_account_gone();
+
 
 -- Scopes in one canonical order, without duplicates; null when a value is outside the vocabulary.
 create function public._caregiver_scopes(p_scopes text[])returns text[]
@@ -209,11 +224,20 @@ language sql immutable set search_path=''as $$
 $$;
 revoke all on function public._caregiver_scopes(text[])from public,anon,authenticated,service_role;
 
--- What the member sees about one link. The phone stays the member's own data: shown to the member only.
+-- A link that still counts: active, or pending and invited less than 14 days ago. An older pending invitation has
+-- expired: it can no longer be accepted, and it no longer counts toward the limit or blocks inviting the same number.
+create function public._caregiver_link_live(l public.member_caregivers)returns boolean
+language sql stable set search_path=''as $$
+ select l.status='active'or(l.status='pending'and l.invited_at>clock_timestamp()-interval '14 days')
+$$;
+revoke all on function public._caregiver_link_live(public.member_caregivers)from public,anon,authenticated,service_role;
+
+-- What the member sees about one link. The phone stays the member's own data: shown to the member only. An expired
+-- pending invitation reads as status 'expired'.
 create function public._caregiver_link_json(l public.member_caregivers)returns jsonb
-language sql immutable set search_path=''as $$
+language sql stable set search_path=''as $$
  select jsonb_build_object('id',l.id,'name',l.display_name,'relationship',l.relationship,'phone',l.phone,'scopes',to_jsonb(l.scopes),
-  'status',l.status,'revision',l.revision,'invitedAt',l.invited_at,'acceptedAt',l.accepted_at,'revokedAt',l.revoked_at,'declinedAt',l.declined_at,
+  'status',case when l.status='pending'and not public._caregiver_link_live(l)then 'expired'else l.status end,'revision',l.revision,'invitedAt',l.invited_at,'acceptedAt',l.accepted_at,'revokedAt',l.revoked_at,'declinedAt',l.declined_at,
   'wordingVersion',l.consent_wording_version)
 $$;
 revoke all on function public._caregiver_link_json(public.member_caregivers)from public,anon,authenticated,service_role;
@@ -226,11 +250,15 @@ $$;
 revoke all on function public._member_first_name(uuid)from public,anon,authenticated,service_role;
 
 -- True only for an active link of this member and caregiver that holds the scope, whose caregiver account still signs in
--- with the invited phone number. The single check every delegated action uses.
+-- with the invited phone number, of a member whose account is still in good standing. The single check every delegated
+-- action uses.
 create function public._caregiver_can(p_member uuid,p_caregiver uuid,p_scope text)returns boolean
 language sql stable security definer set search_path=''as $$
  select p_member is not null and p_caregiver is not null and p_scope is not null and p_member<>p_caregiver
   and not exists(select 1 from public.workspace_staff where user_id=p_caregiver)
+  -- The member's account itself must still be a member's: phone confirmed, not banned or locked, not staff. Every
+  -- delegated action inherits this.
+  and public._auth_phone_e164(p_member)is not null and not exists(select 1 from public.workspace_staff where user_id=p_member)
   and exists(select 1 from public.member_caregivers l where l.member_id=p_member and l.caregiver_user_id=p_caregiver
    and l.status='active'and l.revoked_at is null and p_scope=any(l.scopes)and l.phone=public._auth_phone_e164(p_caregiver))
 $$;
@@ -264,49 +292,57 @@ revoke all on function public._caregiver_self()from public,anon,authenticated,se
 -- Member side ---------------------------------------------------------------------------------------------------------
 
 -- Invites one caregiver and records the caregiver-sharing consent for the exact text shown. Idempotent on p_request_id:
--- the same request returns the same link; a different request with the same id is a conflict. At most 3 live links.
+-- the same request returns the same link; a different request with the same id is a conflict. At most 3 live links
+-- (_caregiver_link_live: an expired invitation no longer counts).
 create function public.member_caregiver_invite(p_request_id uuid,p_display_name text,p_relationship text,p_phone text,p_scopes text[],p_wording_version text,p_text_hash text,p_method text)returns jsonb
 language plpgsql security definer set search_path=''as $$
-declare m uuid:=public._member_self();l public.member_caregivers;scopes text[]:=public._caregiver_scopes(p_scopes);name text:=btrim(p_display_name);phone text:=regexp_replace(coalesce(p_phone,''),'[\s()-]','','g');
+declare m uuid:=public._member_self();l public.member_caregivers;v_scopes text[]:=public._caregiver_scopes(p_scopes);v_name text:=btrim(p_display_name);v_phone text:=regexp_replace(coalesce(p_phone,''),'[\s()-]','','g');
 begin
- if p_request_id is null or name is null or length(name)not between 1 and 80 or p_relationship is null
+ if p_request_id is null or v_name is null or length(v_name)not between 1 and 80 or p_relationship is null
   or p_relationship not in('spouse','partner','child','parent','sibling','relative','friend','other')
-  or phone !~ '^\+[1-9][0-9]{6,14}$' or scopes is null
+  or v_phone !~ '^\+[1-9][0-9]{6,14}$' or v_scopes is null
   or coalesce(p_wording_version,'')!~'^[a-z0-9-]{1,64}$'or coalesce(p_text_hash,'')!~'^[a-f0-9]{64}$'or p_method is null or p_method not in('tap','voice')then
   return jsonb_build_object('ok',false,'code','invalid');end if;
  perform pg_advisory_xact_lock(hashtextextended('member-caregivers:'||m::text,0));
  select * into l from public.member_caregivers where member_id=m and request_id=p_request_id;
  if found then
-  if l.phone<>phone or l.display_name<>name or l.relationship<>p_relationship or l.scopes<>scopes or l.consent_text_hash<>p_text_hash then
+  if l.phone<>v_phone or l.display_name<>v_name or l.relationship<>p_relationship or l.scopes<>v_scopes or l.consent_text_hash<>p_text_hash then
    return jsonb_build_object('ok',false,'code','conflict');end if;
   return jsonb_build_object('ok',true,'replayed',true,'link',public._caregiver_link_json(l));
  end if;
- if phone=public._auth_phone_e164(m)then return jsonb_build_object('ok',false,'code','own_phone');end if;
- if exists(select 1 from public.member_caregivers where member_id=m and phone=phone and status in('pending','active'))then
+ if v_phone=public._auth_phone_e164(m)then return jsonb_build_object('ok',false,'code','own_phone');end if;
+ if exists(select 1 from public.member_caregivers x where x.member_id=m and x.phone=v_phone and public._caregiver_link_live(x))then
   return jsonb_build_object('ok',false,'code','duplicate');end if;
- if(select count(*)from public.member_caregivers where member_id=m and status in('pending','active'))>=3 then
+ if(select count(*)from public.member_caregivers x where x.member_id=m and public._caregiver_link_live(x))>=3 then
   return jsonb_build_object('ok',false,'code','limit');end if;
  insert into public.member_caregivers(member_id,request_id,phone,display_name,relationship,scopes,consent_wording_version,consent_text_hash,consent_method)
-  values(m,p_request_id,phone,name,p_relationship,scopes,p_wording_version,p_text_hash,p_method)returning * into l;
+  values(m,p_request_id,v_phone,v_name,p_relationship,v_scopes,p_wording_version,p_text_hash,p_method)returning * into l;
  insert into public.member_caregiver_events(link_id,member_id,actor_id,actor_kind,kind,detail)
-  values(l.id,m,m,'member','invited',jsonb_build_object('scopes',to_jsonb(scopes),'wordingVersion',p_wording_version,'method',p_method));
+  values(l.id,m,m,'member','invited',jsonb_build_object('scopes',to_jsonb(v_scopes),'wordingVersion',p_wording_version,'method',p_method));
  perform public._member_consent_record(m,'caregiver_sharing',true,p_wording_version,p_text_hash,p_method,'caregiver_invite');
  return jsonb_build_object('ok',true,'replayed',false,'link',public._caregiver_link_json(l));
 end$$;
 
-create function public.member_caregiver_update_scopes(p_id uuid,p_revision bigint,p_scopes text[])returns jsonb
+-- Changes what one caregiver may do. The member confirms the statement for the new scopes, so the link takes that
+-- statement's version and hash and member_consents records the caregiver-sharing grant for it, exactly as on invite.
+create function public.member_caregiver_update_scopes(p_id uuid,p_revision bigint,p_scopes text[],p_wording_version text,p_text_hash text,p_method text)returns jsonb
 language plpgsql security definer set search_path=''as $$
-declare m uuid:=public._member_self();l public.member_caregivers;scopes text[]:=public._caregiver_scopes(p_scopes);
+declare m uuid:=public._member_self();l public.member_caregivers;v_scopes text[]:=public._caregiver_scopes(p_scopes);
 begin
- if p_id is null or p_revision is null or scopes is null then return jsonb_build_object('ok',false,'code','invalid');end if;
+ if p_id is null or p_revision is null or v_scopes is null
+  or coalesce(p_wording_version,'')!~'^[a-z0-9-]{1,64}$'or coalesce(p_text_hash,'')!~'^[a-f0-9]{64}$'or p_method is null or p_method not in('tap','voice')then
+  return jsonb_build_object('ok',false,'code','invalid');end if;
+ perform pg_advisory_xact_lock(hashtextextended('member-caregivers:'||m::text,0));
  select * into l from public.member_caregivers where id=p_id and member_id=m for update;
  if not found then return jsonb_build_object('ok',false,'code','not_found');end if;
- if l.status not in('pending','active')then return jsonb_build_object('ok',false,'code','closed','link',public._caregiver_link_json(l));end if;
- if l.scopes=scopes then return jsonb_build_object('ok',true,'changed',false,'link',public._caregiver_link_json(l));end if;
+ if not public._caregiver_link_live(l)then return jsonb_build_object('ok',false,'code','closed','link',public._caregiver_link_json(l));end if;
+ if l.scopes=v_scopes then return jsonb_build_object('ok',true,'changed',false,'link',public._caregiver_link_json(l));end if;
  if l.revision<>p_revision then return jsonb_build_object('ok',false,'code','stale','link',public._caregiver_link_json(l));end if;
- update public.member_caregivers set scopes=scopes,revision=revision+1 where id=l.id returning * into l;
+ update public.member_caregivers set scopes=v_scopes,consent_wording_version=p_wording_version,consent_text_hash=p_text_hash,consent_method=p_method,revision=revision+1
+  where id=l.id returning * into l;
  insert into public.member_caregiver_events(link_id,member_id,actor_id,actor_kind,kind,detail)
-  values(l.id,m,m,'member','scopes_updated',jsonb_build_object('scopes',to_jsonb(scopes)));
+  values(l.id,m,m,'member','scopes_updated',jsonb_build_object('scopes',to_jsonb(v_scopes),'wordingVersion',p_wording_version,'method',p_method));
+ perform public._member_consent_record(m,'caregiver_sharing',true,p_wording_version,p_text_hash,p_method,'caregiver_scopes');
  return jsonb_build_object('ok',true,'changed',true,'link',public._caregiver_link_json(l));
 end$$;
 
@@ -324,18 +360,20 @@ begin
  if l.revision<>p_revision then return jsonb_build_object('ok',false,'code','stale','link',public._caregiver_link_json(l));end if;
  update public.member_caregivers set status='revoked',revoked_at=clock_timestamp(),revision=revision+1 where id=l.id returning * into l;
  insert into public.member_caregiver_events(link_id,member_id,actor_id,actor_kind,kind)values(l.id,m,m,'member','revoked');
- if not exists(select 1 from public.member_caregivers where member_id=m and status in('pending','active'))then
+ if not exists(select 1 from public.member_caregivers x where x.member_id=m and public._caregiver_link_live(x))then
   perform public._member_consent_record(m,'caregiver_sharing',false,l.consent_wording_version,l.consent_text_hash,'tap','caregiver_revoke');
  end if;
  return jsonb_build_object('ok',true,'changed',true,'link',public._caregiver_link_json(l));
 end$$;
 
+-- Live links, and closed or expired ones for 90 days after they ended.
 create function public.member_caregivers_read()returns jsonb
 language plpgsql stable security definer set search_path=''as $$
 declare m uuid:=public._member_self();
 begin
  return jsonb_build_object('ok',true,'links',coalesce((select jsonb_agg(public._caregiver_link_json(l)order by l.status in('revoked','declined'),l.invited_at desc,l.id)
-  from(select * from public.member_caregivers where member_id=m and(status in('pending','active')or coalesce(revoked_at,declined_at)>clock_timestamp()-interval '90 days')
+  from(select * from public.member_caregivers where member_id=m and(status='active'or status='pending'and invited_at>clock_timestamp()-interval '104 days'
+    or coalesce(revoked_at,declined_at)>clock_timestamp()-interval '90 days')
    order by invited_at desc limit 20)l),'[]'::jsonb));
 end$$;
 
@@ -344,22 +382,25 @@ end$$;
 -- A pending invitation is for the account that signs in with the invited phone number, for 14 days.
 create function public.caregiver_invitations_read()returns jsonb
 language plpgsql stable security definer set search_path=''as $$
-declare c uuid:=public._caregiver_self();phone text:=public._auth_phone_e164(c);
+declare c uuid:=public._caregiver_self();v_phone text:=public._auth_phone_e164(c);
 begin
  return jsonb_build_object('ok',true,'invitations',coalesce((select jsonb_agg(jsonb_build_object('id',l.id,'memberFirstName',public._member_first_name(l.member_id),
    'relationship',l.relationship,'scopes',to_jsonb(l.scopes),'invitedAt',l.invited_at,'wordingVersion',l.consent_wording_version)order by l.invited_at,l.id)
-  from public.member_caregivers l where l.phone=phone and l.status='pending'and l.member_id<>c and l.invited_at>clock_timestamp()-interval '14 days'),'[]'::jsonb));
+  from public.member_caregivers l where l.phone=v_phone and l.status='pending'and l.member_id<>c and l.invited_at>clock_timestamp()-interval '14 days'),'[]'::jsonb));
 end$$;
 
 create function public._caregiver_invitation_answer(p_id uuid,p_accept boolean)returns jsonb
 language plpgsql security definer set search_path=''as $$
-declare c uuid:=public._caregiver_self();phone text:=public._auth_phone_e164(c);l public.member_caregivers;
+declare c uuid:=public._caregiver_self();v_phone text:=public._auth_phone_e164(c);l public.member_caregivers;m uuid;
 begin
  if p_id is null then return jsonb_build_object('ok',false,'code','invalid');end if;
+ -- The member's lock first, then the row, in the same order as invite, scope changes and revoke take them.
+ select member_id into m from public.member_caregivers where id=p_id;
+ if m is null then return jsonb_build_object('ok',false,'code','not_found');end if;
+ perform pg_advisory_xact_lock(hashtextextended('member-caregivers:'||m::text,0));
  select * into l from public.member_caregivers where id=p_id for update;
  -- Another number's invitation reads exactly as a missing one.
- if not found or l.phone<>phone or l.member_id=c then return jsonb_build_object('ok',false,'code','not_found');end if;
- perform pg_advisory_xact_lock(hashtextextended('member-caregivers:'||l.member_id::text,0));
+ if not found or l.phone<>v_phone or l.member_id=c then return jsonb_build_object('ok',false,'code','not_found');end if;
  if l.status='active'and l.caregiver_user_id=c and p_accept then return jsonb_build_object('ok',true,'changed',false,'status','active');end if;
  if l.status='declined'and not p_accept then return jsonb_build_object('ok',true,'changed',false,'status','declined');end if;
  if l.status<>'pending'then return jsonb_build_object('ok',false,'code','closed');end if;
@@ -383,12 +424,12 @@ language sql security definer set search_path=''as $$select public._caregiver_in
 -- The members this account cares for: first name and scopes only. Recorded per member.
 create function public.caregiver_members_read()returns jsonb
 language plpgsql security definer set search_path=''as $$
-declare c uuid:=public._caregiver_self();phone text:=public._auth_phone_e164(c);result jsonb;l public.member_caregivers;
+declare c uuid:=public._caregiver_self();v_phone text:=public._auth_phone_e164(c);result jsonb;l public.member_caregivers;
 begin
  select coalesce(jsonb_agg(jsonb_build_object('linkId',x.id,'memberId',x.member_id,'firstName',public._member_first_name(x.member_id),
    'relationship',x.relationship,'scopes',to_jsonb(x.scopes),'since',x.accepted_at)order by x.accepted_at,x.id),'[]'::jsonb)into result
-  from public.member_caregivers x where x.caregiver_user_id=c and x.status='active'and x.phone=phone;
- for l in select * from public.member_caregivers where caregiver_user_id=c and status='active'and phone=phone loop
+  from public.member_caregivers x where x.caregiver_user_id=c and x.status='active'and x.phone=v_phone;
+ for l in select * from public.member_caregivers where caregiver_user_id=c and status='active'and phone=v_phone loop
   perform public._caregiver_audit(l.member_id,c,'members_read','caregiver_members',l.id::text);
  end loop;
  return jsonb_build_object('ok',true,'members',result);
@@ -396,20 +437,53 @@ end$$;
 
 -- Delegated actions ---------------------------------------------------------------------------------------------------
 
--- The member's own typed-reading internals, so the caregiver's reading is stored, checked and alerted on exactly like
--- one the member typed, with its provenance: entry_source 'caregiver_reported'.
+-- The member's own typed-reading internals, so the caregiver's reading is stored, checked, alerted on and verified by a
+-- nurse when high exactly like one the member typed, with its provenance: entry_source 'caregiver_reported'.
 select pg_temp.widen_in_check('public.patient_measurements','patient_measurements_entry_source_check','entry_source',array['caregiver_reported']);
-select pg_temp.patch_function('public._record_patient_measurement_sourced(uuid,uuid,integer,integer,integer,timestamptz,text)'::regprocedure,
+insert into function_patches(fn,old,new)values('public._record_patient_measurement_sourced(uuid,uuid,integer,integer,integer,timestamptz,text)'::regprocedure,
  'p_entry_source not in(''patient_text_entry'',''patient_photo_confirmed'')',
  'p_entry_source not in(''patient_text_entry'',''patient_photo_confirmed'',''caregiver_reported'')');
 -- A caregiver is not a clinician: their reading is a home reading for the BP check, not a staff-measured one.
-select pg_temp.patch_function('public._bp_check_saved()'::regprocedure,
+insert into function_patches(fn,old,new)values('public._bp_check_saved()'::regprocedure,
  'staff boolean:=auth.uid()is not null and auth.uid()<>new.user_id;',
  'staff boolean:=auth.uid()is not null and auth.uid()<>new.user_id and new.entry_source is distinct from ''caregiver_reported'';');
+-- A caregiver's typed reading is an unverified observation, exactly like the member's own typed one
+-- (20261104173300_zoe_unverified_bp): kept as raw evidence and for safety, never counted as measured BP evidence.
+insert into function_patches(fn,old,new)
+select fn::regprocedure,frag,replace(frag,alias||'entry_source is distinct from ''patient_text_entry''',
+  alias||'entry_source is distinct from ''patient_text_entry'' and '||alias||'entry_source is distinct from ''caregiver_reported''')
+from(values
+ ('public.pilot_gm_overview(date,date)','count(*)from public.patient_measurements where entry_source is distinct from ''patient_text_entry''',''),
+ ('public.pilot_gm_overview(date,date)','select user_id from public.patient_measurements where entry_source is distinct from ''patient_text_entry''',''),
+ ('public._gp_report_source_body(uuid)','m.entry_source is distinct from ''patient_text_entry'' and m.user_id=p_member','m.'),
+ ('public.doctor_programme_member(uuid)','x.entry_source is distinct from ''patient_text_entry'' and x.user_id=p_user_id','x.'),
+ ('public.doctor_programme_member(uuid)','m.entry_source is distinct from ''patient_text_entry'' and m.user_id=p_user_id','m.'),
+ ('public.zoe_run_health_context(uuid[])','l.entry_source is distinct from ''patient_text_entry'' and l.user_id=r.member_id','l.'),
+ ('public.zoe_run_health_context(uuid[])','pm.entry_source is distinct from ''patient_text_entry'' and pm.user_id=r.member_id','pm.'),
+ ('public._required_evidence_sources(uuid,text)','m.entry_source is distinct from ''patient_text_entry'' and b.week_id=w.id','m.'),
+ ('public._required_evidence_sources(uuid,text)','m.entry_source is distinct from ''patient_text_entry'' and m.user_id=p_user','m.'),
+ ('public._bp_weekly_trend(uuid,timestamptz)','where entry_source is distinct from ''patient_text_entry'' and user_id=p_member','')
+)v(fn,frag,alias);
+-- The safety net of a typed reading: a high caregiver-reported reading raises the same nurse verification task
+-- ('bp_member_reported_high', verify_bp) as a high member-typed one, labelled with who reported it.
+insert into function_patches(fn,old,new)values
+ ('public._typed_bp_task(public.patient_measurements)'::regprocedure,
+  'if m.entry_source is distinct from ''patient_text_entry'' or m.systolic<180 then return;end if;',
+  'if m.entry_source is null or m.entry_source not in(''patient_text_entry'',''caregiver_reported'') or m.systolic<180 then return;end if;'),
+ ('public._typed_bp_task(public.patient_measurements)'::regprocedure,
+  '''Check reported BP ''||m.systolic||''/''||m.diastolic||'' mmHg. Member-reported, not verified''',
+  '''Check reported BP ''||m.systolic||''/''||m.diastolic||'' mmHg. ''||case when m.entry_source=''caregiver_reported''then ''Caregiver-reported''else ''Member-reported''end||'', not verified''');
+alter table public.care_queue_tasks drop constraint care_queue_zone_or_verification,drop constraint care_queue_sla_or_verification;
+alter table public.care_queue_tasks add constraint care_queue_zone_or_verification check(
+ ((queue='admin')=(zone is null))or(queue='nurse'and zone is null and reason_code='bp_member_reported_high'
+  and coalesce(summary->>'entrySource' in('patient_text_entry','caregiver_reported'),false)and source_ref ~ '^typed-bp:[a-f0-9-]{36}$'));
+alter table public.care_queue_tasks add constraint care_queue_sla_or_verification check(
+ queue='admin'or sla_deadline is not null or(queue='nurse'and zone is null and reason_code='bp_member_reported_high'
+  and coalesce(summary->>'entrySource' in('patient_text_entry','caregiver_reported'),false)and source_ref ~ '^typed-bp:[a-f0-9-]{36}$'));
 
 create function public.caregiver_bp_log(p_member uuid,p_request_id uuid,p_systolic integer,p_diastolic integer,p_pulse integer,p_measured_at timestamptz)returns jsonb
 language plpgsql security definer set search_path=''as $$
-declare c uuid:=public._caregiver_self();saved uuid;existed boolean;why text;
+declare c uuid:=public._caregiver_self();saved uuid;existed boolean;failure text;
 begin
  if not public._caregiver_can(p_member,c,'log_readings')then raise insufficient_privilege using message='Caregiver scope required';end if;
  if p_request_id is null or p_systolic is null or p_diastolic is null or p_measured_at is null then return jsonb_build_object('ok',false,'code','invalid');end if;
@@ -420,12 +494,13 @@ begin
   when check_violation then return jsonb_build_object('ok',false,'code','invalid');
   when raise_exception then
    -- The recorder's fixed messages, mapped to codes; the text itself is never returned.
-   get stacked diagnostics why=message_text;
-   return jsonb_build_object('ok',false,'code',case when why='measurement conflict'then 'conflict'when why='verified membership required'then 'not_eligible'else 'invalid'end);
+   get stacked diagnostics failure=message_text;
+   return jsonb_build_object('ok',false,'code',case when failure='measurement conflict'then 'conflict'when failure='verified membership required'then 'not_eligible'else 'invalid'end);
  end;
  if existed and not exists(select 1 from public.patient_measurements where id=saved and entry_source='caregiver_reported')then
   return jsonb_build_object('ok',false,'code','conflict');end if;
- perform public._caregiver_audit(p_member,c,'bp_logged','caregiver_bp_log',saved::text);
+ -- A replay of the same request is not a second write.
+ if not existed then perform public._caregiver_audit(p_member,c,'bp_logged','caregiver_bp_log',saved::text);end if;
  return jsonb_build_object('ok',true,'replayed',existed,'measurementId',saved);
 end$$;
 
@@ -481,11 +556,11 @@ begin
  return jsonb_build_object('ok',true,'readings',rows);
 end$$;
 
-revoke all on function public.member_caregiver_invite(uuid,text,text,text,text[],text,text,text),public.member_caregiver_update_scopes(uuid,bigint,text[]),
+revoke all on function public.member_caregiver_invite(uuid,text,text,text,text[],text,text,text),public.member_caregiver_update_scopes(uuid,bigint,text[],text,text,text),
  public.member_caregiver_revoke(uuid,bigint),public.member_caregivers_read(),public.caregiver_invitations_read(),public.caregiver_invitation_accept(uuid),
  public.caregiver_invitation_decline(uuid),public.caregiver_members_read(),public.caregiver_bp_log(uuid,uuid,integer,integer,integer,timestamptz),
  public.caregiver_plan_read(uuid),public.caregiver_readings_read(uuid)from public,anon,authenticated,service_role;
-grant execute on function public.member_caregiver_invite(uuid,text,text,text,text[],text,text,text),public.member_caregiver_update_scopes(uuid,bigint,text[]),
+grant execute on function public.member_caregiver_invite(uuid,text,text,text,text[],text,text,text),public.member_caregiver_update_scopes(uuid,bigint,text[],text,text,text),
  public.member_caregiver_revoke(uuid,bigint),public.member_caregivers_read(),public.caregiver_invitations_read(),public.caregiver_invitation_accept(uuid),
  public.caregiver_invitation_decline(uuid),public.caregiver_members_read(),public.caregiver_bp_log(uuid,uuid,integer,integer,integer,timestamptz),
  public.caregiver_plan_read(uuid),public.caregiver_readings_read(uuid)to authenticated;
@@ -515,3 +590,15 @@ end $migration$;
 
 -- 4. Chat cards -------------------------------------------------------------------------------------------------------
 select pg_temp.widen_in_check('public.zoe_chat_cards','zoe_chat_cards_kind_check','kind',array['caregiver','consents']);
+
+-- Apply the queued function patches, in order.
+do $patch$
+declare r record;def text;
+begin
+ for r in select * from function_patches order by n loop
+  def:=pg_get_functiondef(r.fn);
+  if position(r.old in def)=0 or cardinality(string_to_array(def,r.old))<>2 then raise exception 'Unexpected definition of %',r.fn;end if;
+  execute replace(def,r.old,r.new);
+ end loop;
+end $patch$;
+drop table pg_temp.function_patches;

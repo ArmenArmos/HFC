@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { saveLanguagePreference } from "@/app/patient/account/locale-actions";
 import { unsubscribeMemberPush } from "@/lib/member-push/client";
 import { signOut } from "@/app/patient/actions";
 import { tx, type PatientLocale } from "@/lib/patient/copy";
 
-export function ChatMenu({ locale: l, revision, onLocale, onClose, onSignedOut, disabled = false, onBusy, onMedicines, onResults, onMessage, onPlan, onVisit, onConsult, onQuestions, previousChat = false, overview = false }: {
+export function ChatMenu({ locale: l, revision, onLocale, onClose, onSignedOut, disabled = false, onBusy, onMedicines, onResults, onMessage, onPlan, onVisit, onConsult, onQuestions, onCaregivers, onConsents, caring = false, previousChat = false, overview = false }: {
   locale: PatientLocale; revision: number; onLocale: (locale: PatientLocale, revision: number) => void;
   onClose: () => void; onSignedOut: () => void;
   disabled?: boolean;
@@ -22,6 +23,11 @@ export function ChatMenu({ locale: l, revision, onLocale, onClose, onSignedOut, 
   onVisit?: () => void;
   onConsult?: () => void;
   onQuestions?: () => void;
+  /** WP F: the member's caregivers and consents cards. */
+  onCaregivers?: () => void;
+  onConsents?: () => void;
+  /** WP F: a link to the people this account helps as a caregiver (/patient/caring), when caregivers are switched on. */
+  caring?: boolean;
   /** V3: a visible way back to the previous chat page. */
   previousChat?: boolean;
 }) {
@@ -61,6 +67,9 @@ export function ChatMenu({ locale: l, revision, onLocale, onClose, onSignedOut, 
     {onQuestions && <button type="button" data-menu-questions disabled={busy || disabled} onClick={() => { onQuestions(); onClose(); }}>{tx(l,"Իմ հարցերը բժշկին","My questions for my doctor","Мои вопросы врачу")}</button>}
     {onVisit && <button type="button" data-menu-visit disabled={busy || disabled} onClick={() => { onVisit(); onClose(); }}>{tx(l,"Իմ այցը","My visit","Мой визит")}</button>}
     {onMedicines && <button type="button" data-menu-medicines disabled={busy || disabled} onClick={() => { onMedicines(); onClose(); }}>{tx(l, "Իմ դեղերը", "My medicines", "Мои лекарства")}</button>}
+    {onCaregivers && <button type="button" data-menu-caregivers disabled={busy || disabled} onClick={() => { onCaregivers(); onClose(); }}>{tx(l, "Մարդիկ, ովքեր օգնում են ինձ", "People who help me", "Люди, которые мне помогают")}</button>}
+    {caring && <Link className="cv2-menu-link" data-menu-caring href={"/patient/caring" as Route}>{tx(l, "Ում եմ օգնում", "People I help", "Кому я помогаю")}</Link>}
+    {onConsents && <button type="button" data-menu-consents disabled={busy || disabled} onClick={() => { onConsents(); onClose(); }}>{tx(l, "Իմ համաձայնությունները", "My consents", "Мои согласия")}</button>}
     {previousChat && <a className="cv2-previous" data-menu-previous href="/patient/zoe?view=classic">{tx(l, "Նախորդ էջը", "Previous chat page", "Прежняя страница чата")}</a>}
     <button type="button" disabled={busy || disabled} onClick={async () => {
       if (busy || disabled) return;

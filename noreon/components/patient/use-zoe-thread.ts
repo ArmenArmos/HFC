@@ -13,13 +13,15 @@ import { cardOffer, fetchZoeCards, mergeCards, upsertCard, withCards } from "@/l
 import { couldBeZoeEmergency, isZoeEmergency, type ZoeEmergencyCheck } from "@/lib/zoe/member-screen";
 import { sendZoeChatMessage, startNewZoeQuestion } from "@/app/patient/zoe/chat-actions";
 import { answeredCount, keepThreadNotices, canStartNewQuestion, chatItems, fetchZoeThread, pollAfterRead, pollAfterSend, pollDue, pollMayReplace, pollOnReturn, readWithin, ZOE_POLL, ZOE_POLL_IDLE, type ZoeRefusal, type ZoeThread } from "@/lib/zoe/app-chat-contracts";
+/** A stable empty list: no member settings card is offered unless the chat switches it on. */
+const NO_SETTINGS_KINDS: readonly CardKind[] = [];
 type Pending = { requestId: string; text: string; toDoctor: boolean; state: "sending" | "failed"; voiceReceipt?: string; voiceDraft?: boolean; voiceUrgent?: boolean };
 type Emergency = { request: string | null; text: string; toDoctor: boolean };
 // A stale context gets one second for an authoritative send reply, then local guidance wins.
 const EMERGENCY_WAIT_MS = 1_000;
 export type Notice = "empty" | "too_long" | "rate_limited" | "unavailable" | ZoeRefusal | "doctor_sent" | null;
 
-export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElement = HTMLTextAreaElement>({ initial, emergencyCheck = null, cards: initialCards = NO_CARDS, chatOnly = false, bpOnly = false, onboarding = false, cardKey, accountSection, fillOpenQuestion }: {
+export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElement = HTMLTextAreaElement>({ initial, emergencyCheck = null, cards: initialCards = NO_CARDS, chatOnly = false, bpOnly = false, onboarding = false, cardKey, accountSection, fillOpenQuestion, settingsKinds = NO_SETTINGS_KINDS }: {
   initial: ZoeThread;
   emergencyCheck?: ZoeEmergencyCheck | null;
   cards?: ZoeCards;
@@ -31,6 +33,8 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
   accountSection?: AccountSection;
   /** True when the text answered the question on screen, so it is not a message to Zoe. */
   fillOpenQuestion?: (text: string) => boolean;
+  /** WP F: the member settings cards (caregiver, consents) this chat has switched on; only these are offered or opened. */
+  settingsKinds?: readonly CardKind[];
 }) {
   const [localEmergencies, setEmergencies] = useState<Record<string, Emergency>>({});
   const [thread, setThread] = useState(initial);
@@ -113,7 +117,7 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
   const items = useMemo(() => chatItems(thread), [thread]);
   const [cards, setCards] = useState(initialCards);
   const entries = useMemo(() => withCards(items, cards.cards), [items, cards.cards]);
-  const offer = useMemo(() => cardOffer(thread, cards), [thread, cards]);
+  const offer = useMemo(() => cardOffer(thread, cards, settingsKinds), [thread, cards, settingsKinds]);
   // The card just posted takes focus (its heading), so a screen reader announces it.
   const [focusCard, setFocusCard] = useState<string | null>(null);
   const [focusVersion, setFocusVersion] = useState(0);
@@ -279,7 +283,7 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
 
   // Zoe posts a card: from a chip (no member text), or from her offer under a message her checks cleared.
   const openCard = useCallback((kind: CardKind|EverydayView, seq: number | null, requestId: string = crypto.randomUUID()) => {
-    if ((bpOnly && kind !== "bp" && !(onboarding && (kind === "profile" || kind === "medicines" || kind === "results" || kind === "message" || kind === "plan" || kind === "visit" || kind === "document" || kind === "symptom_gate" || kind === "consult_questions"))) || cardOpening.current) return false;
+    if ((bpOnly && kind !== "bp" && !(onboarding && (kind === "profile" || kind === "medicines" || kind === "results" || kind === "message" || kind === "plan" || kind === "visit" || kind === "document" || kind === "symptom_gate" || kind === "consult_questions" || settingsKinds.includes(kind as CardKind)))) || cardOpening.current) return false;
     cardOpening.current = true;
     setOpening({ kind, seq, requestId, state: "busy" });
     startTransition(async () => {
@@ -299,7 +303,7 @@ export function useZoeThread<Input extends HTMLInputElement | HTMLTextAreaElemen
       } else setOpening({ kind, seq, requestId, state: r?.status === "rate_limited" || r?.status === "signed_out" ? r.status : "failed" });
     });
     return true;
-  }, [startTransition, bpOnly, onboarding]);
+  }, [startTransition, bpOnly, onboarding, settingsKinds]);
 
   // This screen sends requests as messages first. Only the existing server-cleared BP offer
   // opens automatically; hidden kinds remain ordinary Zoe messages.

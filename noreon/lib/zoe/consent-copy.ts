@@ -1,6 +1,6 @@
 /**
  * The Zoe statement shown at the enrolment Agree step and on the one-time Home card
- * (zoe-consent-draft-2). STAGING DRAFT WORDING: not approved; legal (P14/P16/P34) and Tatevik
+ * (zoe-consent-draft-3: draft-2 with «Զոյա», an editorial change). STAGING DRAFT WORDING: not approved; legal (P14/P16/P34) and Tatevik
  * sign it off before real members. Changing the text means a new wording version (lib/zoe/member.ts
  * ZOE_CONSENT_VERSION and zoe_settings.consent_wording_version together), which re-asks members.
  */

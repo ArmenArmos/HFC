@@ -124,7 +124,7 @@ for(const locale of locales){
 }
 const systemTitles=[
  ['nurse_handoff','doctor-referral','Nurse handoff','Փոխանցում բուժքրոջից','Передача от медсестры'],
- ['zoe_side_effect','contact-followup','Mild side effect from Zoe','Թեթև կողմնակի ազդեցություն՝ Զոյայից','Лёгкий побочный эффект от Zoe'],
+ ['zoe_side_effect','contact-followup','Mild side effect from Zoe','Թեթև կողմնակի ազդեցություն՝ Զոյայից','Лёгкий побочный эффект от Зои'],
  ['zoe_side_effect','contact-followup','Side effect reported: ankle swelling','Հաղորդվել է կողմնակի ազդեցություն՝ կոճերի այտուց','Сообщён побочный эффект: отёк лодыжек'],
  ['zoe_side_effect','contact-followup','Side effect reported: dizziness','Հաղորդվել է կողմնակի ազդեցություն՝ գլխապտույտ','Сообщён побочный эффект: головокружение'],
  ['zoe_side_effect','contact-followup','Side effect reported: nausea','Հաղորդվել է կողմնակի ազդեցություն՝ սրտխառնոց','Сообщён побочный эффект: тошнота'],

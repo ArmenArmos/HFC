@@ -70,7 +70,7 @@ on conflict(singleton)do update set storage_enabled=excluded.storage_enabled,
 --    re-run of this file never changes them.
 insert into public.zoe_settings(singleton,consent_collection_enabled,consent_wording_version,consent_wording_also_valid,
  daily_spend_cap_usd,staging_ai_mode)
-values(true,true,'zoe-consent-draft-2','{}',10,true)
+values(true,true,'zoe-consent-draft-3','{zoe-consent-draft-2}',10,true)
 on conflict(singleton)do update set consent_collection_enabled=excluded.consent_collection_enabled,
  consent_wording_version=excluded.consent_wording_version,consent_wording_also_valid=excluded.consent_wording_also_valid,
  daily_spend_cap_usd=excluded.daily_spend_cap_usd,staging_ai_mode=excluded.staging_ai_mode,updated_at=clock_timestamp();

@@ -11,7 +11,7 @@ type Params=Record<string,string|string[]|undefined>;
 export async function BackofficeSignInPage({searchParams,path='/staff/real/login'}:{searchParams:Promise<Params>;path?:string}){
  const portals=await backofficePortals();
  if(!portals.staff&&!portals.clinic)notFound();
- const params=await searchParams,locale=parseLocale(params.locale,'en'),hy=locale==='hy',t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
+ const params=await searchParams,locale=parseLocale(params.locale,'hy'),hy=locale==='hy',t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
  const next=staffNoticeReturnPath(params.next);
  const destination=await signedInDestination(hy);
  if(destination?.startsWith('/staff/real/')&&next)redirect(next as Route);

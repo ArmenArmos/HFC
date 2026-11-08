@@ -50,5 +50,5 @@ const concern: DoctorConcern = {
 };
 assert.equal(concernSummary(concern, "en"), "Did not tick Fictional medicine 5 mg at 20.10 09:00. Told Zoe: side effect. Last 14 days: 10 taken, 2 skipped (the member's own ticks). The member was told you will answer.");
 assert.match(concernSummary({ ...concern, kind: "refill", ask: { ...concern.ask, reason: "ran_out", trigger: "skipped" } }, "en"), /^Marked .* as skipped\. Told Zoe: ran out\. .*refill\.$/);
-assert.match(concernSummary(concern, "hy"), /Զոիին ասել է/);
+assert.match(concernSummary(concern, "hy"), /Զոյային ասել է/);
 console.log("medicine ask copy and routing: ok");

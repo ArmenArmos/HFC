@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/types";
-import type { StaffIdentity, StaffRole } from "./types";
+import type { DemoStaffRole as StaffRole, StaffIdentity } from "./types";
 import { demoStaffHostAllowed } from "./hosts";
 
 const COOKIE_NAME = "noreon-workspace-auth";

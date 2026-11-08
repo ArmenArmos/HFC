@@ -64,6 +64,11 @@ export const dependencyRegions:Record<string,readonly string[]|null>={
  'lib/patient-care/clinical-case-repository.ts':['readRealMemberStatus','snapshotSchema'],
  'lib/nurse-visit/runtime.ts':['readMemberNurseVisit'],
  'lib/telegram-runtime/member.ts':['readTelegramLink'],
+ // WP F: the member's caregiver and consents cards, and the caregiver invitation block.
+ 'lib/caregivers/actions.ts':null,
+ 'lib/caregivers/server.ts':null,
+ 'lib/consents/actions.ts':null,
+ 'lib/consents/server.ts':null,
 };
 
 /** Exact forwarding expressions only. Their literal callers are scanned above. */
@@ -78,5 +83,6 @@ export const forwardingCalls:{file:string;function:string;method:string;argument
  {file:'app/patient/actions.ts',function:'recordMeasurement',method:'rpc',argument:'name',reason:'bpStepAfterSave callback forwards member_bp_recent; selected bp-after-save.ts scanned'},
  {file:'lib/zoe/app-chat.ts',function:'rpc',method:'rpc',argument:"name as keyof Database['public']['Functions']",reason:'Care-alert screening callback; recordScreen and screenPendingMessages supply literal names'},
  {file:'lib/conversation-persistence/repository.ts',function:'call',method:'rpc',argument:'name',reason:'Member receive and voice-message pass literal conversation_receive'},
+ {file:'lib/caregivers/server.ts',function:'call',method:'rpc',argument:'name',reason:'Caregiver and consent wrappers pass literal names as the second call argument'},
  {file:'lib/conversation-persistence/server.ts',function:'repository',method:'rpc',argument:"name as keyof Database['public']['Functions']",reason:'Repository adapter forwards selected ConversationRepository member methods'},
 ];

@@ -9,8 +9,9 @@ export const CONTINUE_PATHS = Object.freeze({
   open_messages: "/patient/zoe", open_chat: "/patient/chat",
 } as const);
 export type ContinueStep = keyof typeof CONTINUE_PATHS;
-/** Screens where a sign-in can end mid-task: the member comes back to them (BC-05). Telegram links never open these. */
-const RETURN_PATHS = ["/patient/measurements/new", "/patient/medicines", "/patient/bp-week", "/patient/account"] as const;
+/** Screens where a sign-in can end mid-task: the member comes back to them (BC-05). Telegram links never open these.
+ * /patient/caring: the caregiver surface (WP F), where a signed-out caregiver is sent to sign in first. */
+const RETURN_PATHS = ["/patient/measurements/new", "/patient/medicines", "/patient/bp-week", "/patient/account", "/patient/caring"] as const;
 const allowed: ReadonlySet<string> = new Set([...Object.values(CONTINUE_PATHS), ...RETURN_PATHS]);
 /** The continue path if it is one of the allowed pages, otherwise null (never an open redirect). */
 export function continuePath(value: unknown): string | null {

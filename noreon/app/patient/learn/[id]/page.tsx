@@ -7,9 +7,10 @@ import { CareLink, copy } from "@/components/patient-care/common";
 import { requireRegisteredForRender } from "@/lib/patient/render-data";
 import { findLesson, lessonsShowDrafts } from "@/lib/lessons/catalogue";
 import { readLessonProgress } from "@/lib/lessons/server";
+import { memberPageMetadata } from "@/lib/patient/page-title";
 
 
-export const metadata: Metadata = { title: "Noreon · Lesson" };
+export const generateMetadata = (): Promise<Metadata> => memberPageMetadata("lesson");
 export const dynamic = "force-dynamic";
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {

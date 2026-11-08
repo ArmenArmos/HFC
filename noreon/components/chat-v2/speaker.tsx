@@ -5,7 +5,7 @@ import {tx,type PatientLocale} from '@/lib/patient/copy';
 type Playback={locale:PatientLocale;voices:SpeechSynthesisVoice[];active:string|null;play:(id:string,text:string,voice:SpeechSynthesisVoice)=>void};
 const PlaybackContext=createContext<Playback|null>(null);
 /** One screen owns playback. Local voices only: browser cloud voices could send member text away. */
-export function VoicePlayback({enabled,children,locale='en'}:{enabled:boolean;children?:ReactNode;locale?:PatientLocale}) {
+export function VoicePlayback({enabled,children,locale='hy'}:{enabled:boolean;children?:ReactNode;locale?:PatientLocale}) {
   const [voices,setVoices]=useState<SpeechSynthesisVoice[]>([]);
   const [active,setActive]=useState<string|null>(null);
   useEffect(()=>{
@@ -30,7 +30,7 @@ export function VoicePlayback({enabled,children,locale='en'}:{enabled:boolean;ch
 }
 export function Speaker({text,locale}:{text:string|(()=>string);locale?:PatientLocale}) {
   const playback=useContext(PlaybackContext),id=useId();
-  const l=locale??playback?.locale??'en';
+  const l=locale??playback?.locale??'hy';
   const language=typeof text==='function'?l:/[\u0530-\u058f]/u.test(text)?'hy':/[\u0400-\u04ff]/u.test(text)?'ru':/[a-z]/iu.test(text)?'en':l;
   const voice=playback?.voices.find(v=>v.lang.toLowerCase().split(/[-_]/)[0]===language);
   if(!playback||!voice)return null;

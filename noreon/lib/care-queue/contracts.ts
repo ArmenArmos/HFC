@@ -1,5 +1,5 @@
 import {bpUnit} from '@/lib/bp-unit';
-import {unverifiedBpLabel} from "@/lib/patient/bp-provenance";
+import {caregiverReportedBpLabel,unverifiedBpLabel} from "@/lib/patient/bp-provenance";
 import {pick,type Locale} from '@/lib/locale';
 import {queueForTask,slaDeadline,type ZoneResult} from '@/lib/clinical/zones/evaluate';
 import {z} from 'zod';
@@ -75,7 +75,8 @@ export function taskFromZone(result:ZoneResult,input:TaskInput):CareQueueRaise[]
   summary:{...input.summary,reasons},slaDeadline:slaDeadline(result,input.at)}));
 }
 
-export const queueForRole=(role:string):CareQueue|null=>role==='nurse'?'nurse':role==='doctor'?'physician':role==='admin'?'admin':null;
+/** A care coordinator reads the admin logistics queue of their clinic (care_queue_inbox maps them the same way). */
+export const queueForRole=(role:string):CareQueue|null=>role==='nurse'?'nurse':role==='doctor'?'physician':role==='admin'||role==='coordinator'?'admin':null;
 export const isOverdue=(task:Pick<CareQueueTask,'slaDeadline'>,asOf:string)=>task.slaDeadline!==null&&new Date(task.slaDeadline).getTime()<new Date(asOf).getTime();
 
 const t=(l:Locale,en:string,hy:string,ru:string)=>pick(l,{en,hy,ru});
@@ -129,8 +130,8 @@ export function reasonLabel(reason:string,l:Locale){
 }
 /** Every reason the zone rule gave, falling back to the task's own reason code. */
 export function taskReasons(task:Pick<CareQueueTask,'reason'|'summary'>,l:Locale){
- if(task.reason==='bp_member_reported_high'&&task.summary.entrySource==='patient_text_entry'&&typeof task.summary.systolic==='number'&&typeof task.summary.diastolic==='number')
-  return `${task.summary.systolic}/${task.summary.diastolic} ${bpUnit(l)} · ${unverifiedBpLabel(l)}`;
+ if(task.reason==='bp_member_reported_high'&&(task.summary.entrySource==='patient_text_entry'||task.summary.entrySource==='caregiver_reported')&&typeof task.summary.systolic==='number'&&typeof task.summary.diastolic==='number')
+  return `${task.summary.systolic}/${task.summary.diastolic} ${bpUnit(l)} · ${task.summary.entrySource==='caregiver_reported'?caregiverReportedBpLabel(l):unverifiedBpLabel(l)}`;
  const parsed=z.array(z.string()).safeParse(task.summary.reasons);
  const reasons=parsed.success&&parsed.data.length?parsed.data:[task.reason];
  return [...new Set(reasons.map(r=>reasonLabel(r,l)))].join(', ');

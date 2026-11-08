@@ -32,7 +32,7 @@ const actions={
 };
 const out:Record<string,unknown>={};
 const boundaries:Record<string,unknown>={react:React,'react/jsx-runtime':jsx,'lucide-react':{ArrowUp:()=>null},
- '@/lib/staff/staff-locale-copy':{st},'@/lib/zoe/practice/patients':patients,'./copy':{patientCopy},
+ '@/lib/staff/staff-locale-copy':{st},'@/lib/brand':await import('@/lib/brand'),'@/lib/zoe/practice/patients':patients,'./copy':{patientCopy},
  '@/app/staff/real/zoe-practice/actions':actions,'@/components/patient/use-chat-viewport':{useChatViewport:()=>false},
  '@/components/chat-v2/use-thread-scroll':{useThreadScroll:()=>({threadRef:{current:null},contentRef:{current:null},unread:false,newest:()=>{}})},
 };

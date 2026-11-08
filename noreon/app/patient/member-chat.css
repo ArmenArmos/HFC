@@ -62,8 +62,9 @@ html:has([data-chat-only-page]), body:has([data-chat-only-page]) { height: 100%;
 [data-member-chat-thread] [data-zoe-quick-actions] { margin: 0; padding: 0; overflow-x: auto; }
 [data-member-chat-thread] [data-zoe-quick-actions] > div { flex-wrap: nowrap; }
 [data-member-chat-thread] [data-zoe-quick-actions] :is(a, button) {
-  font-size: .875rem;
+  font-size: 1rem;
   min-height: var(--control-height-md);
+  min-width: var(--control-height-md);
   max-width: none;
   white-space: nowrap;
   padding-inline: var(--space-4);
@@ -83,7 +84,7 @@ html:has([data-chat-only-page]), body:has([data-chat-only-page]) { height: 100%;
 /* Self-loading notices can return nothing. Their inventory markers must not create empty gaps. */
 .member-home > [data-home-notice], [data-zoe-thread] > [data-home-notice], .member-chat-off > [data-home-notice] { display: contents; }
 
-[data-member-chat-only] .journey-header a[aria-label="Noreon"] { min-height: var(--control-height-md); }
+[data-member-chat-only] .journey-header a[data-brand-link] { min-height: var(--control-height-md); }
 
 /* Below 16px iOS zooms the page when the field takes focus. */
 [data-member-chat-thread] form[data-zoe-composer] textarea {

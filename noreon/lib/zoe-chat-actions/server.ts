@@ -31,7 +31,7 @@ import {findLivingVisit} from './living-visit';
 import {log,errorFields} from '@/lib/observability/logger';
 import {memberTasks,redOutcome,withOpenEmergencies,RED_FLAG_QUESTIONS,flagItem} from './bp-flow';
 import {SAMS_QUESTIONS,samsItem} from './dose-flow';
-import {cardSchema,cardsReadSchema,V3_LAB_CARD_KINDS,V3_NEXT_STEP_KINDS,NO_CARDS,RESULT_PAGES,SNAPSHOTS,urgentHoldResult,type CardKind,type Snapshot,type ZoeCard,type ZoeCards} from './registry';
+import {cardSchema,cardsReadSchema,MEMBER_SETTINGS_KINDS,V3_LAB_CARD_KINDS,V3_NEXT_STEP_KINDS,NO_CARDS,RESULT_PAGES,SNAPSHOTS,urgentHoldResult,type CardKind,type Snapshot,type ZoeCard,type ZoeCards} from './registry';
 
 /**
  * Server side of the Zoe chat cards. Snapshots are built here from the member's own reads (the same reads and
@@ -68,7 +68,7 @@ export async function readZoeCards():Promise<ZoeCards>{
   const parsed=cardsReadSchema.safeParse(data);
   if(!parsed.success)return unavailable();
   if(!parsed.data.enabled)return NO_CARDS;
-  let cards=parsed.data.cards.filter(c=>zoeAppV3Enabled()||(!V3_NEXT_STEP_KINDS.includes(c.kind as CardKind)&&!V3_LAB_CARD_KINDS.includes(c.kind as CardKind)));
+  let cards=parsed.data.cards.filter(c=>zoeAppV3Enabled()||(!V3_NEXT_STEP_KINDS.includes(c.kind as CardKind)&&!V3_LAB_CARD_KINDS.includes(c.kind as CardKind)&&!MEMBER_SETTINGS_KINDS.includes(c.kind as CardKind)));
   if(living){const id=living.id;cards=[...cards.filter(c=>c.id!==id),living];}
   let emergencyAvailable=true;
   let emergencyClearedAt:string|null|undefined;
@@ -214,7 +214,7 @@ async function latestBp():Promise<Snapshot<'bp'>['latest']>{
   const client=await createClient();
   const {data,error}=await client.from('patient_measurements').select('systolic,diastolic,pulse,measured_at,entry_source').order('measured_at',{ascending:false}).limit(1).maybeSingle();
   if(error)return undefined;
-  return data&&{systolic:data.systolic,diastolic:data.diastolic,pulse:data.pulse,measuredAt:data.measured_at,entrySource:data.entry_source as 'patient_text_entry'|'patient_photo_confirmed'|'patient_voice_confirmed'|null};
+  return data&&{systolic:data.systolic,diastolic:data.diastolic,pulse:data.pulse,measuredAt:data.measured_at,entrySource:data.entry_source as 'patient_text_entry'|'patient_photo_confirmed'|'patient_voice_confirmed'|'caregiver_reported'|null};
  }catch{return undefined;}
 }
 async function bpSnapshot(now:Date,typed?:TypedBp):Promise<Snapshot<'bp'>>{
@@ -344,6 +344,16 @@ export const askSnapshotFrom=(a:MedicineAsk):Snapshot<'ask'>=>({v:1,askId:a.id,n
 
 /** The snapshot a new card of this kind carries, checked against its schema. */
 export async function buildSnapshot(kind:CardKind,now=new Date(),page=0,askId?:string,typed?:TypedBp):Promise<unknown>{
+ // WP F: the member's own caregiver links and consents, read with the member's session (the database scopes them).
+ if(kind==='caregiver'||kind==='consents'){
+  const [{caregiversEnabled},{memberConsentsEnabled}]=await Promise.all([import('@/lib/caregivers/schema'),import('@/lib/consents/schema')]);
+  if(!zoeAppV3Enabled()||!(kind==='caregiver'?caregiversEnabled():memberConsentsEnabled()))throw Error('Member chat is disabled.');
+  const {sessionCaregiverRpc,caregiverCardSnapshot}=await import('@/lib/caregivers/server');
+  const rpc=await sessionCaregiverRpc();
+  if(kind==='caregiver')return SNAPSHOTS.caregiver.parse(await caregiverCardSnapshot(rpc));
+  const {consentsCardSnapshot}=await import('@/lib/consents/server');
+  return SNAPSHOTS.consents.parse(await consentsCardSnapshot(rpc));
+ }
  if(kind==='review'){if(!zoeAppV3Enabled())throw Error('Member chat is disabled.');return {v:1};}
  if(kind==='next_step')throw Error('Next steps are server posted.');
  if(kind==='tests_needed'){if(!zoeAppV3Enabled())throw Error('Member chat is disabled.');const {readTestsNeeded}=await import('./next-step-read');return readTestsNeeded();}

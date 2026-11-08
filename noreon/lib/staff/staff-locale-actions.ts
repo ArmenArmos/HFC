@@ -8,8 +8,8 @@ import{parseLocale}from'@/lib/locale';
 
 export const setStaffLocale=loggedAction("setStaffLocale",async function setStaffLocale(form:FormData){
  const{identity}=await requireRealStaff();
- if(identity.role!=='nurse'&&identity.role!=='doctor')return;
- const locale=parseLocale(form.get('locale'),'en');
+ if(identity.role!=='nurse'&&identity.role!=='doctor'&&identity.role!=='coordinator')return;
+ const locale=parseLocale(form.get('locale'),'hy');
  (await cookies()).set(staffLocaleCookie,locale,{path:'/',httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:60*60*24*365});
  revalidatePath('/staff/real','layout');
 });

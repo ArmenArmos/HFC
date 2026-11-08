@@ -164,7 +164,7 @@ for(const locale of ['en','hy','ru'] as const)for(const width of [390,1280])test
  await page.goto(fixture.url+`/staff/real/doctor-chat-v2?state=plan-ready-proposal&locale=${locale}`);
  const card=page.locator('[data-plan-ready]'),next=card.locator('button.w-full');
  const save=locale==='en'?'Save consultation decision':locale==='hy'?'Պահպանել խորհրդատվության որոշումը':'Сохранить решение о консультации';
- const label=locale==='en'?"Zoe's proposal":locale==='hy'?'Զոյայի առաջարկը':'Предложение Zoe';
+ const label=locale==='en'?"Zoe's proposal":locale==='hy'?'Զոյայի առաջարկը':'Предложение Зои';
  await expect(next).toBeEnabled();await next.click(); // Accept the prepared draft.
  await expect(card.locator('select')).toHaveValue('not-required');
  await expect(card.locator('fieldset textarea')).toHaveValue('No consultation is needed.');

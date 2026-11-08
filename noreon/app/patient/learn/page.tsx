@@ -8,8 +8,9 @@ import { requireRegisteredForRender } from "@/lib/patient/render-data";
 import { lessonLocale, lessonsShowDrafts, visibleLessons } from "@/lib/lessons/catalogue";
 import { readLessonProgress } from "@/lib/lessons/server";
 import type { LessonTopic } from "@/lib/lessons/content";
+import { memberPageMetadata } from "@/lib/patient/page-title";
 
-export const metadata: Metadata = { title: "Noreon · Lessons" };
+export const generateMetadata = (): Promise<Metadata> => memberPageMetadata("lessons");
 export const dynamic = "force-dynamic";
 
 const TOPICS: readonly [LessonTopic, string, string, string][] = [

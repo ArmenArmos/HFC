@@ -24,6 +24,7 @@ import {DoctorReply,type Reply,type ThreadMessage} from './messages';
 import {PatientsCard} from './patients-card';
 import {PanelGraphs} from './panel-graphs';
 import {OpenPatientChatChoice} from './open-patient-chat-choice';
+import {noreonName} from '@/lib/brand';
 type Message=ThreadMessage|{id:string;kind:'open-chat';rows:({id:string;name:string}&Partial<ChatMemberIdentity>)[];locale:StaffLocale};
 /** General Zoe owns only portfolio work. Every member control leaves this thread. */
 export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable=false}:{voiceAvailable?:boolean;resultsReport?:boolean;telegram?:{connected:boolean}|null;locale:StaffLocale;doctorId:string;doctorName:string}){
@@ -147,7 +148,7 @@ export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable
   reply:voiceReply?{key:voiceReply,text:()=>renderedStaffReply(contentRef.current,voiceReply),locale:replyLanguages.get(voiceReply)??l}:null});
  const initials=doctorName.trim().split(/\s+/u).slice(0,2).map(part=>part[0]).join('');
  return <main className="cv2-root" lang={l} data-doctor-chat-v2>
-  <header className="cv2-header"><h1><i className="cv2-orb" aria-hidden/>Noreon</h1><button type="button" className="cv2-avatar" onClick={()=>setMenu(true)} aria-label={t('Open menu','Բացել ընտրացանկը','Открыть меню')}><span>{initials||'N'}</span></button></header>
+  <header className="cv2-header"><h1><i className="cv2-orb" aria-hidden/>{noreonName(l)}</h1><button type="button" className="cv2-avatar" onClick={()=>setMenu(true)} aria-label={t('Open menu','Բացել ընտրացանկը','Открыть меню')}><span>{initials||'N'}</span></button></header>
   <section ref={threadRef} className="cv2-thread" role="log" aria-live="polite" aria-label={t('Your work chat','Ձեր աշխատանքային զրույցը','Ваш рабочий чат')} tabIndex={0} data-zoe-thread><div ref={contentRef} className="cv2-messages">
    <article className="cv2-msg cv2-zoe"><p className="cv2-say">{t(`Hello, ${doctorName}. Who needs you today?`,`Բարև, ${doctorName}։ Ո՞ւմ է այսօր պետք ձեր օգնությունը։`,`Здравствуйте, ${doctorName}. Кому сегодня нужна ваша помощь?`)}</p><div className="dcv2-patient-chips">{[t('Who needs me','Ո՞ւմ է պետք իմ օգնությունը','Кому нужна моя помощь'),t('Alerts','Ահազանգեր','Оповещения')].map(label=><button type="button" className="dcv2-choice" key={label} disabled={busy} onClick={()=>void send(label)}>{label}</button>)}<button type="button" className="dcv2-choice" disabled={busy} onClick={()=>{setFindHint(true);input.current?.focus();}}>{t('Find a member','Գտնել անդամին','Найти участника')}</button><button type="button" className="dcv2-choice" disabled={busy} onClick={()=>void showPatients()}>{t('Patients','Անդամներ','Участники')}</button></div></article>
    {messages.map(message=><article key={message.id} data-message-key={message.id} className={`cv2-msg ${message.kind==='doctor'?'cv2-me':'cv2-zoe'}`}>

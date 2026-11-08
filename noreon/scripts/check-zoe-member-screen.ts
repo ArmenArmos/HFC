@@ -207,7 +207,7 @@ assert.ok(zoePageSource.includes('"AI assistant, not a doctor", "ԱԲ օգնակ
 assert.doesNotMatch(zoePageSource,/tel:103/,'Zoe screen: no 103 control besides the header pill');
 const helpSource=readFileSync('components/patient-care/member-help-content.tsx','utf8');
 assert.ok(helpSource.includes('For health questions, your doctor answers. Zoe explains; only your doctor changes treatment.'),'Help: About Zoe');
-assert.ok(helpSource.includes('Առողջության հարցերին պատասխանում է ձեր բժիշկը։ Zoe-ն բացատրում է, իսկ բուժումը փոխում է միայն ձեր բժիշկը։'),'Help: About Zoe (hy)');
+assert.ok(helpSource.includes('Առողջության հարցերին պատասխանում է ձեր բժիշկը։ Զոյան բացատրում է, իսկ բուժումը փոխում է միայն ձեր բժիշկը։'),'Help: About Zoe (hy)');
 assert.doesNotMatch(zoeCopy,/—|!"|!'|reviews (each|every)/,'Voice guide: no em dash, no exclamation, no per-message review promise');
 assert.ok(readFileSync('components/patient/zoe-quick-actions.tsx','utf8').includes('{upload && !cards && ('),'Upload is shown only when member uploads are on');
 assert.deepEqual(screen.doctorChannel({state:'linked'},'NoreonBot'),{mode:'telegram',href:'https://t.me/NoreonBot'});

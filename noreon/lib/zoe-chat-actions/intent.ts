@@ -17,6 +17,11 @@ const RULES:readonly {kind:CardKind;re:RegExp}[]=[
  {kind:'message',re:/\b(?:message|write to|contact|talk to)\b.*\b(?:care team|doctor|nurse)\b|(?:գրել|կապվել).*(?:բժշկ|բուժքույր|թիմ)|(?:написать|связаться).*(?:врач|медсестр|команд)/u},
  // After the explicit tasks: naming a dose while asking for something else stays that request. Medicine words: the common ones, and the endings of the classes members take, so "I took my atorvastatin" counts.
  {kind:'dose',re:/(?<![a-z])(?:hab|dex|degh)[a-z]*(?![a-z]).*(?<![a-z])(?:xmec\w*|khmec\w*|ynd[a-z]*|nshi|nshek|nshel|grancir|grancek|grancel|grances|moraca\w*)(?![a-z])|(?<![a-z])(?:xmec\w*|khmec\w*|ynd[a-z]*|nshi|nshek|grancir|grancek|grances)(?![a-z]).*(?<![a-z])(?:hab|dex|degh)[a-z]*(?![a-z])|\b(?:log|mark|tick|record)\b.*\b(?:medicines?|medications?|meds?|pills?|tablets?|doses?)\b|\b(?:took|taken|forgot|missed)\b.*\b(?:pills?|tablets?|medicines?|medications?|meds?|doses?|\p{L}+(?:statin|pril|sartan|dipine|olol|timibe|thiazide))\b|(?:դեղ|հաբ).*(?:նշել|ընդուն(?:եցի|ել եմ)|խմ(?:եցի|ել եմ)|մոռաց(?:ա|ել եմ)|բաց(?: եմ)? թող(?:եցի|ել))|(?:նշել|ընդուն(?:եցի|ել եմ)|խմ(?:եցի|ել եմ)|մոռաց(?:ա|ել եմ)|բաց(?: եմ)? թող(?:եցի|ել)|չեմ (?:խմել|ընդունել)).*(?:դեղ|հաբ)|(?:лекарств|таблетк|доз).*(?:отмет|принял|выпил|забыл|пропустил)|(?:отмет|принял|выпил|забыл|пропустил).*(?:лекарств|таблетк|доз)/u},
+ // WP F: settings the member manages in the chat, after every task, so a reading, a dose or a message that mentions a
+ // carer or a consent stays that task. Nouns only, so "I agree" in a reply never opens the consents card. Offered only
+ // where those cards are switched on (cardOffer's settingsKinds).
+ {kind:'caregiver',re:/\bcare ?givers?\b|\bcarers?\b|\bwho (?:can )?helps? me\b|խնամող|խնամակալ|опекун|сиделк|ухаживающ/u},
+ {kind:'consents',re:/\bconsents?\b|համաձայնություն|согласи[еяй]/u},
   // Last: an explicit task that names LDL ("log my LDL medicine", "message my doctor about LDL") stays that task.
  {kind:'ldl',re:/\bldl\b|\bcholesterol\b.*\bgoal\b|\bat goal\b|ցխլ|լպնպ|лпнп/u},
 ];

@@ -16,7 +16,7 @@ export type StaffTelegramState = {ok: boolean; message: string; url?: string; ne
 const issued = z.union([z.object({ok: z.literal(true), token: z.string().regex(/^[A-Za-z0-9_-]{32}$/), expiresAt: z.string()}), z.object({ok: z.literal(false), code: z.string(), since: z.string().nullable().optional(), connectedBy: z.string().nullable().optional()})]);
 
 export const issueStaffTelegramLink=loggedAction("issueStaffTelegramLink",async function issueStaffTelegramLink(_previous: StaffTelegramState, form: FormData): Promise<StaffTelegramState> {
-  const locale=parseLocale(form.get('locale'),'en'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
+  const locale=parseLocale(form.get('locale'),'hy'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
   const username = telegramBotUsername();
   if (!staffTelegramEnrolmentEnabled() || !username) return {ok: false, message: t("Telegram is not available yet.","Telegram-ը դեռ հասանելի չէ։","Telegram пока недоступен.")};
   const input = z.object({staffId: z.uuid(), phone: z.string().trim().regex(/^\+[1-9]\d{6,14}$/)}).safeParse({staffId: form.get("staffId"), phone: String(form.get("phone") ?? "").replace(/[\s()-]/g, "")});
@@ -42,7 +42,7 @@ export const issueStaffTelegramLink=loggedAction("issueStaffTelegramLink",async 
 });
 
 export const revokeStaffTelegram=loggedAction("revokeStaffTelegram",async function revokeStaffTelegram(_previous: StaffTelegramState, form: FormData): Promise<StaffTelegramState> {
-  const locale=parseLocale(form.get('locale'),'en'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
+  const locale=parseLocale(form.get('locale'),'hy'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
   if (!staffTelegramEnrolmentEnabled()) return {ok: false, message: t("Telegram is not available yet.","Telegram-ը դեռ հասանելի չէ։","Telegram пока недоступен.")};
   const staffId = z.uuid().safeParse(form.get("staffId"));
   if (!staffId.success || form.get("confirmed") !== "true") return {ok: false, message: t("Confirm before revoking.","Հաստատեք՝ նախքան անջատելը։","Подтвердите отключение.")};
@@ -56,7 +56,7 @@ export const revokeStaffTelegram=loggedAction("revokeStaffTelegram",async functi
 
 /** Password reset by Telegram (T-auth B-3): the link goes only to the account's own chat. */
 export const sendStaffTelegramRecovery=loggedAction("sendStaffTelegramRecovery",async function sendStaffTelegramRecovery(_previous: StaffTelegramState, form: FormData): Promise<StaffTelegramState> {
-  const locale=parseLocale(form.get('locale'),'en'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
+  const locale=parseLocale(form.get('locale'),'hy'),t=(en:string,hy:string,ru:string)=>pick(locale,{en,hy,ru});
   if (!staffTelegramRecoveryReady()) return {ok: false, message: t("Password reset by Telegram is not available yet.","Telegram-ով գաղտնաբառի վերականգնումը դեռ հասանելի չէ։","Сброс пароля через Telegram пока недоступен.")};
   const input = z.object({staffId: z.uuid(), portal: z.enum(["staff", "clinic"])}).safeParse({staffId: form.get("staffId"), portal: form.get("portal")});
   if (!input.success) return {ok: false, message: t("Reload the page and try again.","Թարմացրեք էջը և նորից փորձեք։","Обновите страницу и попробуйте снова.")};

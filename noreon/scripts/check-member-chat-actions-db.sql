@@ -931,6 +931,8 @@ rollback to chat_account_zoe_consents;
 -- card-kind:next_step
 -- card-kind:tests_needed
 -- card-kind:review
+-- card-kind:caregiver
+-- card-kind:consents
 -- App chat cards. Root fixture: member ...001, published plan ...003, medication ...004.
 -- Medication is named Fixture medicine, dose 1 tablet, scheduled at 00:00 Yerevan,
 -- active since before today's midnight. Feature/consent/eligible care-team fixtures belong to the caller.
@@ -959,7 +961,9 @@ insert into chat_card_snapshots(kind,snapshot)values
   ('sams','{"v":1,"episodeId":"ac710000-0000-4000-8000-000000000005"}'::jsonb),
   ('next_step','{"v":1,"stage":"fixture-tests","title":{"en":"Next step","hy":"Next step","ru":"Next step"},"detail":{"en":"Tests","hy":"Tests","ru":"Tests"},"button":{"en":"See tests","hy":"See tests","ru":"See tests"},"target":"tests_needed","doctorInLoop":false}'::jsonb),
   ('tests_needed','{"v":1,"available":true,"rows":[{"id":"ldl","title":"LDL","method":"lab","fresh":false}]}'::jsonb),
-  ('review','{"v":1}'::jsonb);
+  ('review','{"v":1}'::jsonb),
+  ('caregiver','{"v":1,"limit":3,"links":[]}'::jsonb),
+  ('consents','{"v":1,"version":"member-consent-draft-1","current":[],"history":[]}'::jsonb);
 grant select on chat_card_snapshots to service_role;
 update chat_card_snapshots set snapshot=jsonb_set(snapshot,'{date}',to_jsonb((now()at time zone 'Asia/Yerevan')::date::text))where kind='dose';
 update chat_card_snapshots set snapshot=jsonb_set(snapshot,'{startsAt}',to_jsonb(now()+interval '1 day'))where kind in('prep','fasting');
@@ -1475,6 +1479,53 @@ end$$;
 select pg_temp.as_fixture();
 select pg_temp.check_constraints('card_unclaim_cases');
 rollback to card_unclaim_cases;
+
+-- WP F: the member's consents and caregivers, and the invited phone account's caregiver side.
+-- Root member ...001; the caregiver is a separate phone account ...009 (not staff, not a member here).
+savepoint caregiver_consent_cases;
+select pg_temp.as_fixture();
+insert into auth.users(id,phone,phone_confirmed_at) values(pg_temp.id(9),'99971000009',now());
+insert into auth.sessions(id,user_id,created_at,updated_at) values(pg_temp.id(109),pg_temp.id(9),now(),now());
+select pg_temp.as_member();
+-- covers: rpc:member_consent_set
+select pg_temp.chat_call('consents / grant research',$q$select public.member_consent_set(p_kind=>'research',p_granted=>true,p_wording_version=>'member-consent-draft-1',p_text_hash=>repeat('a',64),p_method=>'tap',p_source=>'chat_card')$q$,'{"ok":true,"changed":true}');
+-- covers: rpc:member_consents_current
+select pg_temp.chat_call('consents / current',$q$select public.member_consents_current()$q$,'{"ok":true,"consents":[{"kind":"research","granted":true}]}');
+-- covers: rpc:member_consent_history
+select pg_temp.chat_call('consents / history',$q$select public.member_consent_history()$q$,'{"ok":true}');
+-- covers: rpc:member_caregiver_invite
+insert into chat_results select 'caregiver invite',pg_temp.chat_call('caregiver / invite',$q$select public.member_caregiver_invite(p_request_id=>'ac710000-0000-4000-8000-000000000091',p_display_name=>'Fictional helper',p_relationship=>'child',p_phone=>'+99971000009',p_scopes=>array['view_plan','view_readings','log_readings'],p_wording_version=>'caregiver-consent-draft-1',p_text_hash=>repeat('c',64),p_method=>'tap')$q$,'{"ok":true,"replayed":false,"link":{"status":"pending"}}');
+-- covers: rpc:member_caregivers_read
+select pg_temp.chat_call('caregiver / member list',$q$select public.member_caregivers_read()$q$,'{"ok":true,"links":[{"status":"pending"}]}');
+-- covers: rpc:member_caregiver_update_scopes
+select pg_temp.chat_call('caregiver / scopes',$q$select public.member_caregiver_update_scopes(p_id=>(select (value#>>'{link,id}')::uuid from chat_results where label='caregiver invite'),p_revision=>1,p_scopes=>array['view_plan','view_readings','log_readings','receive_alerts'],p_wording_version=>'caregiver-consent-draft-1',p_text_hash=>repeat('d',64),p_method=>'tap')$q$,'{"ok":true,"changed":true}');
+select pg_temp.as_member(pg_temp.id(9),pg_temp.id(109));
+-- covers: rpc:caregiver_invitations_read
+select pg_temp.chat_call('caregiver / invitations',$q$select public.caregiver_invitations_read()$q$,'{"ok":true,"invitations":[{"relationship":"child"}]}');
+-- covers: rpc:caregiver_invitation_accept
+select pg_temp.chat_call('caregiver / accept',$q$select public.caregiver_invitation_accept(p_id=>(select (value#>>'{link,id}')::uuid from chat_results where label='caregiver invite'))$q$,'{"ok":true,"status":"active"}');
+-- covers: table:member_caregivers:select
+select pg_temp.chat_call('caregiver / own active links (sign-in landing)',$q$select to_jsonb(x)from(select count(*)n from public.member_caregivers where caregiver_user_id=pg_temp.id(9) and status='active')x$q$,'{"n":1}');
+-- covers: rpc:caregiver_members_read
+select pg_temp.chat_call('caregiver / members',$q$select public.caregiver_members_read()$q$,'{"ok":true}');
+-- covers: rpc:caregiver_bp_log
+select pg_temp.chat_call('caregiver / log reading',$q$select public.caregiver_bp_log(p_member=>'ac710000-0000-4000-8000-000000000001',p_request_id=>'ac710000-0000-4000-8000-000000000092',p_systolic=>132,p_diastolic=>84,p_pulse=>70,p_measured_at=>now()-interval '2 minutes')$q$,'{"ok":true,"replayed":false}');
+-- covers: rpc:caregiver_plan_read
+select pg_temp.chat_call('caregiver / plan',$q$select public.caregiver_plan_read(p_member=>'ac710000-0000-4000-8000-000000000001')$q$,'{"ok":true}');
+-- covers: rpc:caregiver_readings_read
+select pg_temp.chat_call('caregiver / readings',$q$select public.caregiver_readings_read(p_member=>'ac710000-0000-4000-8000-000000000001')$q$,'{"ok":true}');
+select pg_temp.as_member();
+-- covers: rpc:member_caregiver_revoke
+select pg_temp.chat_call('caregiver / revoke',$q$select public.member_caregiver_revoke(p_id=>(select (value#>>'{link,id}')::uuid from chat_results where label='caregiver invite'),p_revision=>3)$q$,'{"ok":true,"changed":true,"link":{"status":"revoked"}}');
+insert into chat_results select 'caregiver second invite',pg_temp.chat_call('caregiver / invite again',$q$select public.member_caregiver_invite(p_request_id=>'ac710000-0000-4000-8000-000000000093',p_display_name=>'Fictional helper',p_relationship=>'child',p_phone=>'+99971000009',p_scopes=>array['view_plan'],p_wording_version=>'caregiver-consent-draft-1',p_text_hash=>repeat('c',64),p_method=>'tap')$q$,'{"ok":true}');
+select pg_temp.as_member(pg_temp.id(9),pg_temp.id(109));
+-- covers: rpc:caregiver_invitation_decline
+select pg_temp.chat_call('caregiver / decline',$q$select public.caregiver_invitation_decline(p_id=>(select (value#>>'{link,id}')::uuid from chat_results where label='caregiver second invite'))$q$,'{"ok":true,"status":"declined"}');
+select pg_temp.as_fixture();
+select pg_temp.ok((select entry_source='caregiver_reported' from public.patient_measurements where user_id=pg_temp.id(1) and submission_id=pg_temp.id(92)),'caregiver reading keeps caregiver provenance');
+select pg_temp.ok((select array_agg(granted order by id)=array[true,true,false,true] from public.member_consents where member_id=pg_temp.id(1) and kind='caregiver_sharing'),'caregiver sharing consent: granted, granted again for the changed scopes, withdrawn on the last revoke, granted again on the next invitation');
+select pg_temp.check_constraints('caregiver_consent_cases');
+rollback to caregiver_consent_cases;
 
 rollback;
 \echo 'member chat actions DB checks passed'

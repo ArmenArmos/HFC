@@ -141,7 +141,7 @@ for(const locale of ['en','hy','ru'] as const){
  const before:number=clinicalCalls.length;
  await act(async()=>{tree=TestRenderer.create(React.createElement(Cards,{data:fixture,locale}));});
  const form=()=>tree!.root.findByType('form');
- const attribution=st(locale,"Zoe's proposal",'Զոյայի առաջարկը','Предложение Zoe');
+ const attribution=st(locale,"Zoe's proposal",'Զոյայի առաջարկը','Предложение Зои');
  assert.equal(form().findByType('select').props.value,'not-required');
  assert.equal(form().findByType('textarea').props.value,'No consultation is needed.');
  assert.equal(clinicalCalls.length,before);

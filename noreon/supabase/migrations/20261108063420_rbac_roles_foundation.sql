@@ -13,7 +13,7 @@
 -- Constraint widenings below read the live definition and add values, so a widening made by another migration is kept.
 
 -- Helpers for this migration only (pg_temp: dropped at the end of the session).
-create function pg_temp.widen_in_check(p_table regclass,p_constraint text,p_column text,p_add text[])returns void
+create or replace function pg_temp.widen_in_check(p_table regclass,p_constraint text,p_column text,p_add text[])returns void
 language plpgsql as $$
 declare def text;vals text[];
 begin
@@ -25,15 +25,10 @@ begin
  execute format('alter table %s drop constraint %I',p_table,p_constraint);
  execute format('alter table %s add constraint %I check(%I in(%s))',p_table,p_constraint,p_column,(select string_agg(quote_literal(v),',')from unnest(vals)v));
 end$$;
-create function pg_temp.patch_function(p_fn regprocedure,p_old text,p_new text)returns void
-language plpgsql as $$
-declare def text:=pg_get_functiondef(p_fn);
-begin
- if position(p_old in def)=0 or cardinality(string_to_array(def,p_old))<>2 then
-  raise exception 'Unexpected definition of %',p_fn;
- end if;
- execute replace(def,p_old,p_new);
-end$$;
+-- Function patches (exact text replacements of live definitions) are queued here and applied by one DO block at the
+-- end of this migration, each asserting that its target text occurs exactly once.
+drop table if exists pg_temp.function_patches;
+create temp table function_patches(n serial primary key,fn regprocedure not null,old text not null,new text not null);
 
 -- 1. Roles and specialty ------------------------------------------------------------------------------------------
 
@@ -62,6 +57,9 @@ create trigger workspace_staff_specialty_default before insert or update of role
  for each row execute function public._staff_specialty_default();
 create trigger real_staff_invitations_specialty_default before insert or update of role,specialty on public.real_staff_invitations
  for each row execute function public._staff_specialty_default();
+-- Fixtures written with session_replication_role=replica (the SQL checks do this) must still default the specialty.
+alter table public.workspace_staff enable always trigger workspace_staff_specialty_default;
+alter table public.real_staff_invitations enable always trigger real_staff_invitations_specialty_default;
 
 -- Backfill before the constraint: every existing doctor is a family physician until an administrator says otherwise.
 update public.workspace_staff set specialty='family_physician' where role='doctor' and specialty is null;
@@ -149,10 +147,10 @@ begin
 end $$;
 
 -- Verification and finalisation match the pending membership on role; the specialty must match too.
-select pg_temp.patch_function('public.real_staff_record_invitation_verification(uuid,bigint,uuid)'::regprocedure,
+insert into function_patches(fn,old,new)values('public.real_staff_record_invitation_verification(uuid,bigint,uuid)'::regprocedure,
  'where user_id=i.auth_user_id and role=i.role and clinic_id=i.clinic_id and not active for share',
  'where user_id=i.auth_user_id and role=i.role and specialty is not distinct from i.specialty and clinic_id=i.clinic_id and not active for share');
-select pg_temp.patch_function('public.real_staff_finalize_invitation(uuid,bigint,uuid,uuid)'::regprocedure,
+insert into function_patches(fn,old,new)values('public.real_staff_finalize_invitation(uuid,bigint,uuid,uuid)'::regprocedure,
  'where user_id=i.auth_user_id and role=i.role and clinic_id=i.clinic_id and not active for update',
  'where user_id=i.auth_user_id and role=i.role and specialty is not distinct from i.specialty and clinic_id=i.clinic_id and not active for update');
 
@@ -178,13 +176,13 @@ $$;
 
 select pg_temp.widen_in_check('public.patient_clinical_case_events','patient_clinical_case_events_kind_check','kind',array['cardiologist-assigned']);
 
-select pg_temp.patch_function('public.real_admin_staff()'::regprocedure,
+insert into function_patches(fn,old,new)values('public.real_admin_staff()'::regprocedure,
  'select user_id id from public.workspace_staff where role in (''doctor'',''nurse'')',
  'select user_id id from public.workspace_staff where role in (''doctor'',''nurse'',''coordinator'')');
-select pg_temp.patch_function('public._real_staff_manage(uuid,text,text,uuid,uuid,text)'::regprocedure,
+insert into function_patches(fn,old,new)values('public._real_staff_manage(uuid,text,text,uuid,uuid,text)'::regprocedure,
  '(had_staff and s.role not in (''doctor'',''nurse''))',
  '(had_staff and s.role not in (''doctor'',''nurse'',''coordinator''))');
-select pg_temp.patch_function('public._real_staff_manage(uuid,text,text,uuid,uuid,text)'::regprocedure,
+insert into function_patches(fn,old,new)values('public._real_staff_manage(uuid,text,text,uuid,uuid,text)'::regprocedure,
  'if exists(select 1 from public.patient_clinical_cases where assigned_doctor_id=p_staff_id or assigned_nurse_id=p_staff_id) or',
  'if exists(select 1 from public.patient_clinical_cases where assigned_doctor_id=p_staff_id or assigned_nurse_id=p_staff_id or assigned_cardiologist_id=p_staff_id) or');
 
@@ -279,7 +277,7 @@ revoke all on function public._coordination_actor()from public,anon,authenticate
 
 -- access_audit names coordinators and caregivers.
 select pg_temp.widen_in_check('public.access_audit','access_audit_actor_role_check','actor_role',array['coordinator','caregiver']);
-select pg_temp.patch_function('public._access_audit_record_as(uuid,uuid,bigint,uuid,text,text)'::regprocedure,
+insert into function_patches(fn,old,new)values('public._access_audit_record_as(uuid,uuid,bigint,uuid,text,text)'::regprocedure,
  'when s.role=''nurse''then ''nurse'' else ''staff'' end',
  'when s.role=''nurse''then ''nurse'' when s.role=''coordinator''then ''coordinator'' else ''staff'' end');
 
@@ -294,11 +292,11 @@ begin
   raise insufficient_privilege using message='Active nurse, doctor, coordinator or admin session required';end if;
  return jsonb_build_object('id',who->>'id','role',who->>'role');
 end$$;
-select pg_temp.patch_function('public._care_queue_visible(public.care_queue_tasks,jsonb)'::regprocedure,
+insert into function_patches(fn,old,new)values('public._care_queue_visible(public.care_queue_tasks,jsonb)'::regprocedure,
  'when ''admin''then t.queue=''admin''',
  'when ''admin''then t.queue=''admin''
   when ''coordinator''then t.queue=''admin''and public._staff_coordination_access(t.member_id,(actor->>''id'')::uuid)');
-select pg_temp.patch_function('public.care_queue_inbox(text,text)'::regprocedure,
+insert into function_patches(fn,old,new)values('public.care_queue_inbox(text,text)'::regprocedure,
  'if p_queue<>(case actor->>''role''when ''admin''then ''admin''when ''nurse''then ''nurse''else ''physician''end)then raise insufficient_privilege;end if;',
  'if p_queue<>(case actor->>''role''when ''admin''then ''admin''when ''coordinator''then ''admin''when ''nurse''then ''nurse''else ''physician''end)then raise insufficient_privilege;end if;');
 
@@ -319,7 +317,7 @@ begin
    and (p_filter='all' or (p_filter='active' and t.status not in ('completed','cancelled')) or t.status=p_filter or (p_filter='reassign' and t.status not in ('completed','cancelled') and not public._patient_coordination_owner_valid(t.patient_case_id,t.owner_id,t.kind='doctor-referral')))
    and (p_after_id is null or (t.created_at,t.id)>(p_after_created_at,p_after_id)) order by t.created_at,t.id limit p_limit+1
  ), numbered as(select a.*,row_number() over(order by created_at,id) rn from authorized a)
- select coalesce(jsonb_agg(public._patient_coordination_task_json((n.id,n.patient_case_id,n.kind,n.title,n.instructions,n.due_at,n.creator_id,n.owner_id,n.status,n.revision,n.created_at,n.updated_at)::public.patient_coordination_tasks) order by n.created_at,n.id) filter(where rn<=p_limit),'[]'),count(*)>p_limit,
+ select coalesce(jsonb_agg(public._patient_coordination_task_json((n.id,n.patient_case_id,n.kind,n.title,n.instructions,n.due_at,n.creator_id,n.owner_id,n.status,n.revision,n.created_at,n.updated_at,n.origin)::public.patient_coordination_tasks) order by n.created_at,n.id) filter(where rn<=p_limit),'[]'),count(*)>p_limit,
   (jsonb_agg(jsonb_build_object('createdAt',created_at,'id',id)) filter(where rn=p_limit))->0 into rows,has_more,cursor from numbered n;
  if coordinator then
   for item in select e from jsonb_array_elements(rows)e loop
@@ -392,3 +390,15 @@ begin
  if actor.role='coordinator' then perform public._access_audit_record(m,'consultation_arrange',sub::text);end if;
  return jsonb_build_object('status','arranged');
 end$$;
+
+-- Apply the queued function patches, in order.
+do $patch$
+declare r record;def text;
+begin
+ for r in select * from function_patches order by n loop
+  def:=pg_get_functiondef(r.fn);
+  if position(r.old in def)=0 or cardinality(string_to_array(def,r.old))<>2 then raise exception 'Unexpected definition of %',r.fn;end if;
+  execute replace(def,r.old,r.new);
+ end loop;
+end $patch$;
+drop table pg_temp.function_patches;

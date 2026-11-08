@@ -9,7 +9,10 @@ import {zoeScaffoldEnabled} from './policy';
  * (zoe_settings.consent_wording_version, set by the activation migration) and records that,
  * never a client value; a grant is refused as stale when the two differ (Fable F3).
  */
-export const ZOE_CONSENT_VERSION='zoe-consent-draft-2';
+/** draft-3 (8 Nov 2026, WP B) is draft-2 with the Armenian brand name «Զոյա» and the Russian «Зоя»: an editorial change,
+ * so the operator step that moves the server to draft-3 after the app deploy (docs/operations/staging-ai-mode.sql 0c)
+ * keeps draft-2 in consent_wording_also_valid and nobody is re-asked. */
+export const ZOE_CONSENT_VERSION='zoe-consent-draft-3';
 export type ZoeConsentKind='zoe_reads_messages'|'zoe_scheduled_questions';
 /** Where a choice was made: the Me settings switches, the enrolment Agree step, or the one-time Home card. */
 export type ZoeConsentSource='settings'|'enrolment'|'prompt'|'zoe_screen';

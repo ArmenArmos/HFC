@@ -20,7 +20,7 @@ import type {PanelMember,DoctorPanel} from '@/lib/staff-zoe/panel';
 const a='d0000000-0000-4000-8000-000000000001',b='d0000000-0000-4000-8000-000000000002';
 const rows:PanelMember[]=[{identity:{id:a,name:'Anna Example',birthDate:'1980-01-01',sex:'female',clinic:'North clinic',phoneLast4:'1234',shortId:'NRN-0001'},risk:'low',attention:'urgent',bp:{systolic:122,diastolic:78,at:'2026-11-06T20:30:00Z',unverified:true},ldl:{value:2,on:'2026-11-05',counted:false},unavailable:false},{identity:{id:b,name:'Anna Example',birthDate:'1990-02-03',sex:'female',clinic:'South clinic',phone:'+37499123456',shortId:'NRN-0002'},risk:null,attention:'none',bp:null,ldl:null,unavailable:true}];
 const navigations:string[]=[];
-const modules:Record<string,unknown>={'@/lib/bp-unit':bpUnit,
+const modules:Record<string,unknown>={'@/lib/bp-unit':bpUnit,'@/lib/brand':await import('@/lib/brand'),
  react:React,'react/jsx-runtime':jsx,
  '@/lib/staff/staff-locale-copy':copy,'@/lib/staff/member-identity':identity,'@/lib/staff/yerevan-time':dates,
  '@/lib/staff/chat-member-identity-actions':{readStaffChatMemberIdentities:()=>{throw Error('Complete server identities need no extra read');}},

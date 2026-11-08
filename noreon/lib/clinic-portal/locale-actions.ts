@@ -9,7 +9,7 @@ import {loggedAction} from '@/lib/observability/with-logging';
 
 /** A display preference only, available before sign-in and without JavaScript. */
 export const setClinicLocale=loggedAction('setClinicLocale',async function setClinicLocale(form:FormData){
- const locale=parseLocale(form.get('locale'),'en');
+ const locale=parseLocale(form.get('locale'),'hy');
  (await cookies()).set(clinicLocaleCookie,locale,{path:'/clinic',httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:60*60*24*365});
  revalidatePath('/clinic/real','layout');
  const returnTo=form.get('returnTo');

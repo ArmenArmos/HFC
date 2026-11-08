@@ -176,7 +176,7 @@ test("/menu (Armenian): list of tasks, every button opens its card once, variant
   await say(m.chat, "/menu");
   await expect.poll(async () => { await sweep(); return (await cards(m.chat)).length; }, "menu arrives").toBe(1);
   const menu = (await cards(m.chat))[0];
-  expect(menu.body.text).toBe("Zoe: Ի՞նչ կցանկանայիք անել");
+  expect(menu.body.text).toBe("Զոյա՝ Ի՞նչ կցանկանայիք անել");
   expect(labels(menu)).toEqual(["Նշել այսօրվա դեղերը", "Գրանցել ճնշումը", "Իմ վերջին արդյունքները", "Իմ պլանը", "Իմ ՑԽԼ նպատակը", "Իմ այցը", "Հայտնել կողմնակի ազդեցության մասին", "Գրել խնամքի թիմին"]);
   expect(cardRows(m.id)).toBe("menu:open:-");
   expect(sql(`select count(*) from public.conversation_messages cm join public.conversations c on c.id=cm.conversation_id where c.member_id='${m.id}'`), "/menu is not stored as a message").toBe("0");

@@ -62,7 +62,8 @@ export const approxTokens=(s:string)=>Math.ceil(s.length/4);
  * taken from the app's own screens (17 Oct 2026). Zoe cannot see bookings, times or results.
  */
 export const APP_FACTS=[
- 'The app menu has five parts: Home, Progress, Zoe, Care plan and Me. In Armenian they read Գլխավոր, Առաջընթաց, Զոյա, Բուժման պլան and Իմ էջը.',
+ 'The app menu has five parts: Home, Progress, Zoe, Care plan and Me.',
+ 'In Armenian they read Գլխավոր, Առաջընթաց, Զոյա, Բուժման պլան and Իմ էջը.',
  'In Russian they read Главная, Прогресс, Зоя, План лечения and Мой профиль.',
  'The app is in Armenian, English and Russian; the member chooses the language under Me. When replying in Armenian or Russian, name app sections by their labels in that language, exactly as listed above, never in English.',
  'Home shows the next step in the programme.',

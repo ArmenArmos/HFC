@@ -23,7 +23,7 @@ import {buildSnapshot,claimCard,serviceRpc,typedFromMessage,postCard,readZoeCard
 import {RED_FLAG_QUESTIONS} from './bp-flow';
 import {answerRedFlag,runBpFlow,type FlowPorts} from './bp-flow-server';
 import {readMemberBpWeek} from '@/lib/bp-week/server';
-import {CARD_KINDS,FLOW_KINDS,V3_NEXT_STEP_KINDS,RESULT_PAGES,type ZoeCard,type ZoeCards} from './registry';
+import {CARD_KINDS,FLOW_KINDS,MEMBER_SETTINGS_KINDS,V3_NEXT_STEP_KINDS,RESULT_PAGES,type ZoeCard,type ZoeCards} from './registry';
 import {SIDE_EFFECTS,sideEffectMessage} from './copy';
 
 /**
@@ -75,6 +75,8 @@ export const openZoeCard=loggedAction('openZoeCard',async function openZoeCard(i
  if(!parsed.success)return {status:'invalid'};
  if(parsed.data.kind==='account'&&!memberChatOnlyEnabled())return {status:'disabled'};
  if(parsed.data.kind==='medicines'&&!medicinesCardEnabled())return {status:'disabled'};
+ // WP F: the caregiver and consents cards are new-chat only; their own switches are checked where the snapshot is built.
+ if(MEMBER_SETTINGS_KINDS.includes(parsed.data.kind)&&!zoeAppV3Enabled())return {status:'disabled'};
  if(['profile','document','prep','fasting','symptom_gate','consult_questions'].includes(parsed.data.kind)&&!zoeAppV3Enabled())return {status:'disabled'};
  if(parsed.data.kind==='prep'||parsed.data.kind==='fasting')return {status:'invalid'}; // Scheduled from a live appointment only.
  if(V3_NEXT_STEP_KINDS.includes(parsed.data.kind)&&!flowOn())return {status:'disabled'};

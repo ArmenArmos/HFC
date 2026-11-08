@@ -7,6 +7,7 @@ import{clinicChatEnabled}from'@/lib/clinic-chat/config';
 import{pick,type Locale}from'@/lib/locale';
 import{clinicSignOut}from'@/lib/clinic-portal/actions';import type{ClinicIdentity}from'@/lib/clinic-portal/schema';import{clinicSchedulingEnabled}from'@/lib/clinic-scheduling/schema';
 import{AppShell,ShellSignOut}from'@/components/app-shell/app-shell';import{ClinicLocaleSwitch,ClinicNavigation,type ClinicSection}from'./navigation';
+import{noreonName}from'@/lib/brand';
 /** The staff backoffice shell with clinic sections. Scheduling links appear only while clinic scheduling is
  * switched on; member records, hours and team are for clinic admins (records also need the database switch). Without scheduling there is one section, so no menu. */
 export function ClinicShell({identity,locale,children,current}:{identity:ClinicIdentity;locale:Locale;children:React.ReactNode;current?:ClinicSection}){
@@ -18,7 +19,7 @@ export function ClinicShell({identity,locale,children,current}:{identity:ClinicI
  if(current==='chat')return <ClinicChatViewport locale={locale}>
   <a href="#clinic-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-background focus:p-4">{pick(locale,{en:'Skip to content',hy:'Անցնել բովանդակությանը',ru:'Перейти к содержимому'})}</a>
   <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 sm:px-6">
-   <Link href={`/clinic/real/chat?clinic=${identity.clinicId}&locale=${locale}`} className="text-h3 font-semibold">Noreon</Link>
+   <Link href={`/clinic/real/chat?clinic=${identity.clinicId}&locale=${locale}`} className="text-h3 font-semibold">{noreonName(locale)}</Link>
    <p className="min-w-0 truncate text-body2">{identity.clinicName}</p>
    <ClinicMenu locale={locale}>
      <div className="text-caption text-muted-foreground">{identity.displayName} · {role}</div>

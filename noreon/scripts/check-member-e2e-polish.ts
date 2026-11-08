@@ -137,8 +137,8 @@ for(const locale of locales){
  });
  await check(`E23 ${locale}: stored notices are cleaned and plan-ready follows the UI language`,()=>{
   const prefix='UNAPPROVED PLACEHOLDER. ';
-  const plans=['Your care plan is ready. Open Noreon to read it.','Ձեր խնամքի ծրագիրը պատրաստ է։ Բացեք Noreon-ը՝ այն կարդալու համար։'];
-  const others=['Your care plan was updated. Open Noreon to see what changed.','Ձեր խնամքի ծրագիրը թարմացվել է։ Բացեք Noreon-ը՝ փոփոխությունները տեսնելու համար։','Your samples are at the lab.','Այլ ծանուցում։','Keep these trailing spaces.  ',plans[0]+' Extra context.'];
+  const plans=['Your care plan is ready. Open Noreon to read it.','Ձեր խնամքի ծրագիրը պատրաստ է։ Բացեք Նորեոն Հելթը՝ այն կարդալու համար։'];
+  const others=['Your care plan was updated. Open Noreon to see what changed.','Ձեր խնամքի ծրագիրը թարմացվել է։ Բացեք Նորեոն Հելթը՝ փոփոխությունները տեսնելու համար։','Your samples are at the lab.','Այլ ծանուցում։','Keep these trailing spaces.  ',plans[0]+' Extra context.'];
   for(const body of [...plans,...others])for(const label of ['',prefix]){
    const expected=plans.includes(body)?NEXT_STEP.plan[locale]:body;
    const thread={...emptyThread,notices:[{id,text:label+body,at,closed:false}]};

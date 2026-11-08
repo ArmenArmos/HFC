@@ -37,7 +37,7 @@ try{
  // Proven: the code goes to the proven chat only, and the browser gets the nonce cookie.
  reset();state.rpc.clinic_invite_code_begin={ok:true,challengeId:challenge,address:'7340'};
  assert.deepEqual(await sendClinicInviteCode(invitationId,1,'A'.repeat(32)),{ok:true});
- assert.equal(state.sent.length,1);assert.match(state.sent[0]!,/^7340:Noreon [^]*\d{6}/);
+ assert.equal(state.sent.length,1);assert.match(state.sent[0]!,/^7340:Նորեոն Հելթ [^]*\d{6}/);
  assert.ok(state.cookies.has('noreon_clinic_invite'),'Nonce cookie set');
  const code=/(\d{6})/.exec(state.sent[0]!)![1]!;
 

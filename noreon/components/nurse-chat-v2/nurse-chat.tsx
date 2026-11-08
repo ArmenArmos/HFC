@@ -49,6 +49,7 @@ import {measureCardNeedsConfirmation,prepareMeasureCard,saveMeasureCard,type Mea
 import {recordNurseVisitMark} from '@/lib/nurse-visit/actions';
 import {ChatMemberIdentity} from '@/components/staff/chat-member-identity';
 import {NurseReply,memberLabel,type MemberChoice,type AskMember,type Reply,type ThreadMessage} from './messages';
+import {noreonName} from '@/lib/brand';
 
 /** A typed name must be whole words of the member's name: "Ann" is not "Anna". */
 function wholeWords(typed:string,full:string){const words:string[]=full.toLocaleLowerCase().match(/[\p{L}\p{M}]+/gu)??[];const wanted:string[]=typed.toLocaleLowerCase().match(/[\p{L}\p{M}]+/gu)??[];return wanted.length>0&&wanted.every(word=>words.includes(word));}
@@ -535,7 +536,7 @@ export function NurseChatV2({locale,nurseName,nurseId,voiceAvailable=false}:{loc
   reply:voiceReply?{key:voiceReply,text:()=>renderedStaffReply(contentRef.current,voiceReply)}:null});
  const initials=nurseName.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('');
  return <main className="cv2-root" lang={l} data-nurse-chat-v2 onClick={()=>handoff.select(null)}>
-  <header className="cv2-header"><h1><i className="cv2-orb" aria-hidden/>Noreon</h1><button type="button" className="cv2-avatar" onClick={()=>{focus();setMenu(true);}} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()} aria-label={t('Open menu','Բացել ընտրացանկը','Открыть меню')}><span>{initials||'N'}</span></button></header>
+  <header className="cv2-header"><h1><i className="cv2-orb" aria-hidden/>{noreonName(l)}</h1><button type="button" className="cv2-avatar" onClick={()=>{focus();setMenu(true);}} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()} aria-label={t('Open menu','Բացել ընտրացանկը','Открыть меню')}><span>{initials||'N'}</span></button></header>
   <button type="button" className="ncv2-urgent" data-nurse-urgent-line onClick={()=>{focus();setUrgent(true);}} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>{urgentWords.emergency} <span>{urgentWords.guidance}</span></button>
   <section ref={threadRef} className="cv2-thread" role="log" aria-live="polite" aria-label={t('Your work chat','Ձեր աշխատանքային զրույցը','Ваш рабочий чат')} tabIndex={0}>
    <div ref={contentRef} className="cv2-messages">

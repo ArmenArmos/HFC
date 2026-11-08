@@ -127,7 +127,7 @@ for(const locale of ['en','hy','ru'] as const){
  const commands:unknown[]=[];
  const proposedProps={...props,locale,approvals:undecided,draft:{...draft,ready:{...draft.ready,proposal}},async onPress(command:unknown){commands.push(command);return {ok:true,message:'Saved'};}};
  await act(async()=>{tree=create(React.createElement(PlanReadyCard,proposedProps));});
- const attribution=locale==='en'?"Zoe's proposal":locale==='hy'?'Զոյայի առաջարկը':'Предложение Zoe';
+ const attribution=locale==='en'?"Zoe's proposal":locale==='hy'?'Զոյայի առաջարկը':'Предложение Зои';
  assert.equal(tree!.root.findByType('select').props.value,'not-required');
  assert.equal(tree!.root.findByType('textarea').props.value,proposal.note);
  assert.ok(JSON.stringify(tree!.toJSON()).includes(attribution));

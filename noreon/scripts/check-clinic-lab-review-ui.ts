@@ -36,7 +36,7 @@ try{
   await act(async()=>tree.root.findByType('select').props.onChange({target:{value:id(2)}}));
   await act(async()=>button({en:'Link to this member',hy:'Կապել այս անդամին',ru:'Привязать к этому участнику'}[locale]).props.onClick());
   assert.equal(calls.at(-1)?.memberId,id(2));
-  assert.ok(getText().includes({en:'ask Noreon to review it',hy:'խնդրեք Noreon-ին ստուգել այն',ru:'попросите Noreon проверить'}[locale]),'Review-needed result names the next step');
+  assert.ok(getText().includes({en:'ask Noreon to review it',hy:'խնդրեք Նորեոն Հելթին ստուգել այն',ru:'попросите Нореон Хелс проверить'}[locale]),'Review-needed result names the next step');
   assert.ok(!tree.root.findAll(n=>n.props.className?.includes?.('animate-spin')).length,'A review-required refusal does not keep a reading spinner');
   await act(async()=>tree.unmount());
  }

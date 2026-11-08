@@ -23,7 +23,7 @@ test("doctor takeover: a doctor's reply reaches Telegram and Zoe stays quiet on 
   await say(member.chat, "Հասկացա, իսկ ճնշումը օրական քանի՞ անգամ չափեմ");
   await zoeFinished(member.id);
   expect(runs(member.id)).toMatch(/discarded\/doctor_mode$/);
-  expect(await zoeSaid(member.chat), "only the fixed note that the doctor answers now").toEqual([`Zoe: ${FAKE_REPLY.hy}`, "Zoe: Այժմ ձեզ պատասխանում է ձեր բժիշկը։"]);
+  expect(await zoeSaid(member.chat), "only the fixed note that the doctor answers now").toEqual([`Զոյա՝ ${FAKE_REPLY.hy}`, "Զոյա՝ Այժմ ձեզ պատասխանում է ձեր բժիշկը։"]);
 
   await say(member.chat, "Ուժեղ կրծքավանդակի ցավ ունեմ հիմա");
   await zoeFinished(member.id);

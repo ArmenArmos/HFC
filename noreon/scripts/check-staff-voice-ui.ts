@@ -46,6 +46,7 @@ const visit={open:false,frozen:false,updates:{}};
 const common:Record<string,unknown>={react:React,'react/jsx-runtime':require('react/jsx-runtime'),'lucide-react':require('lucide-react'),
  'next/navigation':{useRouter:()=>({push:nothing,refresh:nothing})},
  '@/lib/staff/staff-locale-copy':copy,
+ '@/lib/brand':await import('@/lib/brand'),
  '@/components/patient/use-chat-viewport':{useChatViewport:nothing},
  '@/components/chat-v2/use-thread-scroll':{useThreadScroll:()=>({threadRef:{current:null},contentRef:{current:null},unread:false,newest:nothing,stopFollowing:nothing})},
  '@/components/chat-v2/conversation':{useConversation:(value:Options)=>{options=value;return conversation;},ConversationToggle:()=>React.createElement('button',{'data-fixture-voice':true})},
