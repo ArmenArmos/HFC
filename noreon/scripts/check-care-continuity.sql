@@ -1,0 +1,62 @@
+begin;
+create function pg_temp.check_true(ok boolean,msg text) returns void language plpgsql as $$ begin if ok is distinct from true then raise exception 'TEST: %',msg; end if; end $$;
+do $$
+declare c uuid:=gen_random_uuid();d uuid:=gen_random_uuid();cl uuid:=gen_random_uuid();s jsonb;w jsonb;draft jsonb;rev integer;ev bigint;oldcare jsonb;oldorder text;due timestamptz:=date_trunc('minute',now());oldack jsonb;
+begin
+ insert into auth.users(id) values(d);
+ insert into public.workspace_clinics(id,name) values(cl,'Fictional continuity clinic');
+ insert into public.workspace_staff(user_id,role,display_name,clinic_id) values(d,'doctor','Fictional doctor',cl);
+ draft:=jsonb_build_object('explanation','Reviewed','instructions','Fictional plan','followUp','','medicationName','Example','medicationDose','Example dose','medicationInstructions','','medicationTimes',jsonb_build_array(to_char(due at time zone 'Asia/Yerevan','HH24:MI')));
+ w:=jsonb_build_object('revision',0,'startedAt',now(),'tests','[]'::jsonb,'receivedTestIds','[]'::jsonb,'allResultsAt',now(),'consultation','not-required','draft',draft,'draftSaved',false,'publication',null);
+ s:=jsonb_build_object('userId',c,'expiresAt',extract(epoch from now()+interval '1 day')*1000,'state',jsonb_build_object('consentAccepted',true,'assessment',jsonb_build_object('completedAt',now(),'urgentRule',null)));
+ perform public.workspace_create_case(c,s,d);rev:=public.workspace_initialize_workflow(c,0,w);
+ select evidence_revision into ev from public.workspace_cases where id=c;
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft);
+ rev:=public.workspace_publish_review(c,d,rev,ev);
+ -- Advance a fictional published order into the past to exercise a now-due check-in without clock sleeps.
+ update public.workspace_cases set state=jsonb_set(state,'{workflow,medicationOrders,0,effectiveAt}',to_jsonb(now()-interval '1 hour')) where id=c;
+ select state#>>'{workflow,publication,medicationOrderId}' into oldorder from public.workspace_cases where id=c;
+ rev:=public.workspace_acknowledge_plan(c,rev,'workflow-plan-1');
+ select state#>'{care,acknowledgements,0}' into oldack from public.workspace_cases where id=c;
+ perform pg_temp.check_true(public.workspace_acknowledge_plan(c,rev,'workflow-plan-1')=rev,'acknowledgement is idempotent');
+ rev:=public.workspace_report_dose(c,rev,'workflow-plan-1',oldorder,due,'taken');
+ perform pg_temp.check_true(public.workspace_report_dose(c,rev,'workflow-plan-1',oldorder,due,'taken')=rev,'dose retry is idempotent');
+ select state->'care' into oldcare from public.workspace_cases where id=c;
+ perform pg_temp.check_true(oldcare#>>'{events,0,planId}'='workflow-plan-1','dose records original displayed plan');
+ draft:=jsonb_set(draft,'{explanation}','"Explanation only"');
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft);
+ rev:=public.workspace_publish_review(c,d,rev,ev);
+ select state into s from public.workspace_cases where id=c;
+ perform pg_temp.check_true(s#>>'{workflow,publication,medicationOrderId}'=oldorder,'same medication identity');
+ perform pg_temp.check_true(s#>'{care,events}'=oldcare->'events','dose events survive republication');
+ perform pg_temp.check_true(s#>'{care,acknowledgements,0}'=oldack,'actual prior acknowledgement time survives');
+ perform pg_temp.check_true(s#>>'{care,acknowledged}'='false','new plan awaits acknowledgement');
+ perform pg_temp.check_true(jsonb_array_length(s#>'{workflow,publicationHistory}')=1,'old publication retained');
+ begin perform public.workspace_acknowledge_plan(c,rev,'workflow-plan-1');raise exception 'TEST: stale plan acknowledged';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ begin perform public.workspace_report_dose(c,rev,'workflow-plan-1',oldorder,due,'skipped');raise exception 'TEST: stale plan dose accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ begin perform public.workspace_report_dose(c,rev-1,'workflow-plan-2',oldorder,due,'skipped');raise exception 'TEST: stale case accepted';exception when others then if sqlerrm not like '%conflict%' then raise;end if;end;
+ begin perform public.workspace_save_case(c,rev,jsonb_set(s,'{care,events}','[]'));raise exception 'TEST: generic save erased care';exception when others then if sqlerrm not like '%explicit command%' then raise;end if;end;
+ begin perform public.workspace_save_case(c,rev,jsonb_set(s,'{workflow,publicationHistory}','[]'));raise exception 'TEST: generic save erased history';exception when others then if sqlerrm not like '%explicit command%' then raise;end if;end;
+ rev:=public.workspace_report_dose_versioned(c,rev,'workflow-plan-2',oldorder,due,'skipped',1);
+ perform pg_temp.check_true((select state#>>'{care,events,0,planId}'='workflow-plan-1' from public.workspace_cases where id=c),'dose correction retains original plan');
+ rev:=public.workspace_acknowledge_plan(c,rev,'workflow-plan-2');
+ draft:=jsonb_set(draft,'{medicationDose}','"Changed dose"');
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft);
+ rev:=public.workspace_publish_review(c,d,rev,ev);
+ select state into s from public.workspace_cases where id=c;
+ perform pg_temp.check_true(s#>>'{workflow,publication,medicationOrderId}'<>oldorder,'changed dose is new order');
+ perform pg_temp.check_true(s#>>'{workflow,medicationOrders,0,retiredAt}' is not null,'old order retired');
+ begin perform public.workspace_report_dose(c,rev,'workflow-plan-3',oldorder,due,'skipped');raise exception 'TEST: retired order accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ perform pg_temp.check_true((select evidence_revision=ev from public.workspace_cases where id=c),'publication/care do not change evidence revision');
+ -- A completed consultation for earlier clinical answers cannot satisfy the new review.
+ s:=jsonb_set(s,'{workflow,clinicalContext}',to_jsonb(public.workspace_clinical_context(s)::text));
+ s:=jsonb_set(s,'{workflow,consultation}','"required"');
+ s:=jsonb_set(s,'{workflow,appointment}',jsonb_build_object('at',now()-interval '1 hour','mode','video','status','completed','completedForContext','old clinical answers'));
+ rev:=public.workspace_save_case(c,rev,s);
+ begin perform public.workspace_publish_review(c,d,rev,ev);raise exception 'TEST: obsolete consultation authorized publication';exception when others then if sqlerrm not like '%Complete the required consultation%' then raise;end if;end;
+ s:=jsonb_set(s,'{workflow,appointment,completedForContext}',s#>'{workflow,clinicalContext}');
+ rev:=public.workspace_save_case(c,rev,s);
+ rev:=public.workspace_publish_review(c,d,rev,ev);
+
+end $$;
+rollback;

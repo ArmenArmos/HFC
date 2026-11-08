@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {createWorkflow} from '@/lib/service-workflow/model';
+import {publishWithContinuity} from '@/lib/service-workflow/continuity';
+import {clinicalContext} from '@/lib/service-workflow/reconciliation';
+import {newDemoState} from '@/lib/patient/demo-model';
+import {careAfterPublication} from '@/lib/service-workflow/care-continuity';
+import type {ServicePublication, TreatmentDraft} from '@/lib/service-workflow/types';
+const now=new Date('2026-10-11T03:00:00Z');
+let workflow=createWorkflow([],now);
+const draft:TreatmentDraft={explanation:'Fictional explanation',instructions:'Fictional instructions',followUp:'',medicationName:'Example',medicationDose:'Example dose',medicationInstructions:'',medicationTimes:['08:00','20:00']};
+const fixtures:{workflow:typeof workflow; publication:ServicePublication; expected:typeof workflow}[]=[];
+for(const [i,change] of [draft,{...draft,explanation:'Only explanation'},{...draft,medicationTimes:['20:00','08:00','08:00']},{...draft,medicationDose:'Changed dose'},{...draft,medicationName:''},{...draft},{...draft,medicationInstructions:'Changed instructions'}].entries()) {
+ const publication:ServicePublication={version:i+1,at:`2026-10-11T${String(i+3).padStart(2,'0')}:00:00.000Z`,doctor:'Fictional doctor',draft:change,resultTestIds:[]};
+ const expected=publishWithContinuity(workflow,publication);
+ fixtures.push({workflow:structuredClone(workflow),publication,expected});
+ workflow=expected;
+}
+const legacy=structuredClone(workflow);delete legacy.medicationOrders;delete legacy.publicationHistory;delete legacy.publication!.medicationOrderId;
+const publication={...legacy.publication!,version:8,at:'2026-10-11T12:00:00.000Z'};
+fixtures.push({workflow:legacy,publication,expected:publishWithContinuity(legacy,publication)});
+const databaseContainer=process.env.NOREON_TEST_DB_CONTAINER;
+assert.ok(databaseContainer && databaseContainer.startsWith('supabase_db_'),'Set NOREON_TEST_DB_CONTAINER to a local Supabase database container');
+const quote=(value:unknown)=>`'${JSON.stringify(value).replaceAll("'","''")}'::jsonb`;
+const migration=readFileSync('supabase/migrations/20261010233959_preserve_care_continuity.sql','utf8').replace(/^create function /gm,'create or replace function ');
+const care={stage:'treatment' as const,events:[],acknowledged:true};
+const sql=['begin;',migration,...fixtures.map(f=>`select public.workspace_publication_continuity(${quote(f.workflow)},${quote(f.publication)});`),`select public.workspace_care_continuity(${quote(care)},${quote(legacy.publication)});`,'rollback;'].join('\n');
+const result=spawnSync('docker',['exec','-i',databaseContainer,'psql','-U','postgres','-X','-q','-t','-A','-v','ON_ERROR_STOP=1'],{input:sql,encoding:'utf8',maxBuffer:8*1024*1024});
+assert.equal(result.status,0,result.stderr);
+const rows=result.stdout.trim().split('\n').map(row=>JSON.parse(row));
+assert.equal(rows.length,fixtures.length+1);
+fixtures.forEach((f,i)=>assert.deepEqual(rows[i],f.expected,`publication fixture ${i+1}`));
+assert.deepEqual(rows.at(-1),careAfterPublication(care,legacy.publication));
+console.log(`Continuity parity: ${fixtures.length} TS/SQL publication transitions and legacy care acknowledgement agree. All database changes rolled back.`);
+
+const contextState=newDemoState();
+contextState.state.assessment={id:'parity',revision:1,assessmentDate:'2026-10-11',completedAt:null,urgentRule:null,answers:{multi:{fieldId:'multi',source:'manual',answeredAt:now.toISOString(),value:['a_b','a-b','A','a','é','unknown']},number:{fieldId:'number',source:'manual',answeredAt:now.toISOString(),value:1.25},empty:{fieldId:'empty',source:'manual',answeredAt:now.toISOString(),value:[]}}};
+const contextResult=spawnSync('docker',['exec','-i',databaseContainer,'psql','-U','postgres','-X','-q','-t','-A','-v','ON_ERROR_STOP=1'],{input:`select public.workspace_clinical_context(${quote(contextState)});`,encoding:'utf8'});
+assert.equal(contextResult.status,0,contextResult.stderr);
+assert.deepEqual(JSON.parse(contextResult.stdout),JSON.parse(clinicalContext(contextState.state)));
+console.log('Clinical context parity: mixed-case, accented, punctuation, numeric and empty-array answers agree.');

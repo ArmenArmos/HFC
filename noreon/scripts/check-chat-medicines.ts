@@ -1,0 +1,112 @@
+import assert from 'node:assert/strict';
+import {runMedicines,medicineCommandSchema} from '@/lib/zoe-chat-actions/medicines';
+import {bookingToken} from '@/lib/zoe-chat-actions/booking';
+import {mintActor} from '@/lib/zoe-chat-actions/actor';
+import {cardSchema,type ZoeCard} from '@/lib/zoe-chat-actions/registry';
+const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const token=bookingToken({revision:1});
+const base=()=>cardSchema.parse({id:id(2),requestId:id(3),source:'chip',sourceSeq:null,state:'open',claims:{},outcome:{},at:'2026-11-01T10:00:00Z',kind:'medicines',snapshot:{v:1,token}});
+let card:ZoeCard=base(),current=token,writes=0;
+const own={id:id(5),dose:'preserve this dose'};
+const seen:unknown[]=[];
+const ports={readCard:async()=>card,current:async()=>({token:current,enabled:true,own:[own],asks:[]}),claim:async(_m:string,_c:string,item:string,op:string,payload:Record<string,unknown>)=>{const c=card.claims[item]??{op,payload};card={...card,claims:{...card.claims,[item]:c}};return {ok:true as const,claim:c};},record:async(_m:string,_c:string,item:string,value:Record<string,unknown>)=>{card={...card,state:'done',outcome:{...card.outcome,[item]:value}};return {ok:true as const,card,replayed:false};},execute:async(command:unknown)=>{writes++;seen.push(command);return {status:'saved'};}};
+const actor=mintActor(id(1),'app');
+const input={cardId:id(2),opId:id(4),command:{kind:'times' as const,id:id(5),times:['09:00']}};
+assert.equal((await runMedicines(actor,ports,input)).status,'ok');
+assert.equal(writes,1);
+assert.deepEqual(seen[0],{kind:'times',id:id(5),times:['09:00'],dose:own.dose,expectedDose:own.dose});
+assert.equal((await runMedicines(actor,ports,input)).status,'closed');
+card=base();current='changed';assert.equal((await runMedicines(actor,ports,input)).status,'stale');assert.equal(writes,1);
+card=base();current=token;assert.equal((await runMedicines(actor,ports,{...input,command:{...input.command,id:id(99)}})).status,'invalid','Plan/foreign medicines cannot be edited');assert.equal(writes,1);
+card=base();card.claims.medicines={op:id(7),payload:{command:input.command}};
+assert.equal((await runMedicines(actor,ports,{...input,command:{...input.command,times:['10:00']}})).status,'stale');assert.equal(writes,1);
+card=base();await runMedicines(actor,ports,{...input,command:{kind:'add',name:'Synthetic',dose:'',times:['08:00']}});
+assert.equal((seen.at(-1) as {requestId:string}).requestId,id(4));
+card=base();assert.equal((await runMedicines(mintActor(id(1),'telegram'),ports,input)).status,'disabled');
+assert.equal(medicineCommandSchema.safeParse({kind:'times',id:id(5),times:['09:00'],dose:'unauthorised edit'}).success,false);
+card=base();const lost=await runMedicines(actor,{...ports,execute:async()=>{throw Error('synthetic');}},input);assert.equal(lost.result?.status,'unknown');assert.equal(card.state,'done');
+console.log('Chat medicines: own-only times edits, preserved dose, durable add id, stale snapshot, competing choice, closed card and unknown outcome. Mocked IO only.');
+
+// Execute the actual authenticated adapter with mocked IO boundaries.
+const {readFileSync}=await import('node:fs');
+const {default:ts}=await import('typescript');
+const {default:vm}=await import('node:vm');
+const zod=await import('zod');
+let enabled=true,signedIn=true,reads=0;
+const logged:string[]=[],dispatched:{kind:string;input:unknown}[]=[];
+const moduleExports:Record<string,unknown>={};
+const feature=(kind:string)=>async(input:unknown)=>{dispatched.push({kind,input});return {status:'saved'};};
+vm.runInNewContext(ts.transpileModule(readFileSync('lib/zoe-chat-actions/medicines-actions.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:moduleExports,require(name:string){
+ if(name==='zod')return zod;
+ if(name==='@/lib/observability/with-logging')return {loggedAction:(name:string,fn:unknown)=>{logged.push(name);return fn;}};
+ if(name==='@/lib/patient/member-chat-config')return {memberChatOnlyEnabled:()=>enabled};
+ if(name==='./actor')return {sessionActor:async()=>signedIn?actor:null,noActor:async()=>({status:'signed_out'})};
+ if(name==='./server')return {readZoeCard:ports.readCard,claimCard:ports.claim,recordCard:ports.record};
+ if(name==='./medicines-read')return {readMedicines:async()=>{reads++;return {token:current,enabled:true,own:[own],asks:[]};}};
+ if(name==='./medicines')return {runMedicines,medicineCommandSchema};
+ if(name==='@/lib/member-medicines/actions')return {addMyMedicine:feature('add'),updateMyMedicine:feature('times'),stopMyMedicine:feature('stop'),answerMedicineAsk:feature('reason'),dismissMedicineAsk:feature('keep'),askCareTeamAboutRefill:feature('refill')};
+ throw Error(`Unexpected boundary ${name}`);
+}});
+const adapters=moduleExports as typeof import('../lib/zoe-chat-actions/medicines-actions');
+card=base();current=token;enabled=false;
+assert.equal((await adapters.changeMedicinesFromCard(input)).status,'disabled');assert.equal((await adapters.readMedicinesFromCard(card.id)).status,'disabled');assert.equal(reads,0);
+enabled=true;signedIn=false;
+assert.equal((await adapters.changeMedicinesFromCard(input)).status,'signed_out');assert.equal((await adapters.readMedicinesFromCard(card.id)).status,'signed_out');assert.equal(reads,0);
+signedIn=true;
+assert.equal((await adapters.readMedicinesFromCard(card.id)).status,'ok');
+assert.equal((await adapters.changeMedicinesFromCard({...input,memberId:id(99)})).status,'invalid');
+assert.equal((await adapters.changeMedicinesFromCard(input)).status,'ok');assert.equal(dispatched.at(-1)?.kind,'times');assert.equal((dispatched.at(-1)?.input as {dose:string}).dose,own.dose);
+card=base();await adapters.changeMedicinesFromCard({...input,command:{kind:'add',name:'Synthetic',dose:'',times:['08:00']}});assert.equal((dispatched.at(-1)?.input as {requestId:string}).requestId,id(4));
+assert.deepEqual(logged,['readMedicinesFromCard','changeMedicinesFromCard']);
+console.log('Chat medicines adapters: flag/session gates before reads, strict inputs, existing action delegation and loggedAction. Mocked IO only.');
+const ask={id:id(30),medicineId:own.id,source:'self',state:'open',reason:null,careTeamAsked:false};
+const withAsk={...ports,current:async()=>({token,enabled:true,own:[own],asks:[ask]})};
+card=base();assert.equal((await runMedicines(actor,withAsk,{...input,command:{kind:'reason',askId:ask.id,reason:'ran_out'}})).status,'ok');
+card=base();assert.equal((await runMedicines(actor,withAsk,{...input,command:{kind:'keep',askId:ask.id}})).status,'ok');
+card=base();assert.equal((await runMedicines(actor,withAsk,{...input,command:{kind:'refill',askId:ask.id}})).status,'stale','An open question cannot send a refill request before a reason');
+const refillPorts={...ports,current:async()=>({token,enabled:true,own:[own],asks:[{...ask,state:'answered',reason:'ran_out'}]})};
+card=base();assert.equal((await runMedicines(actor,refillPorts,{...input,command:{kind:'refill',askId:ask.id}})).status,'ok');
+card=base();assert.equal((await runMedicines(actor,{...withAsk,current:async()=>({token,enabled:true,own:[own],asks:[{...ask,source:'plan'}]})},{...input,command:{kind:'reason',askId:ask.id,reason:'ran_out'}})).status,'invalid','Plan questions have no editable path in own medicines');
+console.log('Chat medicine reasons: own-only questions, keep/dismiss, refill after a recorded eligible reason, plan question refusal. Mocked IO only.');
+
+// Actual shared feature action: chat uses atomic dose CAS, classic forms keep their original operation.
+const actionExports:Record<string,unknown>={},rpcCalls:{name:string;args:Record<string,unknown>}[]=[];
+vm.runInNewContext(ts.transpileModule(readFileSync('lib/member-medicines/actions.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:actionExports,require(name:string){
+ if(name==='zod')return zod;
+ if(name==='@/lib/observability/with-logging')return {loggedAction:(_name:string,fn:unknown)=>fn};
+ if(name==='next/cache')return {revalidatePath:()=>{}};
+ if(name==='@/lib/patient/auth')return {patientIdentityForSave:async()=>({userId:id(1)})};
+ if(name==='@/lib/supabase/server')return {createClient:async()=>({rpc:async(name:string,args:Record<string,unknown>)=>{rpcCalls.push({name,args});return {data:{status:'saved'}};}})};
+ throw Error(`Unexpected feature action boundary ${name}`);
+}});
+const featureActions=actionExports as typeof import('../lib/member-medicines/actions');
+await featureActions.updateMyMedicine({id:own.id,dose:own.dose,times:['09:00'],expectedDose:own.dose});
+assert.equal(rpcCalls.at(-1)?.name,'member_medicine_update_times');
+assert.equal(rpcCalls.at(-1)?.args.p_expected_dose,own.dose);
+assert.equal('p_dose'in rpcCalls.at(-1)!.args,false,'Times-only operation cannot write a captured dose');
+await featureActions.updateMyMedicine({id:own.id,dose:own.dose,times:['09:00']});
+assert.equal(rpcCalls.at(-1)?.name,'member_medicine_update','Classic update remains compatible');
+const addCommand=dispatched.find(v=>v.kind==='add')!.input as Record<string,unknown>;
+await featureActions.addMyMedicine(addCommand);
+assert.equal(rpcCalls.at(-1)?.name,'member_medicine_add','Card adapter payload passes actual feature validation');
+console.log('Actual feature adapters: atomic times-only RPC with expected dose, classic compatibility, valid card add payload. RPC mocked; SQL concurrency check separate.');
+
+// Completed cards may read the current list, but can never write again.
+card=base();current=token;
+await adapters.changeMedicinesFromCard(input);
+current='a later list token';
+assert.equal((await adapters.readMedicinesFromCard(card.id)).status,'ok','Closed cards display current data without comparing the old editing token');
+assert.equal((await adapters.changeMedicinesFromCard(input)).status,'closed','Read access does not reopen a completed choice');
+card=base();
+assert.equal((await adapters.readMedicinesFromCard(card.id)).status,'stale','Open editing cards still enforce their snapshot token');
+
+// Explicit own-list dose edits use the existing authenticated update action.
+card=base();current=token;
+const edit={...input,command:{kind:'edit' as const,id:own.id,dose:'2 tablets',times:['10:00']}};
+assert.equal((await adapters.changeMedicinesFromCard(edit)).status,'ok');
+assert.equal((dispatched.at(-1)?.input as {dose:string}).dose,'2 tablets');
+assert.equal('expectedDose' in (dispatched.at(-1)?.input as object),false);
+card=base();assert.equal((await runMedicines(actor,ports,{...edit,command:{...edit.command,id:id(99)}})).status,'invalid');
+card=base();current='changed';assert.equal((await runMedicines(actor,ports,edit)).status,'stale');
+assert.equal(medicineCommandSchema.safeParse({...edit.command,name:'Renamed'}).success,false,'Name edits remain unsupported by the existing action');
+console.log('Explicit own-list dose edits: existing action delegation, foreign and stale refusal; no name mutation. Mocked IO only.');

@@ -1,0 +1,28 @@
+name: supabase-deploy-staging
+
+# The staging database follows main (3 Nov): every merge applies its new migrations to
+# noreon-staging, so staging.noreon.health never runs code ahead of its schema
+# (docs/operations/staging-site.md). It can also be run by hand from the Actions tab,
+# on any branch, to try a migration against a real hosted project before the PR merges.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/supabase-deploy.yml
+    with:
+      target: staging
+      pooler_host: aws-0-eu-central-1.pooler.supabase.com
+    secrets:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_STAGING_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}

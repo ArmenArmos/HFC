@@ -1,0 +1,27 @@
+{
+  "regions": [
+    "fra1"
+  ],
+  "crons": [
+    {
+      "path": "/api/internal/report-cleanup",
+      "schedule": "17 * * * *"
+    },
+    {
+      "path": "/api/internal/telegram/dispatch",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/internal/zoe/run",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/internal/lab-ai",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/internal/care-alerts/sweep",
+      "schedule": "* * * * *"
+    }
+  ]
+}

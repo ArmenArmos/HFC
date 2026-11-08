@@ -1,0 +1,46 @@
+begin;
+do $$
+declare c uuid:=gen_random_uuid();d uuid:=gen_random_uuid();cl uuid:=gen_random_uuid();rid text:=gen_random_uuid()::text;w jsonb;record jsonb;rev integer;ev bigint;before_receipts jsonb;
+begin
+ insert into auth.users(id) values(d);
+ insert into public.workspace_clinics(id,name) values(cl,'Fictional association clinic');
+ insert into public.workspace_staff(user_id,role,display_name,clinic_id) values(d,'doctor','Fictional source reviewer',cl);
+ perform public.workspace_create_case(c,jsonb_build_object('userId',c,'expiresAt',extract(epoch from now()+interval '1 day')*1000,'state',jsonb_build_object('consentAccepted',true,'assessment',jsonb_build_object('completedAt',now(),'urgentRule',null))),d);
+ w:=jsonb_build_object('revision',0,'publication',null,'tests',jsonb_build_array(jsonb_build_object('id','lipid-panel','method','lab')),'requirements',jsonb_build_array(jsonb_build_object('requirementId','requirement-1','retiredAtRevision',null,'test',jsonb_build_object('id','lipid-panel','method','lab'))),'receivedTestIds','[]'::jsonb,'receiptHistory','[]'::jsonb);
+ perform public.workspace_initialize_workflow(c,0,w);
+ record:=jsonb_build_object('id',rid,'user_id',c,'revision',0,'state','confirmed','reviewed',jsonb_build_object('rows',jsonb_build_array(jsonb_build_object('name','Fictional LDL','literal','3.2'))));
+ rev:=public.workspace_write_report(c,rid,'insert',null,record);
+ select evidence_revision,state#>'{workflow,receivedTestIds}' into ev,before_receipts from public.workspace_cases where id=c;
+ begin perform public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[0,0]);raise exception 'TEST: duplicate rows accepted';exception when others then if sqlerrm not like '%invalid rows%' then raise;end if;end;
+ begin perform public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[9]);raise exception 'TEST: absent row accepted';exception when others then if sqlerrm not like '%invalid rows%' then raise;end if;end;
+ begin perform public.workspace_associate_report(c,rid,d,ev,rev,'foreign',array[0]);raise exception 'TEST: foreign requirement accepted';exception when others then if sqlerrm not like '%inactive requirement%' then raise;end if;end;
+ begin perform public.workspace_associate_report(c,rid,d,ev-1,rev,'requirement-1',array[0]);raise exception 'TEST: stale evidence accepted';exception when others then if sqlerrm not like '%conflict%' then raise;end if;end;
+ begin perform public.workspace_associate_report(c,rid,gen_random_uuid(),ev,rev,'requirement-1',array[0]);raise exception 'TEST: unassigned actor accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ begin
+   update public.workspace_cases set state=jsonb_set(state,'{workflow,requirements,0,retiredAtRevision}','1') where id=c;
+   perform public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[0]);raise exception 'TEST: retired requirement accepted';
+ exception when others then if sqlerrm not like '%inactive requirement%' and sqlerrm not like '%conflict%' then raise;end if;end;
+ rev:=public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[0]);
+ select r.record into record from public.workspace_case_reports r where case_id=c and id=rid;
+ if record#>>'{associations,0,actorId}'<>d::text or record#>>'{associations,0,contentRevision}'<>'0' or record->>'contentRevision'<>'0' then raise exception 'TEST: attribution/content reference incorrect';end if;
+ if (select evidence_revision from public.workspace_cases where id=c)<>ev+1 then raise exception 'TEST: association did not advance evidence exactly once';end if;
+ if (select state#>'{workflow,receivedTestIds}' from public.workspace_cases where id=c) is distinct from before_receipts then raise exception 'TEST: association silently satisfied order';end if;
+ begin perform public.workspace_write_report(c,rid,'update',rev,jsonb_set(record,'{associations}','[]'),null,d);raise exception 'TEST: generic metadata overwrite accepted';exception when others then if sqlerrm not like '%protected report metadata%' then raise;end if;end;
+ begin perform public.workspace_write_report(c,rid,'update',rev,jsonb_set(record,'{contentRevision}','99'),null,d);raise exception 'TEST: forged content revision accepted';exception when others then if sqlerrm not like '%protected report metadata%' then raise;end if;end;
+ record:=jsonb_set(record,'{reviewed,rows,0,literal}','"3.4"');
+ rev:=public.workspace_write_report(c,rid,'update',rev,record,null,d);
+ select r.record into record from public.workspace_case_reports r where case_id=c and id=rid;
+ if record->>'contentRevision'<>'1' or jsonb_array_length(record->'associations')<>0 or record#>>'{associationHistory,0,reason}'<>'content-changed' then raise exception 'TEST: content change did not retire associations';end if;
+ select evidence_revision into ev from public.workspace_cases where id=c;
+ rev:=public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[0]);
+ select r.record into record from public.workspace_case_reports r where case_id=c and id=rid;
+ rev:=public.workspace_write_report(c,rid,'update',rev,jsonb_set(record,'{state}','"needs_review"'),null,d);
+ select r.record into record from public.workspace_case_reports r where case_id=c and id=rid;
+ if record->>'contentRevision'<>'1' or jsonb_array_length(record->'associations')<>0 or record#>>'{associationHistory,1,reason}'<>'unconfirmed' then raise exception 'TEST: downgrade did not retire links separately from content';end if;
+ select evidence_revision into ev from public.workspace_cases where id=c;
+ begin perform public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[0]);raise exception 'TEST: unconfirmed report accepted';exception when others then if sqlerrm not like '%source check required%' then raise;end if;end;
+ update public.workspace_clinics set active=false where id=cl;
+ begin perform public.workspace_associate_report(c,rid,d,ev,rev,'requirement-1',array[]::integer[]);raise exception 'TEST: inactive clinic accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ if has_function_privilege('anon','public.workspace_associate_report(uuid,text,uuid,bigint,integer,text,integer[])','EXECUTE') then raise exception 'TEST: browser can write associations';end if;
+end $$;
+rollback;

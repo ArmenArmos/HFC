@@ -1,0 +1,705 @@
+# Clinic audit copy inventory
+
+Reference: local `fix/clinic-audit-hy-ru`, based on `f532e4ab`. Armenian and Russian wording below is a draft for Roo. No language approval or external contact is implied.
+
+The page is `app/clinic/real/audit/page.tsx`; export is `app/clinic/real/audit/export/route.ts`. The strict read model is `lib/activity-log/contracts.ts`. Display translations live in one map, `lib/activity-log/copy.ts`, used by `lib/activity-log/labels.ts`.
+
+SQL provenance: `20261104173000_audit_log.sql` defines `_audit_rows`, the category classifier, scoped people and entry points; `20261104173500_audit_log_followups.sql` replaces `_audit_page` and `_audit_people` and masks outside-clinic staff; `20261104175100_clinic_profile_edits_direct.sql` adds opt-in `profileChange` through `_audit_profile_page` and replaces the entry points. The clinic calls `clinic_audit_log`, `clinic_audit_people` and `clinic_audit_log_export`, with `p_profile_values: true` for rows/exports.
+
+Clinic categories: `sign_in`, `record_access`, `alert_change`, `outbound_message`, `permission_change`, `care_change`, `export`. The shared map also retains `admin_change`, which the clinic RPC excludes. The inventory includes historical SQL writer vocabulary, not only events expected in a new installation.
+
+Row fields: `key`, `at`, `category`, `source`, `action`, `actorId`, `actorName`, `actorRole`, `memberId`, `memberName`, `ref`, optional `profileChange`. Personal names, references, and recorded old/new values remain data. Clinic birth-date changes expose years only. A masked `noreon` actor displays the localized brand name and has no actor filter link.
+
+The people RPC emits workspace roles (possibly followed by `, removed`) or generic `clinic`. It does not return the clinic membership admin/staff distinction. Generic `clinic` is therefore translated neutrally as Clinic; explicit `clinic_admin` and `clinic_staff` are translated when supplied. `qa` is historical vocabulary. No role is inferred from a person’s name.
+
+Unknown actions display localized “Other action” plus a machine identifier. Free-form English sentences are not echoed. Unknown roles/sources use neutral localized labels. This is display-time behavior; stored data is unchanged.
+
+Outbound actions are composed as `channel:template:state`. The three parts are translated only when all are known. Their full English-coded form remains in CSV. Booking email template versions are deployment-defined free text, so unregistered versions use the unknown-action rule. `document_open/member_record` uses the safe member-record label returned by the clinic masking rule.
+
+CSV stays stable and English-coded. Header order is unchanged:
+
+`time_utc,category,source,action,actor_id,actor_name,actor_role,member_id,member_name,reference,profile_change`
+
+CSV values, quoting, formula protection, full scoped profile-change values and row limits are unchanged. The UI locale does not affect the export. Names and supplied profile values retain their original script.
+
+Sources read by `_audit_rows`: `access`, `auth`, `telegram_auth`, `telegram`, `document_open`, `clinic_file_open`, `clinic`, `clinical_case`, `document_release`, `coordination`, `test_request`, `care_alert`, `conversation`, `booking`, `payment`, `catalog`, `bp_device`, `zoe_tier`, `staff_admin`, `staff_recovery`, `config`, `telegram_auth_message`, `conversation_delivery`, `patient_message_attempt`, `patient_message_delivery`, `telegram_nurse_outbox`, `member_push_delivery`, `system_message`, `zoe_chat_card_send`, `system_message_audit`, `booking_notice`. The compatibility source `clinic_change` shares the `clinic` action map. Clinic scope excludes admin-only rows, including payment/catalog/device/tier/recovery rows; their shared source labels remain translated.
+
+The SQL vocabulary check scans migrations for event-bearing inserts, audit helper calls, enum constraints, dynamic operation branches, test sign-in compositions, outbound templates/states, and `_audit_rows` categories/sources. It is deliberately a scanner for this repository’s SQL conventions, not a general SQL interpreter. New writer conventions must extend it. It executes no SQL and reads no deployment configuration.
+
+Verification scope: the audit check renders the actual page component with mocked RPC data, checks all known action/role copy for Latin leaks in Armenian/Russian, exercises failure states and export stability, and proves untranslated new SQL events fail. It does not establish an authenticated browser or database end-to-end pass. Typecheck, build, database replay and hosted checks are outside this no-tsc/no-network/no-Docker task.
+
+## Translation draft
+
+Tuples in the code and columns below are ordered English, Armenian, Russian.
+
+### categories
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `sign_in` | Sign-in and sign-out | Մուտք և ելք | Вход и выход |
+| `record_access` | Opened member records | Անդամների քարտերի դիտում | Просмотры карт участников |
+| `alert_change` | Alert changes | Ահազանգերի փոփոխություններ | Изменения оповещений |
+| `outbound_message` | Messages sent | Ուղարկված հաղորդագրություններ | Отправленные сообщения |
+| `permission_change` | Permission changes | Իրավունքների փոփոխություններ | Изменения прав доступа |
+| `care_change` | Care changes | Խնամքի փոփոխություններ | Изменения в уходе |
+| `admin_change` | Admin and settings changes | Կարգավորումների փոփոխություններ | Изменения настроек |
+| `export` | Log views and exports | Մատյանի դիտում և արտահանում | Просмотры и выгрузки журнала |
+
+
+### sources
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `access` | Record access | Քարտի դիտում | Доступ к карте |
+| `auth` | Sign-in | Մուտք | Вход |
+| `telegram_auth` | Telegram sign-in | Մուտք Տելեգրամով | Вход через Телеграм |
+| `telegram` | Telegram link | Տելեգրամի կապ | Привязка Телеграма |
+| `clinic` | Clinic portal | Կլինիկայի պորտալ | Портал клиники |
+| `staff_admin` | Staff invitations | Աշխատակազմի հրավերներ | Приглашения сотрудников |
+| `staff_recovery` | Staff recovery | Մուտքի վերականգնում | Восстановление доступа |
+| `care_alert` | Care alert | Խնամքի ահազանգ | Оповещение |
+| `conversation` | Conversation | Զրույց | Беседа |
+| `clinical_case` | Clinical case | Խնամքի քարտ | Карта наблюдения |
+| `coordination` | Coordination | Համակարգում | Координация |
+| `document_release` | Document release | Փաստաթղթի հրապարակում | Публикация документа |
+| `test_request` | Test request | Անալիզների հարցում | Запрос анализов |
+| `payment` | Payment | Վճարում | Оплата |
+| `catalog` | Test catalogue | Անալիզների ցանկ | Каталог анализов |
+| `bp_device` | BP monitor | Ճնշաչափ | Тонометр |
+| `zoe_tier` | Zoe model tier | Զոեի մոդելի մակարդակ | Уровень модели Зои |
+| `config` | Setting | Կարգավորում | Настройка |
+| `document_open` | Document | Փաստաթուղթ | Документ |
+| `clinic_file_open` | Clinic file | Կլինիկայի ֆայլ | Файл клиники |
+| `booking` | Booking | Այց | Запись |
+| `clinic_change` | Clinic change request | Կլինիկայի փոփոխության հարցում | Запрос изменения клиники |
+| `telegram_auth_message` | Telegram message | Տելեգրամ հաղորդագրություն | Сообщение Телеграм |
+| `conversation_delivery` | Member reply | Պատասխան անդամին | Ответ участнику |
+| `patient_message_attempt` | Member message | Հաղորդագրություն անդամին | Сообщение участнику |
+| `patient_message_delivery` | Message delivery update | Հաղորդագրության առաքման թարմացում | Обновление доставки сообщения |
+| `telegram_nurse_outbox` | Nurse message | Բուժքրոջ հաղորդագրություն | Сообщение медсестре |
+| `member_push_delivery` | Push notification | Հրատապ ծանուցում | Уведомление |
+| `system_message` | Message | Հաղորդագրություն | Сообщение |
+| `zoe_chat_card_send` | Zoe card message | Զոեի քարտի հաղորդագրություն | Сообщение с карточкой Зои |
+| `system_message_audit` | Message status | Հաղորդագրության կարգավիճակ | Статус сообщения |
+| `booking_notice` | Booking notice | Այցի ծանուցում | Уведомление о записи |
+
+
+### roles
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `clinic_admin` | Clinic admin | Կլինիկայի կառավարիչ | Администратор клиники |
+| `clinic_staff` | Clinic staff | Կլինիկայի աշխատակից | Сотрудник клиники |
+| `doctor` | Doctor | Բժիշկ | Врач |
+| `nurse` | Nurse | Բուժքույր | Медсестра |
+| `admin` | Noreon admin | Նորեոնի կառավարիչ | Администратор Нореон |
+| `noreon` | Noreon | Նորեոն | Нореон |
+| `member` | Member | Անդամ | Участник |
+| `staff` | Staff | Աշխատակից | Сотрудник |
+| `clinic` | Clinic | Կլինիկա | Клиника |
+| `clinic-admin` | Clinic admin | Կլինիկայի կառավարիչ | Администратор клиники |
+| `noreon-admin` | Noreon admin | Նորեոնի կառավարիչ | Администратор Нореон |
+| `platform_admin` | Noreon admin | Նորեոնի կառավարիչ | Администратор Нореон |
+| `qa` | Quality reviewer | Որակի ստուգող | Специалист по качеству |
+
+
+### Actions: access
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `member_record` | Opened the member's record | Բացել է անդամի քարտը | Открыта карта участника |
+| `member_file` | Opened the member file | Բացել է անդամի ֆայլը | Открыт файл участника |
+| `member_report` | Opened a member report | Բացել է անդամի հաշվետվությունը | Открыт отчёт участника |
+| `member_messages` | Opened the member conversation | Բացել է անդամի զրույցը | Открыта беседа участника |
+| `member_contacts` | Opened member contact details | Բացել է անդամի կոնտակտային տվյալները | Открыты контактные данные участника |
+| `activity_log.export` | Downloaded the activity log | Ներբեռնել է գործողությունների մատյանը | Скачан журнал действий |
+| `audit_log.view` | Opened the activity log | Բացել է գործողությունների մատյանը | Открыт журнал действий |
+| `audit_log.export` | Downloaded the activity log | Ներբեռնել է գործողությունների մատյանը | Скачан журнал действий |
+| `clinic_admin_record` | Opened the member record | Բացել է անդամի քարտը | Открыта карта участника |
+| `clinic_member_reveal` | Revealed member contact details | Բացել է անդամի կոնտակտային տվյալները | Открыты контактные данные участника |
+| `staff_clinic_change_requests` | Opened change requests | Բացել է փոփոխությունների հարցումները | Открыты запросы изменений |
+| `staff_clinic_change_decide` | Decided a clinic change request | Որոշել է փոփոխության հարցումը | Рассмотрен запрос изменения |
+| `member_intake` | Opened the member intake conversation | Բացել է անդամի նախնական զրույցը | Открыта вводная беседа участника |
+| `member_trace` | Opened the conversation trace | Բացել է զրույցի ընթացքի գրանցումները | Открыты записи хода беседы |
+| `member_zoe_runs` | Opened Zoe runs | Բացել է Զոեի գործարկումները | Открыты запуски Зои |
+| `zoe_run_why` | Opened why Zoe did this | Բացել է Զոեի գործողության բացատրությունը | Открыто объяснение действия Зои |
+| `member_plan_versions` | Opened care plan versions | Բացել է խնամքի պլանի տարբերակները | Открыты версии плана наблюдения |
+| `member_documents` | Opened the lab document list | Բացել է լաբորատոր փաստաթղթերի ցանկը | Открыт список лабораторных документов |
+| `member_document` | Opened a lab document | Բացել է լաբորատոր փաստաթուղթը | Открыт лабораторный документ |
+| `member_lab_overview` | Opened lab readings | Բացել է անալիզների արդյունքները | Открыты результаты анализов |
+| `member_lab_read` | Opened a lab reading | Բացել է անալիզի արդյունքը | Открыт результат анализа |
+| `member_lab_stages` | Opened sample stages | Բացել է նմուշի մշակման փուլերը | Открыты этапы обработки образца |
+| `member_visit_evidence` | Opened visit evidence | Բացել է այցի տվյալները | Открыты данные визита |
+| `member_bp_devices` | Opened BP monitor and readings | Բացել է ճնշաչափի և չափումների տվյալները | Открыты данные тонометра и измерений |
+| `member_gp_report` | Opened the GP report | Բացել է ընտանեկան բժշկի հաշվետվությունը | Открыт отчёт семейного врача |
+| `member_gp_report_version` | Opened a GP report version | Բացել է ընտանեկան բժշկի հաշվետվության տարբերակը | Открыта версия отчёта семейного врача |
+| `member_history` | Opened member-reported history | Բացել է անդամի ներկայացրած պատմությունը | Открыты сведения об анамнезе от участника |
+| `member_upload` | Opened a member-uploaded document | Բացել է անդամի վերբեռնած փաստաթուղթը | Открыт документ, загруженный участником |
+| `member_coordination` | Opened a coordination task | Բացել է համակարգման առաջադրանքը | Открыта задача координации |
+| `zoe_staff` | Doctor Zoe: read of the member record | Բժիշկ Զոե․ անդամի քարտի դիտում | Доктор Зоя: просмотр карты участника |
+| `member_bookings` | Opened visit bookings | Բացել է այցերի ամրագրումները | Открыты записи на визиты |
+| `member_test_requests` | Opened test requests | Բացել է անալիզների հարցումները | Открыты запросы анализов |
+| `conversation.read.admin` | Read the member conversation (admin) | Կառավարիչը կարդացել է անդամի զրույցը | Администратор прочитал беседу участника |
+| `conversation.list.admin` | Opened the conversations list (admin) | Կառավարիչը բացել է զրույցների ցանկը | Администратор открыл список бесед |
+| `registrations.list` | Opened the registrations list | Բացել է գրանցումների ցանկը | Открыт список регистраций |
+| `admin_ldl_retests` | Opened repeat lipid tests | Բացել է լիպիդների կրկնակի անալիզները | Открыты повторные анализы липидов |
+| `admin_upload_overrides` | Opened upload exceptions | Բացել է վերբեռնումների բացառությունները | Открыты исключения для загрузок |
+| `bp_week` | Opened weekly blood pressure readings | Բացել է շաբաթական ճնշման չափումները | Открыты измерения давления за неделю |
+| `care_alert_inbox` | Opened care alerts | Բացել է խնամքի ահազանգերը | Открыты оповещения по наблюдению |
+| `care_queue` | Opened the care queue | Բացել է խնամքի հերթը | Открыта очередь наблюдения |
+| `chat_member_identities` | Opened conversation member identities | Բացել է զրույցի անդամների ինքնության տվյալները | Открыты данные участников беседы |
+| `clinic_admin_files` | Opened clinic admin files | Բացել է կլինիկայի կառավարչի ֆայլերը | Открыты файлы администратора клиники |
+| `doctor_approvals_history` | Opened approval history | Բացել է հաստատումների պատմությունը | Открыта история согласований |
+| `doctor_decisions` | Opened doctor decisions | Բացել է բժշկի որոշումները | Открыты решения врача |
+| `doctor_inbox` | Opened the doctor inbox | Բացել է բժշկի մուտքային զրույցները | Открыты входящие беседы врача |
+| `doctor_saved_plans` | Opened saved care plans | Բացել է պահպանված խնամքի պլանները | Открыты сохранённые планы наблюдения |
+| `doctor_zoe_coach` | Opened Zoe coaching settings | Բացել է Զոեի աջակցության կարգավորումները | Открыты настройки поддержки Зои |
+| `doctor_zoe_mode` | Opened Zoe mode settings | Բացել է Զոեի ռեժիմի կարգավորումները | Открыты настройки режима Зои |
+| `doctor_zoe_urgent_window` | Opened Zoe urgent review settings | Բացել է Զոեի հրատապ դիտարկման կարգավորումները | Открыты настройки срочного рассмотрения Зои |
+| `lab_ai_results` | Opened automated lab analysis | Բացել է անալիզների ինքնաշխատ վերլուծությունը | Открыт автоматический разбор анализов |
+| `ldl_goal` | Opened the LDL cholesterol goal | Բացել է ցածր խտության խոլեստերինի նպատակային մակարդակը | Открыт целевой уровень холестерина низкой плотности |
+| `member_identities` | Opened member identities | Բացել է անդամների ինքնության տվյալները | Открыты данные участников |
+| `member_medicines` | Opened member medicines | Բացել է անդամի դեղերը | Открыты лекарства участника |
+| `member_nurse_visit` | Opened the nurse visit | Բացել է բուժքրոջ այցը | Открыт визит медсестры |
+| `member_nurse_visit_record` | Opened the nurse visit record | Բացել է բուժքրոջ այցի գրառումը | Открыта запись визита медсестры |
+| `member_search` | Searched for members | Որոնել է անդամների | Выполнен поиск участников |
+| `member_upload_approvals` | Opened upload approvals | Բացել է վերբեռնումների հաստատումները | Открыты согласования загрузок |
+| `member_upload_approve` | Reviewed an uploaded document | Դիտարկել է վերբեռնված փաստաթուղթը | Рассмотрен загруженный документ |
+| `member_upload_overrides` | Opened member upload exceptions | Բացել է անդամի վերբեռնումների բացառությունները | Открыты исключения для загрузок участника |
+| `member_zoe_reply_drafts` | Opened Zoe reply drafts | Բացել է Զոեի պատասխանների սևագրերը | Открыты черновики ответов Зои |
+| `staff_notice_open` | Opened a staff notice | Բացել է աշխատակցի ծանուցումը | Открыто уведомление сотрудника |
+| `staff_notice_refused` | Staff notice access refused | Աշխատակցի ծանուցման հասանելիությունը մերժվել է | В доступе к уведомлению сотрудника отказано |
+| `zoe_symptom_intakes` | Opened symptom questionnaires | Բացել է ախտանշանների հարցաթերթերը | Открыты опросники симптомов |
+
+
+### Actions: auth
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `login` | Signed in | Մուտք է գործել | Выполнен вход |
+| `logout` | Signed out | Դուրս է եկել | Выполнен выход |
+| `user_signedup` | Account created | Հաշիվը ստեղծվել է | Учётная запись создана |
+| `user_recovery_requested` | Asked to reset password | Հայցել է գաղտնաբառի վերականգնում | Запрошен сброс пароля |
+| `user_updated_password` | Changed password | Փոխել է գաղտնաբառը | Пароль изменён |
+| `user_invited` | Was invited | Հրավիրվել է | Приглашение отправлено |
+| `user_deleted` | Account deleted | Հաշիվը ջնջվել է | Учётная запись удалена |
+| `token_revoked` | Session ended | Աշխատաշրջանն ավարտվել է | Сеанс завершён |
+| `user_modified` | Account changed | Հաշիվը փոխվել է | Учётная запись изменена |
+
+
+### Actions: clinic
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `profile_updated` | Saved personal details | Պահպանել է անձնական տվյալները | Личные данные сохранены |
+| `profile_auto_applied` | Personal details auto-applied when approval was removed | Անձնական տվյալները կիրառվել են ինքնաբերաբար՝ հաստատման պահանջը հանելիս | Личные данные применены автоматически после отмены согласования |
+| `profile_superseded` | Personal details request superseded without applying | Անձնական տվյալների հարցումը փոխարինվել է՝ առանց կիրառելու | Запрос изменения личных данных заменён без применения |
+| `admin-record-opened` | Opened the member record | Բացել է անդամի քարտը | Открыта карта участника |
+| `member-file-opened` | Opened the member file | Բացել է անդամի ֆայլը | Открыт файл участника |
+| `member_reveal` | Revealed member contact details | Բացել է անդամի կոնտակտային տվյալները | Открыты контактные данные участника |
+| `audit-log-view` | Opened the audit log | Բացել է գործողությունների մատյանը | Открыт журнал действий |
+| `audit-log-export` | Downloaded the audit log | Ներբեռնել է գործողությունների մատյանը | Скачан журнал действий |
+| `change_requested` | Requested a change | Հայցել է փոփոխություն | Запрошено изменение |
+| `change_approved` | Approved a change | Հաստատել է փոփոխությունը | Изменение одобрено |
+| `change_rejected` | Rejected a change | Մերժել է փոփոխությունը | Изменение отклонено |
+| `change_cancelled` | Cancelled a change request | Չեղարկել է փոփոխության հարցումը | Запрос изменения отменён |
+| `change_expired` | Change request expired | Փոփոխության հարցման ժամկետը լրացել է | Срок запроса изменения истёк |
+| `change_stale` | Change request no longer valid | Փոփոխության հարցումն այլևս վավեր չէ | Запрос изменения больше не действителен |
+| `admin-care-team-changed` | Changed the care team | Փոխել է խնամքի թիմը | Команда наблюдения изменена |
+| `admin-care-team-refused` | Care team change refused | Խնամքի թիմի փոփոխությունը մերժվել է | В изменении команды наблюдения отказано |
+| `admin-original-opened` | Opened an original file | Բացել է բնօրինակ ֆայլը | Открыт исходный файл |
+| `admin-original-refused` | Original file access refused | Բնօրինակ ֆայլի հասանելիությունը մերժվել է | В доступе к исходному файлу отказано |
+| `admin-patients-listed` | Opened the member list | Բացել է անդամների ցանկը | Открыт список участников |
+| `admin-profile-refused` | Personal details change refused | Անձնական տվյալների փոփոխությունը մերժվել է | В изменении личных данных отказано |
+| `admin-profile-updated` | Updated personal details | Թարմացրել է անձնական տվյալները | Личные данные обновлены |
+| `admin-record-refused` | Member record access refused | Անդամի քարտի հասանելիությունը մերժվել է | В доступе к карте участника отказано |
+| `booking-arrived` | Recorded arrival for a visit | Գրանցել է այցի ներկայանալը | Отмечена явка на визит |
+| `booking-cancelled-by-member` | Member cancelled the visit | Անդամը չեղարկել է այցը | Участник отменил визит |
+| `booking-confirmed` | Confirmed a visit | Հաստատել է այցը | Визит подтверждён |
+| `booking-declined` | Declined a visit | Մերժել է այցը | Визит отклонён |
+| `booking-no-show` | Recorded a missed visit | Գրանցել է այցին չներկայանալը | Отмечена неявка на визит |
+| `booking-proposal-accepted` | Accepted the proposed visit time | Ընդունել է այցի առաջարկված ժամը | Предложенное время визита принято |
+| `booking-proposal-rejected` | Rejected the proposed visit time | Մերժել է այցի առաջարկված ժամը | Предложенное время визита отклонено |
+| `booking-proposal-withdrawn` | Withdrew the proposed visit time | Հետ է կանչել այցի առաջարկված ժամը | Предложение времени визита отозвано |
+| `booking-time-proposed` | Proposed a visit time | Առաջարկել է այցի ժամ | Предложено время визита |
+| `change_request_viewed` | Opened a change request | Բացել է փոփոխության հարցումը | Открыт запрос изменения |
+| `change_requests_listed` | Opened the change requests list | Բացել է փոփոխությունների հարցումների ցանկը | Открыт список запросов изменений |
+| `command-retired` | Retired a command | Դադարեցրել է հրամանը | Команда выведена из обращения |
+| `invitation-accepted` | Accepted an invitation | Ընդունել է հրավերը | Приглашение принято |
+| `invitation-reissued` | Reissued an invitation | Կրկին տրամադրել է հրավերը | Приглашение выдано повторно |
+| `invitation-reserved` | Reserved an invitation | Ստեղծել է հրավերի նախնական գրանցումը | Создана предварительная запись приглашения |
+| `invitation-revoked` | Revoked an invitation | Հետ է կանչել հրավերը | Приглашение отозвано |
+| `lab-link-refused` | Lab result linking refused | Անալիզի արդյունքի կապումը մերժվել է | В привязке результата анализа отказано |
+| `lab-linked` | Linked a lab result | Կապել է անալիզի արդյունքը | Результат анализа привязан |
+| `member-file-attached` | Attached a member file | Կցել է անդամի ֆայլը | Файл участника прикреплён |
+| `member-file-blocked` | Blocked a member file | Արգելափակել է անդամի ֆայլը | Файл участника заблокирован |
+| `member-file-download-refused` | Member file download refused | Անդամի ֆայլի ներբեռնումը մերժվել է | В скачивании файла участника отказано |
+| `member-file-downloaded` | Downloaded a member file | Ներբեռնել է անդամի ֆայլը | Файл участника скачан |
+| `member-file-override` | Applied a member file exception | Կիրառել է անդամի ֆայլի բացառությունը | Применено исключение для файла участника |
+| `member-file-refused` | Member file access refused | Անդամի ֆայլի հասանելիությունը մերժվել է | В доступе к файлу участника отказано |
+| `member-files-read` | Opened member files | Բացել է անդամի ֆայլերը | Открыты файлы участника |
+| `member-files-refused` | Member files access refused | Անդամի ֆայլերի հասանելիությունը մերժվել է | В доступе к файлам участника отказано |
+| `member-search` | Searched for members | Որոնել է անդամների | Выполнен поиск участников |
+| `member-upload-refused` | Member upload refused | Անդամի ֆայլի վերբեռնումը մերժվել է | В загрузке файла участника отказано |
+| `member-upload-started` | Started a member file upload | Սկսել է անդամի ֆայլի վերբեռնումը | Начата загрузка файла участника |
+| `membership-command-retired` | Retired a membership command | Դադարեցրել է անդամակցության հրամանը | Команда членства выведена из обращения |
+| `original-access-refused` | Original file access refused | Բնօրինակ ֆայլի հասանելիությունը մերժվել է | В доступе к исходному файлу отказано |
+| `original-target-refused` | Original file target refused | Բնօրինակ ֆայլի նպատակային գրառումը մերժվել է | Целевая запись исходного файла отклонена |
+| `result-attached` | Attached a result | Կցել է արդյունքը | Результат прикреплён |
+| `result-detached` | Detached a result | Հեռացրել է արդյունքի կապը | Привязка результата удалена |
+| `result-reattached` | Reattached a result | Կրկին կցել է արդյունքը | Результат прикреплён повторно |
+| `schedule-saved` | Saved the schedule | Պահպանել է ժամանակացույցը | Расписание сохранено |
+| `team-member-updated` | Updated a team member | Թարմացրել է թիմի անդամի տվյալները | Данные сотрудника обновлены |
+| `upload-cleanup-complete` | Finished upload cleanup | Ավարտել է վերբեռնման մաքրումը | Очистка загрузки завершена |
+| `upload-execution-ended` | Ended an upload attempt | Ավարտել է վերբեռնման փորձը | Попытка загрузки завершена |
+| `upload-retired` | Retired an upload | Դադարեցրել է վերբեռնումը | Загрузка выведена из обращения |
+| `upload-stored` | Stored an uploaded file | Պահել է վերբեռնված ֆայլը | Загруженный файл сохранён |
+| `membership-update` | Updated clinic membership | Թարմացրել է կլինիկայի անդամակցությունը | Доступ к клинике обновлён |
+| `membership-revoke` | Revoked clinic membership | Հետ է կանչել կլինիկայի անդամակցությունը | Доступ к клинике отозван |
+| `create-batch` | Created a file batch | Ստեղծել է ֆայլերի փաթեթ | Создан пакет файлов |
+| `reserve-upload` | Reserved a file upload | Նախապատրաստել է ֆայլի վերբեռնումը | Подготовлена загрузка файла |
+| `membership-grant-existing` | Granted an existing account clinic access | Տրամադրել է կլինիկայի հասանելիություն գործող հաշվին | Существующей учётной записи предоставлен доступ к клинике |
+
+
+### Actions: clinical_case
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `enrolled` | Enrolled in care | Գրանցել է խնամքի ծրագրում | Участник включён в программу наблюдения |
+| `assigned` | Assigned a doctor | Նշանակել է բժիշկ | Врач назначен |
+| `nurse-assigned` | Assigned a nurse | Նշանակել է բուժքույր | Медсестра назначена |
+| `draft-saved` | Saved a draft | Պահպանել է սևագիրը | Черновик сохранён |
+| `review-prepared` | Prepared a review | Պատրաստել է դիտարկումը | Рассмотрение подготовлено |
+| `report-approved` | Approved a report | Հաստատել է հաշվետվությունը | Отчёт одобрен |
+| `result-received` | Recorded receipt of a result | Գրանցել է արդյունքի ստացումը | Получение результата зарегистрировано |
+| `consultation-decided` | Recorded a consultation decision | Գրանցել է խորհրդատվության որոշումը | Решение о консультации зарегистрировано |
+| `consultation-completed` | Recorded a completed consultation | Գրանցել է ավարտված խորհրդատվությունը | Завершённая консультация зарегистрирована |
+| `plan-published` | Published a care plan | Հրապարակել է խնամքի պլանը | План наблюдения опубликован |
+| `care-measurement` | Recorded a measurement | Գրանցել է չափումը | Измерение зарегистрировано |
+| `care-evidence` | Recorded care evidence | Գրանցել է խնամքի տվյալները | Данные наблюдения зарегистрированы |
+| `care-contact-attempted` | Recorded a contact attempt | Գրանցել է կապի փորձը | Попытка связи зарегистрирована |
+| `care-reached` | Recorded successful contact | Գրանցել է հաջողված կապը | Успешная связь зарегистрирована |
+| `care-unreachable` | Recorded unsuccessful contact | Գրանցել է կապի անհաջող փորձը | Неудачная связь зарегистрирована |
+| `care-refer-doctor` | Referred to a doctor | Ուղղորդել է բժշկի մոտ | Участник направлен к врачу |
+
+
+### Actions: coordination
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `create` | Created a coordination task | Ստեղծել է համակարգման առաջադրանք | Создана задача координации |
+| `edit` | Edited a coordination task | Խմբագրել է համակարգման առաջադրանքը | Задача координации изменена |
+| `reassign` | Reassigned a coordination task | Վերանշանակել է համակարգման առաջադրանքը | Задача координации переназначена |
+| `contact` | Recorded contact | Գրանցել է կապը | Контакт зарегистрирован |
+| `await-member` | Marked as awaiting the member | Նշել է՝ սպասում է անդամին | Отмечено ожидание участника |
+| `reopen` | Reopened a coordination task | Վերաբացել է համակարգման առաջադրանքը | Задача координации открыта повторно |
+| `complete` | Completed a coordination task | Ավարտել է համակարգման առաջադրանքը | Задача координации завершена |
+| `refer` | Referred to a doctor | Ուղղորդել է բժշկի մոտ | Участник направлен к врачу |
+| `resolve` | Resolved a referral | Ավարտել է ուղղորդումը | Направление закрыто |
+| `cancel` | Cancelled a coordination task | Չեղարկել է համակարգման առաջադրանքը | Задача координации отменена |
+
+
+### Actions: test_request
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `create` | Created a test request | Ստեղծել է անալիզի հարցում | Создан запрос анализа |
+| `confirm` | Confirmed a test request | Հաստատել է անալիզի հարցումը | Запрос анализа подтверждён |
+| `accept` | Accepted a test booking | Ընդունել է անալիզի ամրագրումը | Запись на анализ принята |
+| `cancel` | Cancelled a test request | Չեղարկել է անալիզի հարցումը | Запрос анализа отменён |
+| `request-change` | Requested a booking change | Հայցել է ամրագրման փոփոխություն | Запрошено изменение записи |
+| `change-outcome` | Recorded a booking change outcome | Գրանցել է ամրագրման փոփոխության արդյունքը | Результат изменения записи зарегистрирован |
+| `completed-by-visit` | Completed through a visit | Ավարտվել է այցի միջոցով | Запрос выполнен в ходе визита |
+
+
+### Actions: care_alert
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `raised` | Raised an alert | Ստեղծել է ահազանգ | Оповещение создано |
+| `repeated` | Repeated an alert | Կրկնել է ահազանգը | Оповещение повторено |
+| `acknowledged` | Acknowledged an alert | Հաստատել է ահազանգի ստացումը | Получение оповещения подтверждено |
+| `escalated` | Escalated an alert | Փոխանցել է ահազանգը հաջորդ պատասխանատուին | Оповещение передано следующему ответственному |
+| `next_action` | Recorded the next action | Գրանցել է հաջորդ քայլը | Следующее действие зарегистрировано |
+| `reassigned` | Reassigned an alert | Վերանշանակել է ահազանգը | Оповещение переназначено |
+| `resolved` | Resolved an alert | Փակել է ահազանգը | Оповещение закрыто |
+| `routing_backfilled` | Filled in alert routing | Լրացրել է ահազանգի ուղղորդումը | Маршрутизация оповещения дополнена |
+
+
+### Actions: document_release
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `released` | Released a lab document | Հրապարակել է լաբորատոր փաստաթուղթը | Лабораторный документ опубликован |
+| `withdrawn` | Withdrew a lab document | Հետ է կանչել լաբորատոր փաստաթուղթը | Лабораторный документ отозван |
+
+
+### Actions: booking
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `cancellation-requested` | Requested visit cancellation | Հայցել է այցի չեղարկում | Запрошена отмена визита |
+| `cancelled` | Cancelled a visit | Չեղարկել է այցը | Визит отменён |
+| `clinic-confirmed` | Clinic confirmed the visit | Կլինիկան հաստատել է այցը | Клиника подтвердила визит |
+| `clinic-declined` | Clinic declined the visit | Կլինիկան մերժել է այցը | Клиника отклонила визит |
+| `clinic-proposal-accepted` | Accepted the clinic's proposed time | Ընդունել է կլինիկայի առաջարկված ժամը | Предложенное клиникой время принято |
+| `receipt-recovery-requested` | Requested notice recovery | Հայցել է ծանուցման վերականգնում | Запрошено восстановление уведомления |
+| `selected` | Selected a visit time | Ընտրել է այցի ժամը | Время визита выбрано |
+| `accepted` | Notice accepted for delivery | Ծանուցումն ընդունվել է առաքման համար | Уведомление принято к доставке |
+| `definitely_failed` | Notice delivery failed | Ծանուցման առաքումը չհաջողվեց | Не удалось доставить уведомление |
+| `unknown` | Notice delivery outcome unknown | Ծանուցման առաքման արդյունքն անհայտ է | Результат доставки уведомления неизвестен |
+| `reconciliation` | Notice delivery needs checking | Ծանուցման առաքումը ստուգման կարիք ունի | Доставка уведомления требует проверки |
+
+
+### Actions: conversation
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `delivery.held` | Held a reply for review | Պահել է պատասխանը դիտարկման համար | Ответ приостановлен для рассмотрения |
+| `inbox.zoe_reopened` | Reopened Zoe's answer for review | Վերաբացել է Զոեի պատասխանը դիտարկման համար | Ответ Зои открыт для повторного рассмотрения |
+| `inbox.zoe_reviewed` | Reviewed Zoe's answer | Դիտարկել է Զոեի պատասխանը | Ответ Зои рассмотрен |
+| `member.topic_break` | Started a new conversation topic | Սկսել է զրույցի նոր թեմա | Начата новая тема беседы |
+| `message.media` | Received a media message | Ստացել է մեդիա հաղորդագրություն | Получено медиасообщение |
+| `message.overflow` | Message queue limit reached | Լրացել է հաղորդագրությունների հերթի սահմանը | Достигнут предел очереди сообщений |
+| `message.rate_limited` | Message rate limit reached | Լրացել է հաղորդագրությունների հաճախության սահմանը | Достигнут предел частоты сообщений |
+| `message.received` | Received a message | Ստացել է հաղորդագրություն | Сообщение получено |
+| `nurse.handoff` | Nurse handed over the conversation | Բուժքույրը փոխանցել է զրույցը | Медсестра передала беседу |
+| `nurse.reply_sent` | Nurse sent a reply | Բուժքույրը պատասխան է ուղարկել | Медсестра отправила ответ |
+| `zoe.alarm_trigger` | Zoe detected an urgent concern | Զոեն հայտնաբերել է հրատապ խնդիր | Зоя обнаружила срочную проблему |
+| `zoe.answered` | Zoe answered | Զոեն պատասխանել է | Зоя ответила |
+| `zoe.chatted` | Zoe continued the conversation | Զոեն շարունակել է զրույցը | Зоя продолжила беседу |
+| `zoe.doctor_mode_off` | Turned off Zoe doctor mode | Անջատել է Զոեի բժշկի ռեժիմը | Режим врача Зои выключен |
+| `zoe.doctor_mode_on` | Turned on Zoe doctor mode | Միացրել է Զոեի բժշկի ռեժիմը | Режим врача Зои включён |
+| `zoe.forward` | Zoe forwarded the message | Զոեն փոխանցել է հաղորդագրությունը | Зоя передала сообщение |
+| `zoe.injection_alert` | Zoe flagged a suspicious instruction | Զոեն նշել է կասկածելի հրահանգ | Зоя отметила подозрительную инструкцию |
+| `zoe.intake` | Zoe asked about symptoms | Զոեն հարցրել է ախտանշանների մասին | Зоя уточнила симптомы |
+| `zoe.member_cleared_urgent` | Member cleared the urgent state | Անդամը հանել է հրատապ վիճակը | Участник снял срочный статус |
+| `zoe.nurse_first` | Zoe routed to the nurse first | Զոեն նախ ուղղորդել է բուժքրոջը | Зоя сначала направила к медсестре |
+| `zoe.receipt` | Zoe acknowledged the message | Զոեն հաստատել է հաղորդագրության ստացումը | Зоя подтвердила получение сообщения |
+| `zoe.urgent` | Zoe opened the urgent route | Զոեն բացել է հրատապ օգնության ուղին | Зоя открыла маршрут срочной помощи |
+| `zoe.urgent_cleared` | Cleared the urgent state | Հանել է հրատապ վիճակը | Срочный статус снят |
+| `zoe.urgent_reading` | Zoe flagged an urgent reading | Զոեն նշել է հրատապ չափում | Зоя отметила срочное измерение |
+| `actions.issued` | Issued conversation actions | Տրամադրել է զրույցի գործողություններ | Выданы действия беседы |
+| `command.recorded` | Recorded a conversation command | Գրանցել է զրույցի հրամանը | Команда беседы зарегистрирована |
+| `command.replay` | Replayed a conversation command | Կրկնել է զրույցի հրամանը | Команда беседы повторена |
+| `command.retired` | Retired a conversation command | Դադարեցրել է զրույցի հրամանը | Команда беседы выведена из обращения |
+| `delivery.claimed` | Started reply delivery | Սկսել է պատասխանի առաքումը | Доставка ответа начата |
+| `delivery.conflicting_observation` | Reply delivery updates conflicted | Պատասխանի առաքման թարմացումների հակասություն | Противоречивые обновления доставки ответа |
+| `delivery.late_outcome` | Recorded a late reply delivery result | Գրանցել է պատասխանի առաքման ուշացած արդյունքը | Поздний результат доставки ответа зарегистрирован |
+| `delivery.outcome` | Recorded a reply delivery result | Գրանցել է պատասխանի առաքման արդյունքը | Результат доставки ответа зарегистрирован |
+| `delivery.retry_requested` | Requested reply delivery again | Կրկին հայցել է պատասխանի առաքումը | Запрошена повторная доставка ответа |
+| `intake.requested` | Requested a symptom questionnaire | Հայցել է ախտանշանների հարցաթերթ | Запрошен опросник симптомов |
+
+
+### Actions: telegram_auth
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `binding.created` | Created a Telegram binding | Ստեղծել է Տելեգրամի կապը | Создана привязка Телеграма |
+| `binding.reproven` | Verified a Telegram binding again | Կրկին հաստատել է Տելեգրամի կապը | Привязка Телеграма подтверждена повторно |
+| `binding.revoked` | Revoked a Telegram binding | Հետ է կանչել Տելեգրամի կապը | Привязка Телеграма отозвана |
+| `clinic.invite_conflict` | Clinic invitation conflicted | Կլինիկայի հրավերի հակասություն | Конфликт приглашения клиники |
+| `clinic.invite_issued` | Issued a clinic invitation | Տրամադրել է կլինիկայի հրավեր | Приглашение клиники выдано |
+| `clinic.invite_proven` | Proved a clinic invitation | Հաստատել է կլինիկայի հրավերի ինքնությունը | Личность по приглашению клиники подтверждена |
+| `clinic.invite_verified` | Verified a clinic invitation | Ստուգել է կլինիկայի հրավերը | Приглашение клиники проверено |
+| `signin_link.armed` | Activated a sign-in link | Ակտիվացրել է մուտքի հղումը | Ссылка входа активирована |
+| `signin_link.cancelled` | Cancelled a sign-in link | Չեղարկել է մուտքի հղումը | Ссылка входа отменена |
+| `signin_link.refused` | Sign-in link refused | Մուտքի հղումը մերժվել է | Ссылка входа отклонена |
+| `signin_link.used` | Used a sign-in link | Օգտագործել է մուտքի հղումը | Ссылка входа использована |
+| `staff.admitted` | Granted staff access | Տրամադրել է աշխատակցի հասանելիություն | Доступ сотрудника предоставлен |
+| `staff.code_ceiling` | Staff sign-in code limit reached | Լրացել է աշխատակցի մուտքի կոդերի սահմանը | Достигнут предел кодов входа сотрудника |
+| `staff.enrolled` | Enrolled a staff account | Գրանցել է աշխատակցի հաշիվը | Учётная запись сотрудника зарегистрирована |
+| `staff.enrolment_issued` | Issued staff enrolment | Տրամադրել է աշխատակցի գրանցման հնարավորություն | Выдан доступ к регистрации сотрудника |
+| `staff.invite_admitted` | Granted access through a staff invitation | Տրամադրել է հասանելիություն աշխատակցի հրավերով | Предоставлен доступ по приглашению сотрудника |
+| `staff.invite_conflict` | Staff invitation conflicted | Աշխատակցի հրավերի հակասություն | Конфликт приглашения сотрудника |
+| `staff.invite_issued` | Issued a staff invitation | Տրամադրել է աշխատակցի հրավեր | Приглашение сотрудника выдано |
+| `staff.invite_proven` | Proved a staff invitation | Հաստատել է աշխատակցի հրավերի ինքնությունը | Личность по приглашению сотрудника подтверждена |
+| `staff.invite_rejected` | Rejected a staff invitation | Մերժել է աշխատակցի հրավերը | Приглашение сотрудника отклонено |
+| `staff.recovery_completed` | Completed staff access recovery | Ավարտել է աշխատակցի մուտքի վերականգնումը | Восстановление доступа сотрудника завершено |
+| `staff.recovery_issued` | Issued staff access recovery | Տրամադրել է աշխատակցի մուտքի վերականգնում | Выдано восстановление доступа сотрудника |
+| `staff.recovery_verified` | Verified staff access recovery | Ստուգել է աշխատակցի մուտքի վերականգնումը | Восстановление доступа сотрудника проверено |
+| `staff.revoked` | Revoked staff access | Հետ է կանչել աշխատակցի հասանելիությունը | Доступ сотрудника отозван |
+| `test_signin.add.added` | Test account addition: added | Փորձնական հաշվի ավելացում: ավելացված | Добавление тестовой учётной записи: добавлено |
+| `test_signin.add.already_exists` | Test account addition: already exists | Փորձնական հաշվի ավելացում: արդեն առկա է | Добавление тестовой учётной записи: уже существует |
+| `test_signin.add.forbidden` | Test account addition: forbidden | Փորձնական հաշվի ավելացում: արգելված | Добавление тестовой учётной записи: запрещено |
+| `test_signin.add.invalid` | Test account addition: invalid | Փորձնական հաշվի ավելացում: անվավեր | Добавление тестовой учётной записи: недействительно |
+| `test_signin.add.staff_account` | Test account addition: staff account | Փորձնական հաշվի ավելացում: աշխատակցի հաշիվ | Добавление тестовой учётной записи: учётная запись сотрудника |
+| `test_signin.challenge.issued` | Test sign-in challenge: issued | Փորձնական մուտքի հարցում: տրամադրված | Запрос тестового входа: выдано |
+| `test_signin.code.accepted` | Test sign-in code: accepted | Փորձնական մուտքի կոդ: ընդունված | Код тестового входа: принято |
+| `test_signin.list.forbidden` | Test sign-in list: forbidden | Փորձնական մուտքերի ցանկ: արգելված | Список тестовых входов: запрещено |
+| `test_signin.refused.expired` | Test sign-in refused: expired | Փորձնական մուտքը մերժված է: ժամկետանց | Тестовый вход отклонён: срок истёк |
+| `test_signin.refused.invalid` | Test sign-in refused: invalid | Փորձնական մուտքը մերժված է: անվավեր | Тестовый вход отклонён: недействительно |
+| `test_signin.refused.no_request` | Test sign-in refused: no request | Փորձնական մուտքը մերժված է: հարցումը բացակայում է | Тестовый вход отклонён: запрос отсутствует |
+| `test_signin.refused.not_allowlisted` | Test sign-in refused: not on the allowed list | Փորձնական մուտքը մերժված է: թույլատրված ցանկում չկա | Тестовый вход отклонён: нет в разрешённом списке |
+| `test_signin.refused.not_verifiable` | Test sign-in refused: cannot be verified | Փորձնական մուտքը մերժված է: հաստատել հնարավոր չէ | Тестовый вход отклонён: невозможно подтвердить |
+| `test_signin.refused.outside_range` | Test sign-in refused: outside allowed range | Փորձնական մուտքը մերժված է: թույլատրելի միջակայքից դուրս | Тестовый вход отклонён: вне разрешённого диапазона |
+| `test_signin.refused.rate_limited` | Test sign-in refused: rate limit reached | Փորձնական մուտքը մերժված է: հաճախության սահմանը լրացած է | Тестовый вход отклонён: предел частоты достигнут |
+| `test_signin.refused.switched_off` | Test sign-in refused: switched off | Փորձնական մուտքը մերժված է: անջատված | Тестовый вход отклонён: выключено |
+| `test_signin.refused.switched_off_or_removed` | Test sign-in refused: switched off or removed | Փորձնական մուտքը մերժված է: անջատված կամ հեռացված | Тестовый вход отклонён: выключено или удалено |
+| `test_signin.refused.unknown_request` | Test sign-in refused: unknown request | Փորձնական մուտքը մերժված է: անհայտ հարցում | Тестовый вход отклонён: неизвестный запрос |
+| `test_signin.refused.wrong_code` | Test sign-in refused: wrong code | Փորձնական մուտքը մերժված է: սխալ կոդ | Тестовый вход отклонён: неверный код |
+| `test_signin.remove.forbidden` | Test account removal: forbidden | Փորձնական հաշվի հեռացում: արգելված | Удаление тестовой учётной записи: запрещено |
+| `test_signin.remove.missing` | Test account removal: missing | Փորձնական հաշվի հեռացում: բացակա | Удаление тестовой учётной записи: отсутствует |
+| `test_signin.remove.removed` | Test account removal: removed | Փորձնական հաշվի հեռացում: հեռացված | Удаление тестовой учётной записи: удалено |
+| `test_signin.set_code.forbidden` | Test code change: forbidden | Փորձնական կոդի փոփոխություն: արգելված | Изменение тестового кода: запрещено |
+| `test_signin.set_code.missing` | Test code change: missing | Փորձնական կոդի փոփոխություն: բացակա | Изменение тестового кода: отсутствует |
+| `test_signin.set_code.set` | Test code change: set | Փորձնական կոդի փոփոխություն: սահմանված | Изменение тестового кода: задано |
+| `test_signin.signin.succeeded` | Test sign-in: succeeded | Փորձնական մուտք: հաջողված | Тестовый вход: успешно |
+| `test_signin.switch.disabled` | Test sign-in switch: disabled | Փորձնական մուտքի անջատիչ: անջատված | Переключатель тестового входа: выключено |
+| `test_signin.switch.enabled` | Test sign-in switch: enabled | Փորձնական մուտքի անջատիչ: միացված | Переключатель тестового входа: включено |
+| `test_signin.switch.forbidden` | Test sign-in switch: forbidden | Փորձնական մուտքի անջատիչ: արգելված | Переключатель тестового входа: запрещено |
+
+
+### Actions: telegram
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `link.auto_enrolment` | Automatically enrolled through Telegram | Ինքնաբերաբար գրանցվել է Տելեգրամով | Автоматическая регистрация через Телеграм |
+| `link.issued` | Issued a Telegram link | Տրամադրել է Տելեգրամի հղում | Ссылка Телеграма выдана |
+| `link.redeemed` | Used a Telegram link | Օգտագործել է Տելեգրամի հղումը | Ссылка Телеграма использована |
+| `link.refused` | Telegram link refused | Տելեգրամի հղումը մերժվել է | Ссылка Телеграма отклонена |
+| `link.unlinked` | Unlinked Telegram | Անջատել է Տելեգրամի կապը | Привязка Телеграма удалена |
+| `bot.next_step` | Opened the next step through the bot | Բացել է հաջորդ քայլը բոտի միջոցով | Следующий шаг открыт через бота |
+| `card.press_refused` | Card action refused | Քարտի գործողությունը մերժվել է | Действие карточки отклонено |
+| `inbox.conflict` | Incoming message conflicted | Մուտքային հաղորդագրության հակասություն | Конфликт входящего сообщения |
+| `inbox.generation_mismatch` | Incoming message binding expired | Մուտքային հաղորդագրության կապը հնացել է | Привязка входящего сообщения устарела |
+
+
+### Actions: staff_admin
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `clinic_created` | Created a clinic | Ստեղծել է կլինիկա | Клиника создана |
+| `clinic_scheduling_updated` | Updated the clinic schedule | Թարմացրել է կլինիկայի ժամանակացույցը | Расписание клиники обновлено |
+| `scheduling_copy_updated` | Updated scheduling copy | Թարմացրել է ամրագրման տեքստը | Текст записи обновлён |
+| `dispatch_claimed` | Started invitation delivery | Սկսել է հրավերի առաքումը | Доставка приглашения начата |
+| `identity_bound` | Linked the account identity | Կապել է հաշվի ինքնությունը | Личность учётной записи привязана |
+| `invitation_accepted` | Accepted an invitation | Ընդունել է հրավերը | Приглашение принято |
+| `invitation_reissued` | Reissued an invitation | Կրկին տրամադրել է հրավերը | Приглашение выдано повторно |
+| `invitation_reserved` | Reserved an invitation | Ստեղծել է հրավերի նախնական գրանցումը | Создана предварительная запись приглашения |
+| `invitation_verified` | Verified an invitation | Ստուգել է հրավերը | Приглашение проверено |
+| `staff_removed` | Removed a staff account | Հեռացրել է աշխատակցի հաշիվը | Учётная запись сотрудника удалена |
+| `staff_updated` | Updated a staff account | Թարմացրել է աշխատակցի հաշիվը | Учётная запись сотрудника обновлена |
+| `submission_accepted` | Invitation delivery accepted | Հրավերի առաքումն ընդունվել է | Доставка приглашения принята |
+| `submission_failed` | Invitation delivery failed | Հրավերի առաքումը չհաջողվեց | Не удалось доставить приглашение |
+| `submission_unknown` | Invitation delivery outcome unknown | Հրավերի առաքման արդյունքն անհայտ է | Результат доставки приглашения неизвестен |
+| `token_prepared` | Prepared an invitation token | Պատրաստել է հրավերի կոդը | Код приглашения подготовлен |
+
+
+### Actions: document_open
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `member` | Opened a released lab document | Բացել է հրապարակված լաբորատոր փաստաթուղթը | Открыт опубликованный лабораторный документ |
+| `doctor` | Opened a released lab document | Բացել է հրապարակված լաբորատոր փաստաթուղթը | Открыт опубликованный лабораторный документ |
+
+
+### Actions: clinic_file_open
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `opened` | Clinic opened an original file | Կլինիկան բացել է բնօրինակ ֆայլը | Клиника открыла исходный файл |
+
+
+### Actions: config
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `insert:workspace_staff` | Created staff account | Ստեղծված է աշխատակցի հաշիվ | Создано: учётная запись сотрудника |
+| `update:workspace_staff` | Updated staff account | Թարմացված է աշխատակցի հաշիվ | Обновлено: учётная запись сотрудника |
+| `delete:workspace_staff` | Deleted staff account | Հեռացված է աշխատակցի հաշիվ | Удалено: учётная запись сотрудника |
+| `insert:clinic_portal_memberships` | Created clinic membership | Ստեղծված է կլինիկայի անդամակցություն | Создано: доступ к клинике |
+| `update:clinic_portal_memberships` | Updated clinic membership | Թարմացված է կլինիկայի անդամակցություն | Обновлено: доступ к клинике |
+| `delete:clinic_portal_memberships` | Deleted clinic membership | Հեռացված է կլինիկայի անդամակցություն | Удалено: доступ к клинике |
+| `insert:workspace_clinics` | Created clinic | Ստեղծված է կլինիկա | Создано: клиника |
+| `update:workspace_clinics` | Updated clinic | Թարմացված է կլինիկա | Обновлено: клиника |
+| `delete:workspace_clinics` | Deleted clinic | Հեռացված է կլինիկա | Удалено: клиника |
+
+
+### states
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `sent` | sent | ուղարկված | отправлено |
+| `delivered` | delivered | առաքված | доставлено |
+| `queued` | queued | հերթում | в очереди |
+| `pending` | pending | սպասող | ожидает |
+| `held` | held | պահված | приостановлено |
+| `failed` | failed | չհաջողված | ошибка |
+| `unknown` | unknown | անհայտ | неизвестно |
+| `sending` | sending | ուղարկվում է | отправляется |
+| `accepted` | accepted | ընդունված | принято |
+| `read` | read | կարդացված | прочитано |
+| `cancelled` | cancelled | չեղարկված | отменено |
+| `accepted_by_provider` | accepted by provider | ընդունված առաքման ծառայության կողմից | принято службой доставки |
+| `definitely_failed` | delivery failed | առաքումը չհաջողվեց | ошибка доставки |
+| `submitting` | submitting | ուղարկման է ներկայացվում | передаётся на отправку |
+| `scheduled` | scheduled | պլանավորված | запланировано |
+| `undelivered` | undelivered | չառաքված | не доставлено |
+| `canceled` | cancelled | չեղարկված | отменено |
+| `suppressed` | suppressed | կանխված | подавлено |
+| `gone` | recipient unavailable | ստացողն անհասանելի է | получатель недоступен |
+| `reconciliation` | needs checking | ստուգման կարիք ունի | требует проверки |
+| `declined` | declined | մերժված | отклонено |
+| `superseded` | superseded | փոխարինված | заменено |
+| `enqueued` | queued | հերթում | в очереди |
+| `conflicting_observation` | conflicting delivery update | առաքման հակասական թարմացում | противоречивое обновление доставки |
+| `claimed` | delivery started | առաքումը սկսված է | доставка начата |
+| `late_outcome` | late delivery result | առաքման ուշացած արդյունք | поздний результат доставки |
+| `outcome` | delivery result recorded | առաքման արդյունքը գրանցված է | результат доставки зарегистрирован |
+| `released` | released for delivery | թույլատրված է առաքման | разрешено к доставке |
+
+
+### channels
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `telegram` | Telegram | Տելեգրամ | Телеграм |
+| `app` | App | Հավելված | Приложение |
+| `email` | Email | Էլփոստ | Электронная почта |
+| `sms` | SMS | Կարճ հաղորդագրություն | Короткое сообщение |
+| `push` | Push | Ծանուցում | Уведомление |
+| `portal` | Portal | Պորտալ | Портал |
+| `whatsapp` | WhatsApp | Ուոթսափ | Ватсап |
+
+
+### templates
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `app.bp_weekly_summary` | Weekly blood pressure summary | Ճնշման շաբաթական ամփոփում | Сводка давления за неделю |
+| `booking.clinic_proposal` | Proposed visit time | Այցի առաջարկված ժամ | Предложенное время визита |
+| `callback_request.notice` | Callback request | Հետադարձ զանգի հարցում | Запрос обратного звонка |
+| `care_alert.staff_notice` | Care alert notice | Խնամքի ահազանգի ծանուցում | Уведомление об оповещении |
+| `home_visit.nurse_assigned` | Home visit assignment | Տնային այցի նշանակում | Назначение домашнего визита |
+| `member.booking_cancelled` | Visit cancelled | Այցը չեղարկված է | Визит отменён |
+| `member.booking_confirmed` | Visit confirmed | Այցը հաստատված է | Визит подтверждён |
+| `member.booking_declined` | Visit declined | Այցը մերժված է | Визит отклонён |
+| `member.booking_rescheduled` | Visit rescheduled | Այցը տեղափոխված է | Визит перенесён |
+| `member.consultation_clinic` | Clinic consultation | Խորհրդատվություն կլինիկայում | Консультация в клинике |
+| `member.consultation_needed` | Consultation needed | Խորհրդատվություն է անհրաժեշտ | Нужна консультация |
+| `member.consultation_phone` | Phone consultation | Հեռախոսային խորհրդատվություն | Консультация по телефону |
+| `member.document_released` | Document available | Փաստաթուղթը հասանելի է | Документ доступен |
+| `member.home_arranged` | Home visit arranged | Տնային այցը կազմակերպված է | Домашний визит организован |
+| `member.home_arranged_plain` | Home visit arranged | Տնային այցը կազմակերպված է | Домашний визит организован |
+| `member.home_received` | Home visit request received | Տնային այցի հարցումը ստացված է | Запрос домашнего визита получен |
+| `member.ldl_result_with_doctor` | Lipid result with the doctor | Լիպիդների արդյունքը բժշկի մոտ է | Результат липидов у врача |
+| `member.ldl_retest_due` | Repeat lipid test due | Լիպիդների կրկնակի անալիզի ժամանակն է | Пора повторить анализ липидов |
+| `member.ldl_retest_overdue` | Repeat lipid test overdue | Լիպիդների կրկնակի անալիզն ուշացած է | Повторный анализ липидов просрочен |
+| `member.medicine_ask` | Medicine check-in | Դեղերի ընդունման հարցում | Уточнение приёма лекарств |
+| `member.plan_ready` | Care plan ready | Խնամքի պլանը պատրաստ է | План наблюдения готов |
+| `member.plan_updated` | Care plan updated | Խնամքի պլանը թարմացված է | План наблюдения обновлён |
+| `member.programme_month3_open` | Month three review | Երրորդ ամսվա դիտարկում | Рассмотрение третьего месяца |
+| `member.programme_month6_open` | Month six review | Վեցերորդ ամսվա դիտարկում | Рассмотрение шестого месяца |
+| `member.programme_plan_confirmed` | Programme plan confirmed | Ծրագրի պլանը հաստատված է | План программы подтверждён |
+| `member.programme_week4_open` | Week four review | Չորրորդ շաբաթվա դիտարկում | Рассмотрение четвёртой недели |
+| `member.reminder_bp_week` | Blood pressure week reminder | Ճնշման չափումների շաբաթվա հիշեցում | Напоминание о неделе измерений давления |
+| `member.reminder_home_soon` | Upcoming home visit reminder | Մոտակա տնային այցի հիշեցում | Напоминание о скором домашнем визите |
+| `member.reminder_home_tomorrow` | Tomorrow's home visit reminder | Վաղվա տնային այցի հիշեցում | Напоминание о домашнем визите завтра |
+| `member.reminder_medicine` | Medicine reminder | Դեղի ընդունման հիշեցում | Напоминание о приёме лекарства |
+| `member.reminder_visit_soon` | Upcoming visit reminder | Մոտակա այցի հիշեցում | Напоминание о скором визите |
+| `member.reminder_visit_tomorrow` | Tomorrow's visit reminder | Վաղվա այցի հիշեցում | Напоминание о визите завтра |
+| `member.request_cancelled` | Request cancelled | Հարցումը չեղարկված է | Запрос отменён |
+| `member.results_received` | Results received | Արդյունքները ստացված են | Результаты получены |
+| `member.samples_at_lab` | Samples at the lab | Նմուշները լաբորատորիայում են | Образцы в лаборатории |
+| `member.samples_collected` | Samples collected | Նմուշները վերցված են | Образцы взяты |
+| `member.samples_collected_exceptions` | Samples collected with exceptions | Նմուշները վերցված են բացառություններով | Образцы взяты с исключениями |
+| `member.zoe_coach_teaser` | Zoe support notice | Զոեի աջակցության ծանուցում | Уведомление о поддержке Зои |
+| `member_notice.open_label` | Open member notice | Բացել անդամի ծանուցումը | Открыть уведомление участника |
+| `member_notice.push` | Member notification | Անդամի ծանուցում | Уведомление участника |
+| `plan-ready-v1` | Care plan ready | Խնամքի պլանը պատրաստ է | План наблюдения готов |
+| `staff_message.notice` | Staff message notice | Աշխատակցի հաղորդագրության ծանուցում | Уведомление о сообщении сотрудника |
+| `staff_message.open_label` | Open staff message | Բացել աշխատակցի հաղորդագրությունը | Открыть сообщение сотрудника |
+| `telegram.ack` | Message receipt | Հաղորդագրության ստացման հաստատում | Подтверждение получения сообщения |
+| `telegram.binding_replaced` | Telegram binding replaced | Տելեգրամի կապը փոխարինված է | Привязка Телеграма заменена |
+| `telegram.contact_ok` | Contact verified | Կոնտակտը հաստատված է | Контакт подтверждён |
+| `telegram.contact_refused` | Contact refused | Կոնտակտը մերժված է | Контакт отклонён |
+| `telegram.link_confirmed` | Telegram link confirmed | Տելեգրամի կապը հաստատված է | Привязка Телеграма подтверждена |
+| `telegram.link_expired` | Telegram link expired | Տելեգրամի հղման ժամկետը լրացած է | Срок ссылки Телеграма истёк |
+| `telegram.media_to_app` | Media directed to the app | Մեդիան ուղղորդված է հավելված | Медиа направлено в приложение |
+| `telegram.next_profile` | Continue to personal details | Շարունակել դեպի անձնական տվյալներ | Перейти к личным данным |
+| `telegram.next_questionnaire` | Continue to the questionnaire | Շարունակել դեպի հարցաթերթ | Перейти к опроснику |
+| `telegram.next_review` | Continue to the review | Շարունակել դեպի դիտարկում | Перейти к рассмотрению |
+| `telegram.ready` | Telegram ready | Տելեգրամը պատրաստ է | Телеграм готов |
+| `telegram.replies_auto_linked` | Replies linked automatically | Պատասխաններն ինքնաբերաբար կապակցված են | Ответы привязаны автоматически |
+| `telegram.replies_off` | Replies turned off | Պատասխաններն անջատված են | Ответы выключены |
+| `telegram.share_contact` | Share contact request | Կոնտակտի փոխանցման հարցում | Запрос передачи контакта |
+| `telegram.share_contact_label` | Share contact | Փոխանցել կոնտակտը | Передать контакт |
+| `telegram.signup` | Account registration | Հաշվի գրանցում | Регистрация учётной записи |
+| `telegram.staff_chat` | Staff conversation | Աշխատակցի զրույց | Беседа сотрудника |
+| `telegram.staff_contact_ok` | Staff contact verified | Աշխատակցի կոնտակտը հաստատված է | Контакт сотрудника подтверждён |
+| `telegram.unsupported_media` | Unsupported media notice | Չաջակցվող մեդիայի ծանուցում | Уведомление о неподдерживаемом медиа |
+| `zoe.answer` | Zoe answer | Զոեի պատասխան | Ответ Зои |
+| `zoe.card` | Zoe card | Զոեի քարտ | Карточка Зои |
+| `zoe.chat` | Zoe conversation | Զրույց Զոեի հետ | Беседа с Зоей |
+| `zoe.mode` | Zoe mode notice | Զոեի ռեժիմի ծանուցում | Уведомление о режиме Зои |
+| `zoe.urgent` | Zoe urgent notice | Զոեի հրատապ ծանուցում | Срочное уведомление Зои |
+| `zoe_abuse.notice` | Suspicious instruction notice | Կասկածելի հրահանգի ծանուցում | Уведомление о подозрительной инструкции |
+| `zoe_intake.notice` | Symptom questionnaire notice | Ախտանշանների հարցաթերթի ծանուցում | Уведомление об опроснике симптомов |
+| `reply` | Member reply | Պատասխան անդամին | Ответ участнику |
+| `telegram.nurse.today` | Nurse tasks for today | Բուժքրոջ այսօրվա առաջադրանքները | Задачи медсестры на сегодня |
+| `telegram.nurse.action` | Nurse task action | Բուժքրոջ առաջադրանքի գործողություն | Действие по задаче медсестры |
+| `telegram.nurse.task_note` | Nurse task note | Բուժքրոջ առաջադրանքի նշում | Заметка по задаче медсестры |
+| `telegram.nurse.task_saved` | Nurse task saved | Բուժքրոջ առաջադրանքը պահպանված է | Задача медсестры сохранена |
+| `telegram.nurse.pending` | Nurse task pending | Բուժքրոջ առաջադրանքը սպասման մեջ է | Задача медсестры ожидает |
+| `telegram.nurse.refused` | Nurse task action refused | Բուժքրոջ առաջադրանքի գործողությունը մերժված է | Действие по задаче медсестры отклонено |
+| `telegram.nurse.help` | Nurse task help | Բուժքրոջ առաջադրանքների օգնություն | Помощь по задачам медсестры |
+| `telegram.nurse.cancelled` | Nurse task action cancelled | Բուժքրոջ առաջադրանքի գործողությունը չեղարկված է | Действие по задаче медсестры отменено |
+| `telegram.nurse.task_recovered` | Nurse task recovered | Բուժքրոջ առաջադրանքը վերականգնված է | Задача медсестры восстановлена |
+| `telegram.nurse.followup_unavailable` | Nurse follow-up unavailable | Բուժքրոջ հետագա կապն անհասանելի է | Повторная связь с медсестрой недоступна |
+| `telegram.nurse.clear_controls` | Nurse task controls cleared | Բուժքրոջ առաջադրանքի կառավարումները մաքրված են | Элементы управления задачей медсестры убраны |
+| `telegram.nurse.visit_list` | Nurse visit list | Բուժքրոջ այցերի ցանկ | Список визитов медсестры |
+| `telegram.nurse.visit_opening` | Opening a nurse visit | Բուժքրոջ այցի բացում | Открытие визита медсестры |
+| `telegram.nurse.visit_action` | Nurse visit action | Բուժքրոջ այցի գործողություն | Действие по визиту медсестры |
+| `telegram.nurse.visit_question` | Nurse visit question | Բուժքրոջ այցի հարց | Вопрос по визиту медсестры |
+| `telegram.nurse.visit_pending` | Nurse visit pending | Բուժքրոջ այցը սպասման մեջ է | Визит медсестры ожидает |
+| `telegram.nurse.visit_refused` | Nurse visit action refused | Բուժքրոջ այցի գործողությունը մերժված է | Действие по визиту медсестры отклонено |
+
+
+### text
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `otherAction` | Other action | Այլ գործողություն | Другое действие |
+| `otherSource` | Other source | Այլ աղբյուր | Другой источник |
+| `otherRole` | Other role | Այլ դեր | Другая роль |
+| `removed` | removed | հեռացված | удалён |
+| `documentOpen` | Opened a released lab document | Բացել է հրապարակված լաբորատոր փաստաթուղթը | Открыт опубликованный лабораторный документ |
+| `clinicFileOpen` | Clinic opened an original file | Կլինիկան բացել է բնօրինակ ֆայլը | Клиника открыла исходный файл |
+| `none` | Not given | Նշված չէ | Не указано |
+| `name` | Name | Անուն | Имя |
+| `birthDate` | Date of birth | Ծննդյան ամսաթիվ | Дата рождения |
+
+### Existing page and export labels
+
+| Code | English | Armenian draft | Russian draft |
+| --- | --- | --- | --- |
+| `label-1` | Audit log | Գործողությունների մատյան | Журнал действий |
+| `label-2` | See record access, care and permission changes, and message delivery. Message contents and reasons are not shown. | Դիտեք քարտերի հասանելիությունը, խնամքի և իրավունքների փոփոխություններն ու հաղորդագրությունների առաքումը։ Հաղորդագրությունների բովանդակությունը և պատճառները չեն ցուցադրվում։ | Просматривайте доступ к картам, изменения в уходе и правах, доставку сообщений. Содержимое сообщений и причины не показываются. |
+| `label-3` | Person | Անձ | Кто |
+| `label-4` | Anyone | Բոլորը | Все |
+| `label-5` | Member reference | Անդամի հղում | Идентификатор участника |
+| `label-6` | Type of action | Գործողության տեսակ | Тип действия |
+| `label-7` | All actions | Բոլոր գործողությունները | Все действия |
+| `label-8` | From | Սկսած | С |
+| `label-9` | To | Մինչև | По |
+| `label-10` | Show activity | Ցույց տալ գործողությունները | Показать действия |
+| `label-11` | Clear filters | Մաքրել զտիչները | Сбросить фильтры |
+| `label-12` | This is not a member reference. Copy the reference from the member record. | Սա անդամի հղում չէ։ Պատճենեք հղումը անդամի քարտից։ | Это не идентификатор участника. Скопируйте его из карты участника. |
+| `label-13` | The audit log is not switched on yet. | Գործողությունների մատյանը դեռ միացված չէ։ | Журнал действий пока не включён. |
+| `label-14` | The audit log could not load. Try again. | Գործողությունների մատյանը չհաջողվեց բեռնել։ Նորից փորձեք։ | Не удалось загрузить журнал действий. Попробуйте снова. |
+| `label-15` | Recorded activity | Գրանցված գործողություններ | Записанные действия |
+| `label-16` | Newest first, Yerevan time (UTC+4). The default is the last 7 days. Views and exports are recorded. | Նորերը՝ սկզբում, Երևանի ժամանակով (UTC+4)։ Լռելյայն՝ վերջին 7 օրը։ Դիտումները և արտահանումները գրանցվում են։ | Сначала новые, время Еревана (UTC+4). По умолчанию последние 7 дней. Просмотры и выгрузки записываются. |
+| `label-17` | Download these rows as CSV | Ներբեռնել այս տողերը CSV ձևաչափով | Скачать эти строки в CSV |
+| `label-18` | Up to 5000 rows. Narrow the dates if more match. | Մինչև 5000 տող։ Ավելի շատ արդյունքների դեպքում կրճատեք ամսաթվերի միջակայքը։ | До 5000 строк. Если их больше, сузьте диапазон дат. |
+| `label-19` | Nothing recorded for these filters. | Այս զտիչներով գրառումներ չկան։ | Для этих фильтров записей нет. |
+| `label-20` | Who | Ով | Кто |
+| `label-21` | Unnamed account | Անանուն հաշիվ | Без имени |
+| `label-22` | System | Համակարգ | Система |
+| `label-23` | Only this person | Միայն այս անձը | Только этот человек |
+| `label-24` | Member | Անդամ | Участник |
+| `label-25` | Reference | Հղում | Ссылка |
+| `label-26` | Older activity | Ավելի վաղ գործողություններ | Более ранние действия |
+| `label-27` | You cannot export this audit log. | Դուք չեք կարող արտահանել այս մատյանը։ | Вы не можете выгрузить этот журнал. |
+| `label-28` | Not a member reference. | Սա անդամի հղում չէ։ | Это не идентификатор участника. |
+| `label-29` | More than 5000 rows match. Narrow the dates and download again. | Համապատասխանում է ավելի քան 5000 տող։ Կրճատեք ամսաթվերի միջակայքը և նորից ներբեռնեք։ | Найдено более 5000 строк. Сузьте диапазон дат и скачайте снова. |

@@ -1,0 +1,140 @@
+{
+  "q1.age": {
+    "value": 52,
+    "source": "manual",
+    "fieldId": "q1.age",
+    "answeredAt": "2026-10-06T21:43:12.649Z"
+  },
+  "q1.sex": {
+    "value": "male",
+    "source": "manual",
+    "fieldId": "q1.sex",
+    "answeredAt": "2026-10-06T21:43:12.649Z"
+  },
+  "q2.diet": {
+    "value": [
+      "ssb"
+    ],
+    "source": "manual",
+    "fieldId": "q2.diet",
+    "answeredAt": "2026-10-06T21:51:52.977Z"
+  },
+  "q2.waist": {
+    "value": 94,
+    "source": "manual",
+    "fieldId": "q2.waist",
+    "answeredAt": "2026-10-06T21:51:50.683Z"
+  },
+  "q2.height": {
+    "value": 175,
+    "source": "manual",
+    "fieldId": "q2.height",
+    "answeredAt": "2026-10-06T21:50:14.860Z"
+  },
+  "q2.weight": {
+    "value": 82,
+    "source": "manual",
+    "fieldId": "q2.weight",
+    "answeredAt": "2026-10-06T21:51:10.657Z"
+  },
+  "q3.status": {
+    "value": "never",
+    "source": "manual",
+    "fieldId": "q3.status",
+    "answeredAt": "2026-10-06T21:51:53.633Z"
+  },
+  "q8.stress": {
+    "value": "no",
+    "source": "manual",
+    "fieldId": "q8.stress",
+    "answeredAt": "2026-10-06T21:51:58.450Z"
+  },
+  "q9.present": {
+    "value": "no",
+    "source": "manual",
+    "fieldId": "q9.present",
+    "answeredAt": "2026-10-06T21:51:59.230Z"
+  },
+  "q2.activity": {
+    "value": "occasional",
+    "source": "manual",
+    "fieldId": "q2.activity",
+    "answeredAt": "2026-10-06T21:51:51.147Z"
+  },
+  "q10.symptoms": {
+    "value": "no",
+    "source": "manual",
+    "fieldId": "q10.symptoms",
+    "answeredAt": "2026-10-06T21:51:59.805Z"
+  },
+  "q4.frequency": {
+    "value": "never",
+    "source": "manual",
+    "fieldId": "q4.frequency",
+    "answeredAt": "2026-10-06T21:51:54.394Z"
+  },
+  "q5.diagnosed": {
+    "value": "treated",
+    "source": "manual",
+    "fieldId": "q5.diagnosed",
+    "answeredAt": "2026-10-06T21:51:55.244Z"
+  },
+  "q7.relatives": {
+    "value": [
+      "none"
+    ],
+    "source": "manual",
+    "fieldId": "q7.relatives",
+    "answeredAt": "2026-10-06T21:51:56.965Z"
+  },
+  "q6.conditions": {
+    "value": [
+      "none"
+    ],
+    "source": "manual",
+    "fieldId": "q6.conditions",
+    "answeredAt": "2026-10-06T21:51:56.415Z"
+  },
+  "q8.sleep_hours": {
+    "value": 8,
+    "source": "manual",
+    "fieldId": "q8.sleep_hours",
+    "answeredAt": "2026-10-06T21:51:58.027Z"
+  },
+  "q8.sleep_quality": {
+    "value": 7,
+    "source": "manual",
+    "fieldId": "q8.sleep_quality",
+    "answeredAt": "2026-10-06T21:51:57.658Z"
+  },
+  "q2.activity_minutes": {
+    "value": 150,
+    "source": "manual",
+    "fieldId": "q2.activity_minutes",
+    "answeredAt": "2026-10-06T21:51:51.897Z"
+  },
+  "q2.weight_perception": {
+    "value": "ok",
+    "source": "manual",
+    "fieldId": "q2.weight_perception",
+    "answeredAt": "2026-10-06T21:47:05.071Z"
+  },
+  "q2.activity_intensity": {
+    "value": "moderate",
+    "source": "manual",
+    "fieldId": "q2.activity_intensity",
+    "answeredAt": "2026-10-06T21:51:52.265Z"
+  },
+  "q5.last_reading.systolic": {
+    "value": 130,
+    "source": "manual",
+    "fieldId": "q5.last_reading.systolic",
+    "answeredAt": "2026-10-06T21:53:17.513Z"
+  },
+  "q5.last_reading.diastolic": {
+    "fieldId": "q5.last_reading.diastolic",
+    "value": 82,
+    "source": "manual",
+    "answeredAt": "2026-10-07T00:00:00Z"
+  }
+}

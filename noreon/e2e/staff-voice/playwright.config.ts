@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'../web',testMatch:'staff-voice.spec.ts',outputDir:'/private/tmp/noreon-staff-voice-results',workers:1,retries:0,timeout:90_000,expect:{timeout:15_000},reporter:'list',projects:[{name:'desktop-chromium',use:{browserName:'chromium',viewport:{width:1280,height:900}}},{name:'mobile-webkit',use:{browserName:'webkit',viewport:{width:402,height:714},isMobile:true,hasTouch:true}}]});

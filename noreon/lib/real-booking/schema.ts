@@ -1,0 +1,15 @@
+import {z} from 'zod';
+import type {PilotBookingData} from './appointment-schema';
+const preferenceFields={startsAt:z.iso.datetime({offset:true}),timezone:z.literal('Asia/Yerevan'),mode:z.enum(['clinic','home','office']),location:z.string().trim().min(3).max(1000)};
+export const bookingPreferenceSchema=z.object({...preferenceFields,endsAt:z.iso.datetime({offset:true}).optional()}).strict().refine(v=>v.endsAt===undefined || (Date.parse(v.endsAt)>Date.parse(v.startsAt)&&Date.parse(v.endsAt)-Date.parse(v.startsAt)<=86400000),'Choose an end after the start, within one day.');
+export const bookingTermsSchema=z.object({...preferenceFields,endsAt:z.iso.datetime({offset:true})}).strict().refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt)&&Date.parse(v.endsAt)-Date.parse(v.startsAt)<=86400000,'Choose an end after the start, within one day.');
+export const bookingRequirementSchema=z.object({id:z.string(),title:z.string(),method:z.enum(['lab','clinic'])});
+export const providerInputSchema=z.object({provider:z.string().trim().min(2).max(300),terms:bookingTermsSchema,obtainedAt:z.iso.datetime({offset:true}),channel:z.enum(['phone','email','portal','in-person']),source:z.string().trim().min(3).max(1000),preparation:z.string().trim().min(3).max(8000),replacesExisting:z.boolean().default(false)}).strict();
+export const arrangementSchema=providerInputSchema.extend({recordedBy:z.string(),recordedAt:z.string()});
+export const bookingRequestSchema=z.object({id:z.uuid(),pilotAppointmentId:z.uuid().optional(),revision:z.number(),status:z.enum(['requested','provider-proposed','confirmed','change-pending','cancelled','completed']),requestedTerms:bookingPreferenceSchema,requirements:z.array(bookingRequirementSchema),algorithmVersion:z.string(),contextToken:z.string(),contextStale:z.boolean(),proposal:arrangementSchema.nullable(),currentArrangement:arrangementSchema.nullable(),pendingChange:z.object({kind:z.enum(['cancel','reschedule']),terms:bookingPreferenceSchema.optional(),memberAccepted:z.boolean().optional(),replacedReschedule:z.boolean().optional()}).nullable(),createdAt:z.string()});
+export type BookingPreference=z.infer<typeof bookingPreferenceSchema>;
+export type BookingTerms=z.infer<typeof bookingTermsSchema>;
+export type BookingRequirement=z.infer<typeof bookingRequirementSchema>;
+export type BookingRequest=z.infer<typeof bookingRequestSchema>;
+export type BookingFormState={ok:boolean;outcomeUnknown?:boolean;message:string;messageHy?:string;providerPending?:boolean;code?:'unavailable'|'invalid'|'past-time'|'conflict'|'clinical-hold'|'provider-action'|'failed'|'requested'|'saved'|'provider-recorded'|'response-recorded'};
+export type MemberBookingData={/** LDL re-test requests: the member may act on them even while screening booking is unavailable (lib/ldl/retest.ts). */ldlAvailable?:boolean;legacyCreationAvailable?:boolean;homeRequestAvailable?:boolean;clinicalHold?:boolean;pilot?:PilotBookingData;clinics?:{id:string;name:string;address:string}[];available:boolean;message?:string;contextToken?:string;requirements:BookingRequirement[];homeTasks:{id:string;title:string}[];requests:BookingRequest[]};

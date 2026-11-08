@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {deliverFollowup,readDeviceMeasurements,integrationCapabilities} from '@/lib/service-workflow/follow-up-capabilities';
+const request={idempotencyKey:'fictional-request',template:'monitoring-reminder',consent:true};
+assert.equal((await deliverFollowup(null,request)).status,'unavailable');
+let calls=0;
+const adapter={deliver:async()=>{calls++;return {receipt:'fictional-provider-receipt'};}};
+assert.equal((await deliverFollowup(adapter,{...request,consent:false})).status,'unavailable');assert.equal(calls,0);
+assert.equal((await deliverFollowup(adapter,request)).status,'accepted');assert.equal(calls,1);
+assert.equal((await deliverFollowup({deliver:async()=>{throw Error('fictional outage');}},request)).status,'failed');
+assert.equal((await readDeviceMeasurements(null,true)).status,'unavailable');
+assert.equal((await readDeviceMeasurements({read:async()=>[{submissionId:crypto.randomUUID(),measuredAt:new Date().toISOString(),systolic:120,diastolic:80}]},true)).status,'received');
+assert.equal((await readDeviceMeasurements({read:async()=>[{systolic:'forged'}]},true)).status,'failed');
+assert.deepEqual(integrationCapabilities,{inApp:true,externalDelivery:false,deviceSync:false});
+console.log('Unconfigured/consent-disabled integrations do not call adapters; fake accepted, failure and invalid-device responses are explicit. No real delivery or imports.');

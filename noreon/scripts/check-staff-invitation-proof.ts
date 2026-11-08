@@ -1,0 +1,26 @@
+import assert from "node:assert/strict";
+import { issueInvitationProof, verifyInvitationProof, invitationProofMatches } from "@/lib/staff/invitation-proof";
+
+const secret = "local-test-proof-secret-only-32-bytes-minimum";
+const now = Date.parse("2026-10-13T18:00:00Z");
+const input = { invitationId: "11111111-1111-4111-8111-111111111111", userId: "22222222-2222-4222-8222-222222222222", generation: 1, sessionId: "33333333-3333-4333-8333-333333333333", stage: "verified" as const, invitationExpiresAt: now + 60_000 };
+const proof = issueInvitationProof(input, secret, now);
+assert.equal(verifyInvitationProof(proof, secret, now)?.stage, "verified");
+assert.equal(verifyInvitationProof(proof, secret, now)?.expiresAt, input.invitationExpiresAt);
+assert.equal(verifyInvitationProof(proof, secret, now + 60_000), null);
+assert.equal(verifyInvitationProof(proof, secret + "wrong", now), null);
+assert.equal(verifyInvitationProof(proof + "x", secret, now), null);
+assert.equal(verifyInvitationProof("a".repeat(2049), secret, now), null);
+assert.equal(verifyInvitationProof(proof, secret, now - 60_000), null);
+const password = issueInvitationProof({ ...input, stage: "password_set" }, secret, now);
+assert.equal(verifyInvitationProof(password, secret, now)?.stage, "password_set");
+const parsed = verifyInvitationProof(proof, secret, now)!;
+const context = { id: input.invitationId, generation: 1, authUserId: input.userId, expectedAuthUserId: input.userId, status: "verified", expiresAt: new Date(input.invitationExpiresAt).toISOString() };
+assert.equal(invitationProofMatches(parsed, context, input.userId, input.sessionId, now), true);
+assert.equal(invitationProofMatches(parsed, { ...context, generation: 2 }, input.userId, input.sessionId, now), false);
+assert.equal(invitationProofMatches(parsed, context, input.invitationId, input.sessionId, now), false);
+assert.equal(invitationProofMatches(parsed, { ...context, status: "revoked" }, input.userId, input.sessionId, now), false);
+assert.equal(invitationProofMatches(parsed, context, input.userId, input.invitationId, now), false);
+assert.throws(() => issueInvitationProof(input, "short", now));
+assert.throws(() => issueInvitationProof({ ...input, invitationExpiresAt: now }, secret, now));
+console.log("Invitation proof authentication, bounded parsing and expiry checks passed");

@@ -1,0 +1,202 @@
+/* Patient cards from v8.1: the live chat's tokens, compact type and borderless cards.
+   Scope every rule to the flag's frame, including overrides for retained legacy components. */
+.member-journey .ms-screen {
+  padding: 1rem 0.75rem;
+  margin: -0.5rem;
+  border-radius: var(--zk-r-card);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.member-journey .ms-screen :is(h1, h2, h3, h4, .font-display) {
+  font-family: inherit;
+  color: var(--zk-ink);
+  letter-spacing: -0.02em;
+}
+.member-journey .ms-screen :is(h1, .text-h1) { font-size: 1.375rem; line-height: 1.3; font-weight: 700; }
+.member-journey .ms-screen :is(h2, .text-h2, .text-h3) { font-size: 1rem; line-height: 1.4; font-weight: 700; }
+.member-journey .ms-screen :is(.text-body1, .text-body2) { font-size: 0.9375rem; line-height: 1.5; }
+.member-journey .ms-screen :is(.text-caption, .text-xs) { font-size: 0.8125rem; line-height: 1.45; }
+.member-journey .ms-screen :is(.text-muted-foreground) { color: var(--zk-muted); }
+.member-journey .ms-screen :is(section.journey-card, section.bg-card, aside.journey-card),
+.member-journey .ms-screen .ms-plan > section,
+.member-journey .ms-screen .ms-medicines > section,
+.member-journey .ms-screen .ms-visits > section {
+  padding: 1rem;
+  border: 0;
+  border-radius: var(--zk-r-card);
+  box-shadow: none;
+  background: var(--zk-surface);
+}
+.member-journey .ms-screen .ms-plan > #plan { background: var(--zk-tint); }
+.member-journey .ms-screen .ms-care-sections,
+.member-journey .ms-screen .ms-care-sections > div { display: grid; min-width: 0; gap: 0.75rem; }
+.member-journey .ms-screen .ms-medicines article { padding: 0.875rem 0; }
+.member-journey .ms-screen .ms-medicines article:first-child { padding-top: 0; }
+.member-journey .ms-screen .ms-medicines article .bg-muted { background: var(--zk-tint); color: var(--zk-action-ink); border-radius: var(--radius-pill); }
+.member-journey .ms-screen .journey-progress-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  gap: 0.5rem;
+  padding: 0;
+}
+.member-journey .ms-screen .journey-progress-sections a {
+  min-width: 0;
+  white-space: normal;
+  border-radius: var(--radius-pill);
+  background: var(--zk-surface);
+  color: var(--zk-action-ink);
+}
+.member-journey .ms-screen .journey-progress-sections a[aria-current="page"] { background: var(--zk-action); color: var(--text-on-inverse); }
+.member-journey .ms-screen :is(button, summary, a) { overflow-wrap: anywhere; }
+.member-journey .ms-screen :is(button, summary) { white-space: normal; height: auto; min-height: 3rem; }
+.member-journey .ms-screen :is(.bg-primary) { background: var(--zk-action); }
+.member-journey .ms-screen :is(.text-primary) { color: var(--zk-action-ink); }
+.member-journey .ms-screen .progress-week-tile { border: 0; border-radius: var(--zk-r-ctl); background: var(--zk-tint); }
+.member-journey .ms-screen .progress-week-tile > span { flex-wrap: wrap; }
+.member-journey .ms-screen .progress-week-tile .text-brand-navy { color: var(--zk-ink); }
+.member-journey .ms-screen .ms-goal { border-radius: var(--zk-r-card); background: var(--zk-ldl-bg); }
+.member-journey .ms-screen .ms-goal > [data-ldl-goal] { border: 0; background: var(--zk-ldl-bg); box-shadow: none; }
+.member-journey .ms-screen .ms-charts { background: var(--zk-surface); border-radius: var(--zk-r-card); padding: 0.5rem 1rem; }
+.member-journey .ms-screen .ms-charts > summary { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; cursor: pointer; font-weight: 700; list-style: none; }
+.member-journey .ms-screen .ms-charts > summary::-webkit-details-marker { display: none; }
+.member-journey .ms-screen .ms-charts[open] > summary svg { transform: rotate(180deg); }
+.member-journey .ms-screen .ms-charts-body { min-width: 0; padding-block: 0.5rem; }
+.member-journey .ms-screen .ms-results [data-result-row] { background: var(--zk-tint); padding: 0.875rem; border-radius: var(--zk-r-ctl); }
+.member-journey .ms-screen .ms-results [data-result-row] .font-display { font-weight: 700; }
+.member-journey .ms-screen .ms-result-glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 0.75rem; }
+.member-journey .ms-screen .ms-result-note { grid-column: 1 / -1; }
+.member-journey .ms-screen .ms-result-tile { display: grid; align-content: start; gap: 0.5rem; min-width: 0; padding: 1rem; background: var(--zk-surface); border-radius: var(--zk-r-card); color: var(--zk-ink); }
+.member-journey .ms-screen .ms-result-value { font-size: 1.625rem; font-weight: 700; line-height: 1.3; }
+.member-journey .ms-screen .ms-result-value span { display: block; font-size: 0.8125rem; font-weight: 400; }
+.member-journey .ms-screen .ms-classic { display: flex; align-items: center; min-height: 2.75rem; margin-top: 1rem; color: var(--zk-action-ink); text-decoration: underline; font-size: 0.8125rem; }
+@media (min-width: 30rem) {
+  .member-journey .ms-screen .journey-progress-sections { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.member-journey .ms-screen:lang(hy) :is(h1, h2, h3, h4) { letter-spacing: 0; }
+
+/* v12 supporting sheets: one shared presentation, existing reads and controls. */
+.member-journey .ms-screen .ms-support,
+.member-journey .ms-screen .ms-visit,
+.member-journey .ms-screen .ms-next-details { min-width: 0; }
+.member-journey .ms-screen .ms-next-details { display: grid; gap: 0.75rem; }
+.member-journey .ms-screen .ms-support :is(.journey-card, section.bg-card),
+.member-journey .ms-screen .ms-visit :is(.journey-card, section.bg-card),
+.member-journey .ms-screen .ms-next-details > section {
+  padding: 1rem;
+  border: 0;
+  border-radius: var(--zk-r-card);
+  box-shadow: none;
+  background: var(--zk-surface);
+}
+.member-journey .ms-screen .ms-support :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+.member-journey .ms-screen .ms-visit :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+  border-radius: var(--zk-r-ctl);
+  font-size: 1rem;
+}
+.member-journey .ms-screen :is(.ms-support, .ms-visit) :is(button, .journey-button),
+.member-journey .ms-screen .ms-next-details .journey-button {
+  max-width: 100%;
+  white-space: normal;
+  border-radius: var(--radius-pill);
+  min-height: 3rem;
+}
+.member-journey .ms-screen :is(.ms-support, .ms-visit) fieldset { min-width: 0; }
+.member-journey .ms-screen .ms-visit :is(.booking-page-heading, h1) { font-size: 1.375rem; }
+.member-journey .ms-screen .ms-visit label:has(input[type="radio"]) { border-radius: var(--zk-r-ctl); }
+.member-journey .ms-screen .ms-visit label:has(input[type="radio"]:checked),
+.member-journey .ms-screen .ms-visit-proposal { background: var(--zk-tint); }
+.member-journey .ms-screen .ms-visit-proposal { border-radius: var(--zk-r-ctl); padding: 0.875rem; }
+.member-journey .ms-screen .ms-account > header { align-items: flex-start; }
+.member-journey .ms-screen .ms-account > details { border: 0; border-radius: var(--zk-r-card); background: var(--zk-surface); }
+.member-journey .ms-screen .ms-upload-entry > section:first-child { background: var(--zk-tint); }
+.member-journey .ms-screen .ms-support [role="alert"] { border-color: var(--zk-alert); }
+
+/* Goal facts never colour a computed achievement state. Only the saved goal and result lead. */
+.member-journey .ms-screen [data-ldl-goal]:has([data-ldl-facts]) { background: var(--zk-surface); }
+.member-journey .ms-screen .ms-ldl-facts { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); }
+.member-journey .ms-screen .ms-ldl-facts > * { grid-column: 1 / -1; min-width: 0; }
+.member-journey .ms-screen .ms-ldl-facts :is(.ms-ldl-target, .ms-ldl-latest) {
+  grid-column: auto;
+  padding: 1rem;
+  border-radius: var(--zk-r-ctl);
+  background: var(--zk-ldl-bg);
+}
+.member-journey .ms-screen .ms-ldl-latest .text-h2 { font-size: 1.75rem; font-weight: 800; }
+
+/* Urgent screens live outside PatientShell. Keep the call and truthful receipt prominent. */
+.member-journey.ms-urgent > .ms-screen { margin-inline: auto; max-width: 36rem; padding: 0; }
+.member-journey.ms-urgent .ms-urgent-card,
+.member-journey.ms-urgent [data-zoe-emergency-content] {
+  border-radius: var(--zk-r-card);
+  border: 0;
+  padding: 1.25rem;
+  background: var(--zk-surface);
+}
+.member-journey.ms-urgent .ms-screen :is(h1, .text-destructive) { color: var(--zk-alert); }
+.member-journey.ms-urgent .ms-screen .emergency-call { border-radius: var(--radius-pill); min-height: 3.5rem; white-space: normal; text-align: center; }
+
+/* The BP dialog is portalled outside .member-journey. Its opt-in class is the scope. */
+.ms-bp-dialog {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+  border-radius: var(--zk-r-card);
+  background: var(--zk-canvas);
+}
+.ms-bp-dialog :is(h2, .font-heading, .text-h3) { font-family: var(--font-body); color: var(--zk-ink); letter-spacing: -0.02em; }
+.ms-bp-dialog :is(header, footer) { background: var(--zk-surface); }
+.ms-bp-dialog header { align-items: flex-start; flex-wrap: wrap; padding-block: 0.75rem; }
+.ms-bp-dialog header > span { display: none; }
+.ms-bp-dialog :is(button, a) { white-space: normal; height: auto; min-height: 2.75rem; }
+.ms-bp-dialog button { border-radius: var(--radius-pill); }
+.ms-bp-dialog button[type="submit"] { background: var(--zk-action); color: var(--text-on-inverse); }
+.ms-bp-dialog footer { flex-shrink: 1; overflow-y: auto; }
+.ms-bp-dialog .ms-classic { display: block; padding-block: 0.5rem; text-align: center; color: var(--zk-action-ink); text-decoration: underline; font-size: 0.8125rem; }
+.ms-bp-dialog :is(.text-body2, .text-sm) { font-size: 0.9375rem; }
+.ms-bp-dialog :is(.text-caption, .text-xs) { font-size: 0.8125rem; }
+.ms-bp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr)); align-items: start; gap: 0.5rem; margin-block: 1rem; }
+.ms-bp-field { display: flex; flex-direction: column; min-width: 0; gap: 0.375rem; text-align: center; }
+.ms-bp-field label { font-size: 0.8125rem; font-weight: 600; line-height: 1.4; }
+.ms-bp-field input {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 3.875rem;
+  padding: 0.5rem 0.25rem;
+  border: 1px solid var(--zk-hair);
+  border-radius: var(--zk-r-ctl);
+  background: var(--zk-surface);
+  color: var(--zk-ink);
+  font: 800 1.75rem/1.2 var(--font-body);
+}
+.ms-bp-field input[aria-invalid="true"] { border-color: var(--zk-alert); }
+.ms-bp-field > span { color: var(--zk-muted); font-size: 0.75rem; }
+.ms-bp-dialog:lang(hy) :is(h2, .text-h3) { letter-spacing: 0; }
+.member-journey .ms-screen { font-size: 0.9375rem; }
+.ms-bp-dialog :is(h2, .text-h3) { font-size: 1.125rem; line-height: 1.4; }
+/* Keep room for enlarged text on narrow screens; decoration must yield to words. */
+.member-journey:has([data-member-screens-prototype]) .journey-main {
+  padding-inline: min(1rem, 16px);
+}
+.member-journey .ms-screen { padding: min(1rem, 16px) min(0.75rem, 12px); }
+.member-journey .ms-screen :is(section.journey-card, aside.journey-card, .ms-support .journey-card, .ms-visit .journey-card, .ms-next-details > section) { padding: min(1rem, 16px); }
+.member-journey .ms-screen :is([data-ldl-goal], .ms-support, .ms-next-details) header.flex { flex-wrap: wrap; }
+.member-journey .ms-screen .ms-ldl-facts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr)); }
+.ms-bp-grid { align-items: stretch; }
+.ms-bp-field label { flex: 1; }
+.member-journey.ms-urgent { padding: min(1.5rem, 24px) min(1rem, 16px); }
+.member-journey.ms-urgent :is(.ms-urgent-card, [data-zoe-emergency-content]) { padding: min(1.25rem, 20px); }
+.member-journey.ms-urgent .emergency-call { font-size: 1.375rem; }
+.member-journey .ms-screen .journey-strip ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 4rem), 1fr)); gap: 0.75rem; }
+.member-journey .ms-screen .journey-strip li::after { display: none; }
+.member-journey .ms-screen .journey-strip-label { font-size: 0.75rem; white-space: normal; }
+.member-journey .ms-screen .ms-support button[aria-pressed="true"] { background: var(--zk-action); color: var(--text-on-inverse); }
+.ms-bp-dialog header > div { flex-basis: min(100%, 12rem); }
+.ms-bp-dialog :is(.text-body2, .text-sm) { line-height: 1.5; }
+.ms-bp-dialog :is(.text-caption, .text-xs) { line-height: 1.45; }
+.member-journey.ms-urgent .emergency-call { line-height: 1.3; }

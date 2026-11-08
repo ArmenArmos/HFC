@@ -1,0 +1,1 @@
+export default function ClinicLoading(){return <main className="mx-auto max-w-5xl px-5 py-12"><p role="status" className="text-body2">Loading your clinic workspace… / Բեռնվում է կլինիկայի աշխատավայրը… / Загрузка рабочего пространства клиники…</p></main>;}

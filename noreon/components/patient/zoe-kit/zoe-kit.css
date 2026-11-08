@@ -1,0 +1,450 @@
+/* Zoe chat kit (output/zoe-chat-design/DESIGN.md): the founders' prototype v8.1 look ("v5 Zoe coach").
+   A cool grey canvas, white borderless surfaces, one vivid blue for every action and for the member's own
+   words, tinted panels for data. Tokens only: every colour is a var(), from styles/noreon or, where the
+   prototype differs from the brand tokens, the --zoe-* tokens in app/globals.css. */
+.zk {
+  --zk-canvas: var(--zoe-canvas);
+  --zk-surface: var(--surface-card);
+  --zk-panel: var(--noreon-navy-50);
+  --zk-hair: var(--noreon-gray-200);
+  --zk-ink: var(--zoe-ink);
+  --zk-muted: var(--text-muted);
+  --zk-action: var(--zoe-action);
+  --zk-action-hover: var(--zoe-action-hover);
+  --zk-action-ink: var(--zoe-action-ink);
+  --zk-tint: var(--zoe-tint);
+  --zk-tint-2: var(--zoe-tint-2);
+  --zk-ok: var(--status-success-fg);
+  --zk-ok-bg: var(--noreon-teal-50);
+  --zk-watch: var(--status-warning-fg);
+  --zk-watch-bg: var(--status-warning-bg);
+  --zk-alert: var(--status-danger-fg);
+  --zk-alert-bg: var(--status-danger-bg);
+  --zk-ldl: var(--zoe-ldl);
+  --zk-ldl-bg: var(--zoe-ldl-wash);
+  --zk-r-bubble: var(--radius-xl);
+  --zk-r-card: var(--zoe-card-radius);
+  --zk-r-ctl: var(--radius-lg);
+  --zk-tail: var(--radius-sm);
+  background: var(--zk-canvas);
+  color: var(--zk-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.zk :focus-visible {
+  outline: 3px solid var(--zk-action);
+  outline-offset: 2px;
+}
+.zk :where(button) { font: inherit; cursor: pointer; }
+.zk :where(button:disabled) { cursor: not-allowed; }
+
+/* ---------- thread ---------- */
+.zk-thread { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.zk-live { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; }
+.zk-turn { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 10px; animation: zk-rise 0.18s ease; }
+.zk-turn[data-run="true"] { margin-top: 2px; }
+.zk-from { display: flex; align-items: center; gap: 7px; margin-left: 2px; font-size: 13px; font-weight: 700; }
+.zk-from span { font-weight: 500; color: var(--zk-muted); }
+.zk-orb {
+  display: inline-block; flex: none; width: 22px; height: 22px; border-radius: var(--radius-pill);
+  background: var(--zoe-orb); box-shadow: var(--zoe-orb-shadow);
+}
+.zk-avatar {
+  display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-pill);
+  background: var(--noreon-navy-600); color: var(--text-on-inverse); font-size: 10px; font-weight: 700;
+}
+.zk-bubble {
+  max-width: 92%; padding: 11px 14px; border-radius: var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-tail);
+  background: var(--zk-surface); font-size: 15.5px; overflow-wrap: break-word; white-space: pre-wrap;
+}
+.zk-bubble[data-voice="doctor"] { background: var(--zk-tint); }
+.zk-bubble[data-voice="urgent"] { color: var(--zk-alert); font-weight: 600; }
+.zk-me {
+  align-self: flex-end; max-width: 86%; margin-top: 12px; padding: 11px 15px;
+  border-radius: var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-tail) var(--zk-r-bubble);
+  background: var(--zk-action); color: var(--text-on-inverse); font-size: 15.5px; overflow-wrap: break-word; white-space: pre-wrap;
+  animation: zk-rise 0.18s ease;
+}
+.zk-me + .zk-me { margin-top: 4px; }
+.zk-me[data-state="sending"] { opacity: 0.7; }
+.zk-me[data-state="failed"] { background: var(--zk-surface); color: var(--zk-ink); box-shadow: inset 0 0 0 1.5px var(--zk-alert); }
+.zk-time { font-size: 12px; font-weight: 500; color: var(--zk-muted); margin-left: 2px; }
+.zk-me .zk-time { display: block; text-align: right; color: var(--text-on-inverse); margin: 2px 0 0; font-weight: 500; }
+.zk-me[data-state="failed"] .zk-time { color: var(--zk-alert); font-weight: 600; }
+.zk-day { align-self: center; padding: 12px 4px 0; font-size: 12.5px; font-weight: 700; color: var(--zk-muted); }
+.zk-note {
+  align-self: center; max-width: 92%; margin-top: 8px; padding: 8px 14px; border-radius: var(--radius-pill);
+  background: var(--zk-surface); font-size: 13px; font-weight: 600; color: var(--text-muted); text-align: center; box-shadow: var(--shadow-xs);
+}
+.zk-typing { display: inline-flex; gap: 4px; padding: 13px 14px; border-radius: var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-tail); background: var(--zk-surface); }
+.zk-typing i { width: 7px; height: 7px; border-radius: var(--radius-pill); background: var(--noreon-gray-300); animation: zk-blink 1s infinite; }
+.zk-typing i:nth-child(2) { animation-delay: 0.2s; }
+.zk-typing i:nth-child(3) { animation-delay: 0.4s; }
+.zk-progress { margin: 2px 0 0 2px; font-size: 13px; font-weight: 600; color: var(--zk-action-ink); }
+@keyframes zk-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes zk-blink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .zk-turn, .zk-me, .zk-typing i, .zk-spin { animation: none; }
+}
+
+/* ---------- buttons ---------- */
+.zk-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px;
+  padding: 10px 20px; border: 1px solid transparent; border-radius: var(--radius-pill);
+  font-size: 15.5px; font-weight: 700; line-height: 1.25; text-align: center; white-space: normal; text-decoration: none;
+  background: var(--zk-action); color: var(--text-on-inverse);
+}
+.zk-btn:hover { background: var(--zk-action-hover); }
+.zk-btn:disabled, .zk-btn[aria-disabled="true"] { background: var(--action-disabled-bg); color: var(--text-muted); }
+.zk-btn[data-tone="line"] { background: var(--zk-surface); border-color: var(--noreon-gray-300); color: var(--zk-action-ink); }
+.zk-btn[data-tone="line"]:hover { background: var(--zk-tint); }
+.zk-btn[data-tone="ok"] { background: var(--noreon-success-600); }
+.zk-btn[data-tone="ok"]:hover { background: var(--noreon-success-700); }
+.zk-link {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; background: none;
+  color: var(--zk-action-ink); font-size: 15px; font-weight: 600; text-decoration: none;
+}
+.zk-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.zk-why { font-size: 13px; color: var(--zk-muted); text-align: center; }
+.zk-spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: var(--radius-pill); animation: zk-rot 0.8s linear infinite; }
+@keyframes zk-rot { to { transform: rotate(360deg); } }
+
+/* ---------- answers ---------- */
+.zk-replies { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-self: stretch; margin-top: 4px; }
+.zk-reply {
+  min-height: 48px; max-width: 100%; padding: 10px 16px; border: 0; border-radius: var(--radius-pill);
+  background: var(--zk-surface); box-shadow: var(--shadow-xs); color: var(--zk-action-ink);
+  font-size: 15px; font-weight: 600; line-height: 1.3; text-align: center; white-space: normal;
+}
+.zk-reply:hover { background: var(--zk-tint); }
+.zk-fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.zk-legend { padding: 0; margin-bottom: 10px; font-size: 15px; font-weight: 600; }
+.zk-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.zk-options[data-layout="list"] { flex-direction: column; }
+.zk-opt { position: relative; display: inline-flex; max-width: 100%; }
+.zk-options[data-layout="list"] .zk-opt { display: flex; }
+.zk-opt input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.zk-opt span {
+  display: inline-flex; align-items: center; gap: 9px; width: 100%; min-height: 48px; padding: 10px 16px 10px 12px;
+  border-radius: var(--radius-pill); background: var(--zk-tint); color: var(--zk-action-ink);
+  font-size: 15px; font-weight: 600; line-height: 1.3;
+}
+.zk-options[data-layout="list"] .zk-opt span { border-radius: var(--zk-r-ctl); }
+.zk-opt span::before {
+  content: ""; flex: none; width: 18px; height: 18px; border: 2px solid var(--zk-action); background: var(--zk-surface);
+  border-radius: var(--radius-pill); box-sizing: border-box;
+}
+.zk-opt[data-kind="multi"] span::before { border-radius: var(--radius-sm); }
+.zk-opt:hover span { background: var(--zk-tint-2); }
+.zk-opt input:checked + span { background: var(--zk-action); color: var(--text-on-inverse); }
+.zk-opt input:checked + span::before { border-color: var(--surface-card); box-shadow: inset 0 0 0 4px var(--zk-action); }
+.zk-opt[data-kind="multi"] input:checked + span::before { box-shadow: none; }
+.zk-opt[data-kind="multi"] input:checked + span::after {
+  content: ""; position: absolute; left: 17px; top: 50%; width: 5px; height: 10px; margin-top: -7px;
+  border: solid var(--zk-action); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+}
+.zk-opt input:focus-visible + span { outline: 3px solid var(--zk-action); outline-offset: 2px; }
+.zk-opt input:disabled + span { opacity: 0.6; cursor: not-allowed; }
+.zk-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+.zk-numrow { display: flex; align-items: center; gap: 10px; }
+.zk-big {
+  width: 100%; min-width: 0; min-height: 62px; padding: 6px; border: 1.5px solid transparent; border-radius: var(--zk-r-ctl);
+  background: var(--zk-panel); color: var(--zk-ink); font-size: 28px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums;
+}
+.zk-big::placeholder { color: var(--noreon-gray-300); font-weight: 700; }
+.zk-big:focus { outline: none; border-color: var(--zk-action); background: var(--zk-surface); }
+.zk-big[aria-invalid="true"] { border-color: var(--zk-alert); background: var(--zk-alert-bg); }
+.zk-numrow .zk-big { max-width: 160px; }
+.zk-unit { font-size: 15px; font-weight: 600; color: var(--zk-muted); }
+.zk-taps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: 13.5px; color: var(--zk-muted); }
+.zk-taps .zk-chip { min-height: 44px; }
+.zk-chip {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 6px 14px; border: 0; border-radius: var(--radius-pill);
+  background: var(--zk-tint); color: var(--zk-action-ink); font-size: 15px; font-weight: 600;
+}
+.zk-chip:hover { background: var(--zk-tint-2); }
+.zk-chip[aria-pressed="true"], .zk-chip[aria-checked="true"] { background: var(--zk-action); color: var(--text-on-inverse); }
+.zk-error { margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--zk-alert); }
+.zk-readback { margin-top: 10px; font-size: 15px; font-weight: 600; min-height: 1.45em; }
+
+.zk-bp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.zk-bp label { display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; min-width: 0; text-align: center; font-size: 13.5px; font-weight: 600; color: var(--zk-muted); }
+.zk-bp label small { font-weight: 500; font-size: 12px; }
+
+.zk-days { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; margin: 0 -2px; scrollbar-width: none; }
+.zk-days::-webkit-scrollbar { display: none; }
+.zk-day-btn {
+  flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 62px; min-height: 64px; padding: 8px 10px;
+  border: 0; border-radius: var(--zk-r-ctl); background: var(--zk-panel); color: var(--zk-ink); font-size: 13px; font-weight: 600;
+}
+.zk-day-btn strong { font-size: 19px; font-weight: 800; }
+.zk-day-btn small { font-size: 11.5px; font-weight: 600; color: var(--zk-muted); }
+.zk-day-btn[aria-pressed="true"] { background: var(--zk-action); color: var(--text-on-inverse); }
+.zk-day-btn[aria-pressed="true"] small { color: var(--text-on-inverse-muted); }
+.zk-day-btn:disabled { opacity: 0.5; }
+.zk-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; margin-top: 10px; }
+.zk-times .zk-chip { justify-content: center; min-height: 44px; }
+
+.zk-review { padding: 12px 14px; border-radius: var(--zk-r-ctl); background: var(--zk-panel); }
+.zk-review p:first-child { font-size: 13.5px; font-weight: 600; color: var(--zk-muted); }
+.zk-review blockquote { margin: 6px 0 0; font-size: 15.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.zk-text {
+  width: 100%; min-height: 96px; padding: 12px 14px; border: 1.5px solid transparent; border-radius: var(--zk-r-ctl);
+  background: var(--zk-panel); color: var(--zk-ink); font-size: 15.5px; resize: vertical;
+}
+.zk-text:focus { outline: none; border-color: var(--zk-action); background: var(--zk-surface); }
+
+/* ---------- cards ---------- */
+.zk-card {
+  align-self: stretch; display: flex; flex-direction: column; gap: 12px; margin-top: 2px; padding: 16px;
+  border-radius: var(--zk-r-card); background: var(--zk-surface); min-width: 0;
+}
+.zk-card[data-tone="action"] { background: var(--zk-tint); }
+.zk-card[data-tone="ok"] { background: var(--zk-ok-bg); }
+.zk-card[data-tone="watch"] { background: var(--zk-watch-bg); }
+.zk-card[data-tone="alert"] { background: var(--zk-alert-bg); }
+.zk-card > * { margin: 0; }
+.zk-card-head { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px 10px; }
+.zk-card-head h3 { flex: 1 1 10rem; min-width: 0; font-family: var(--font-body); color: var(--zk-ink); font-size: 16px; font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; }
+.zk-card-head svg { flex: none; margin-top: 2px; color: var(--zk-action-ink); }
+.zk-card[data-tone="alert"] .zk-card-head svg, .zk-card[data-tone="alert"] h3 { color: var(--zk-alert); }
+.zk-card-foot { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--zk-muted); }
+.zk-tag {
+  display: inline-flex; flex: none; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--radius-pill);
+  font-size: 12.5px; font-weight: 700; line-height: 1.4; background: var(--zk-panel); color: var(--text-muted);
+}
+.zk-tag[data-tone="ok"] { background: var(--surface-card); color: var(--zk-ok); }
+.zk-card:not([data-tone="ok"]) .zk-tag[data-tone="ok"] { background: var(--zk-ok-bg); }
+.zk-tag[data-tone="watch"] { background: var(--zk-watch-bg); color: var(--zk-watch); }
+.zk-tag[data-tone="doctor"] { background: var(--zk-tint); color: var(--zk-action-ink); }
+.zk-tag[data-tone="ldl"] { background: var(--zk-ldl-bg); color: var(--zk-ldl); }
+.zk-stale {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; margin: -4px -4px 0;
+  padding: 6px 12px; border-radius: var(--zk-r-ctl); background: var(--zk-panel); font-size: 13.5px; font-weight: 600; color: var(--text-muted);
+}
+.zk-stale .zk-link { font-size: 13.5px; }
+.zk-done { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--zk-ok); }
+.zk-done .zk-link { margin-left: auto; }
+.zk-alertline { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: var(--zk-r-ctl); background: var(--zk-alert-bg); color: var(--zk-alert); font-size: 14.5px; font-weight: 600; }
+.zk-skel { display: flex; flex-direction: column; gap: 8px; }
+.zk-skel i { display: block; height: 12px; border-radius: var(--radius-pill); background: var(--zk-panel); }
+.zk-skel i:nth-child(2) { width: 70%; }
+
+.zk-rows { display: flex; flex-direction: column; }
+.zk-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--zk-hair); font-size: 14.5px; }
+.zk-row:first-child { border-top: 0; padding-top: 0; }
+.zk-row dt { color: var(--zk-muted); font-weight: 500; }
+.zk-row dd { margin: 0; font-weight: 600; text-align: end; min-width: 0; overflow-wrap: anywhere; }
+.zk-pill-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--zk-hair); }
+.zk-pill-row:first-child { border-top: 0; padding-top: 0; }
+.zk-pill-badge {
+  display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: var(--radius-pill);
+  background: var(--zk-tint); color: var(--zk-action-ink); font-size: 11.5px; font-weight: 700;
+}
+.zk-pill-badge[data-slot="evening"] { background: var(--zk-ldl-bg); color: var(--zk-ldl); }
+.zk-pill-row strong { display: block; font-size: 15px; }
+.zk-pill-row span { font-size: 13.5px; color: var(--zk-muted); }
+
+.zk-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.zk-tile { padding: 12px 14px; border-radius: var(--radius-xl); background: var(--zk-panel); min-width: 0; }
+.zk-tile[data-domain="bp"] { background: var(--zk-tint); }
+.zk-tile[data-domain="ldl"] { background: var(--zk-ldl-bg); }
+.zk-tile p:first-child { font-size: 13px; font-weight: 600; color: var(--zk-muted); }
+.zk-tile[data-domain="bp"] p:first-child { color: var(--zk-action-ink); }
+.zk-tile[data-domain="ldl"] p:first-child { color: var(--zk-ldl); }
+.zk-tile p + p { margin-top: 4px; font-size: 15px; font-weight: 700; }
+.zk-value { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 6px; }
+.zk-value strong { font-size: 30px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+.zk-value small { font-size: 13px; font-weight: 600; color: var(--zk-muted); }
+.zk-plain { font-size: 15px; }
+
+.zk-band { position: relative; height: 8px; margin: 22px 0 22px; border-radius: var(--radius-pill); background: var(--noreon-gray-200); }
+.zk-band b { position: absolute; top: 0; bottom: 0; border-radius: var(--radius-pill); background: var(--noreon-teal-200); }
+.zk-band i { position: absolute; top: -4px; width: 16px; height: 16px; margin-left: -8px; border: 3px solid var(--surface-card); border-radius: var(--radius-pill); background: var(--zk-ink); box-shadow: 0 0 0 1px var(--noreon-gray-300); }
+.zk-band u { position: absolute; top: -6px; width: 2px; height: 20px; margin-left: -1px; background: var(--zk-ldl); text-decoration: none; }
+.zk-band u span { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--zk-ldl); }
+.zk-band em { position: absolute; top: 14px; transform: translateX(-50%); font-style: normal; font-size: 11.5px; font-weight: 500; color: var(--zk-muted); white-space: nowrap; }
+
+.zk-goalbar { height: 10px; border-radius: var(--radius-pill); background: var(--noreon-gray-200); overflow: hidden; }
+.zk-goalbar b { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--zk-ldl); }
+.zk-goalbar[data-done="true"] b { background: var(--noreon-success-600); }
+
+.zk-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.zk-chart .line { fill: none; stroke: var(--zk-ldl); stroke-width: 2.5; stroke-linejoin: round; }
+.zk-chart .dot { fill: var(--surface-card); stroke: var(--zk-ldl); stroke-width: 2.5; }
+.zk-chart .goal { stroke: var(--noreon-success-600); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.zk-chart .grid { stroke: var(--zk-hair); }
+.zk-chart text { font-size: 11.5px; font-weight: 600; fill: var(--text-muted); font-family: var(--font-body); }
+.zk-chart text.v { fill: var(--zk-ink); font-weight: 700; font-size: 12.5px; }
+.zk-chart text.g { fill: var(--noreon-success-600); }
+
+.zk-fold summary {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; list-style: none;
+  color: var(--zk-action-ink); font-size: 15px; font-weight: 600;
+}
+.zk-fold summary::-webkit-details-marker { display: none; }
+.zk-fold summary svg { transition: transform 0.15s; }
+.zk-fold[open] summary svg { transform: rotate(180deg); }
+.zk-fold-body { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; font-size: 14.5px; }
+
+.zk-steps { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.zk-step { position: relative; display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 8px 0; }
+.zk-step::before { content: ""; position: absolute; left: 14px; top: 38px; bottom: -6px; width: 2px; background: var(--zk-hair); }
+.zk-step:last-child::before { display: none; }
+.zk-step-dot {
+  display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid var(--noreon-gray-300); border-radius: var(--radius-pill);
+  background: var(--surface-card); color: var(--text-muted); font-size: 13px; font-weight: 700;
+}
+.zk-step[data-state="done"] .zk-step-dot { border-color: var(--zk-action); background: var(--zk-action); color: var(--text-on-inverse); }
+.zk-step[data-state="now"] .zk-step-dot { border-color: var(--zk-action); color: var(--zk-action-ink); box-shadow: 0 0 0 3px var(--zk-tint-2); }
+.zk-step strong { display: block; font-size: 15px; }
+.zk-step span { font-size: 13.5px; color: var(--zk-muted); }
+.zk-step em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--zk-action-ink); }
+
+/* ---------- composer and quick strip ---------- */
+.zk-dock {
+  position: sticky; bottom: calc(4.75rem + env(safe-area-inset-bottom)); z-index: 10; display: flex; flex-direction: column; gap: 8px;
+  padding: 8px 0; background: var(--zk-canvas);
+}
+/* Above the member tab bar on phones (as the live chat's composer); the bar moves to the side from 1024px. */
+@media (min-width: 1024px) { .zk-dock { bottom: 0; padding-bottom: 16px; } }
+.zk-panel .zk-chip { min-height: 36px; padding: 4px 12px; font-size: 13.5px; }
+.zk-strip {
+  display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 4px; scrollbar-width: none;
+  mask-image: linear-gradient(90deg, var(--noreon-navy-900) calc(100% - 32px), transparent);
+}
+.zk-strip::-webkit-scrollbar { display: none; }
+.zk-strip .zk-reply { flex: none; min-height: 44px; padding: 7px 14px; font-size: 13.5px; white-space: nowrap; }
+.zk-composer { display: flex; align-items: center; gap: 4px; min-height: 54px; padding: 6px 6px 6px 18px; border-radius: var(--radius-pill); background: var(--zk-surface); box-shadow: var(--shadow-xs); }
+.zk-composer input { flex: 1; min-width: 0; min-height: 42px; border: 0; background: transparent; font-size: 15.5px; color: var(--zk-ink); }
+.zk-composer input:focus { outline: none; }
+.zk-composer input:disabled { color: var(--text-muted); }
+.zk-send { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 0; border-radius: var(--radius-pill); background: var(--zk-action); color: var(--text-on-inverse); }
+.zk-send:disabled { background: var(--action-disabled-bg); color: var(--text-muted); }
+
+/* Armenian: no tracking, buttons and chips wrap and centre (the prototype's hy rules). */
+.zk:lang(hy) .zk-value strong, .zk:lang(hy) .zk-card-head h3 { letter-spacing: 0; }
+.zk:lang(hy) .zk-bubble, .zk:lang(hy) .zk-me { overflow-wrap: anywhere; }
+
+/* ---------- the live chat in the kit's look (NOREON_ZOE_CHAT_KIT) ----------
+   The live thread keeps its markup, its data attributes and its behaviour; only the look moves, so every journey
+   takes it at once and the suite runs unchanged with the flag on. */
+.zk-chat { padding: 12px 0 0; border-radius: var(--zk-r-card); }
+/* The composer stays at the bottom of the screen, as in the prototype, with a short thread and at the end of a long one. */
+@media (max-width: 1023px) {
+  .zk-chat { display: flex; flex-direction: column; min-height: calc(100dvh - var(--journey-sticky-top) - 11.25rem); }
+  .zk-chat [data-zoe-thread] { flex: 1; }
+}
+@media (max-width: 1023px) and (not (display-mode: standalone)) {
+  .member-journey:has(.zk-chat) [data-tabbar] > .journey-main { padding-bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
+}
+/* :where keeps this base rule below the member and reply rules that follow it. */
+.zk-chat [data-zoe-bubble]:where(:not([data-zoe-bubble="pending"])) > div, .zk-chat [data-zoe-bubble]:where(:not([data-zoe-bubble="pending"])) > p {
+  border: 0; background: var(--zk-surface); font-size: 15.5px;
+  border-radius: var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-tail);
+}
+.zk-chat [data-zoe-bubble="reply"] > div { background: var(--zk-tint); }
+.zk-chat [data-zoe-bubble="member"] > div, .zk-chat [data-zoe-bubble="pending"] > div {
+  border-radius: var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-tail) var(--zk-r-bubble);
+  font-size: 15.5px;
+}
+.zk-chat [data-zoe-bubble="member"] > div, .zk-chat [data-zoe-bubble="pending"][data-state="sending"] > div {
+  background: var(--zk-action); color: var(--text-on-inverse);
+}
+/* The time keeps 4.5:1 on the blue (the prototype's 60% white, and the live 80%, do not). */
+.zk-chat [data-zoe-bubble="member"] .opacity-80 { opacity: 1; }
+
+/* Cards: heading and numbers in Inter, ink. "As shown at" moves under the card, in small text, where the prototype has its time. */
+.zk-chat [data-zoe-card] { flex-direction: column; align-items: stretch; gap: 3px; }
+.zk-chat [data-zoe-card] > section { border: 0; box-shadow: none; background: var(--zk-surface); border-radius: var(--zk-r-card); }
+.zk-chat [data-zoe-card][data-state="done"] > section { background: var(--zk-ok-bg); }
+.zk-chat [data-zoe-card] > section :is(h2, h3) { font-family: var(--font-body); color: var(--zk-ink); font-size: 16px; line-height: 1.3; letter-spacing: -0.02em; }
+.zk-chat [data-zoe-card] :is(.font-heading, .text-h1, .text-h2, .text-h3) { font-family: var(--font-body); color: var(--zk-ink); }
+.zk-chat:lang(hy) [data-zoe-card] > section :is(h2, h3) { letter-spacing: 0; }
+.zk-chat [data-zoe-card] > section > .flex { align-items: center; gap: 10px; }
+.zk-chat [data-zoe-card] > section > .flex > span[aria-hidden] { width: auto; height: auto; background: none; color: var(--zk-ink); }
+.zk-chat [data-zoe-card-asof] { display: none; }
+.zk-chat [data-zoe-card-time] { display: block; margin: 0 0 0 2px; font-size: 12px; font-weight: 500; color: var(--zk-muted); }
+/* LDL is lavender in the prototype. The status words keep their own colours. */
+.zk-chat [data-zoe-card="ldl"] > section > .flex > span[aria-hidden], .zk-chat [data-zoe-card="ldl"] [data-ldl-goal] .text-h2 { color: var(--zk-ldl); }
+
+.zk-chat [data-slot="button"] {
+  min-height: 48px; border-radius: var(--radius-pill); border-color: transparent; font-size: 15.5px; font-weight: 700;
+  background: var(--zk-action); color: var(--text-on-inverse);
+}
+.zk-chat [data-slot="button"]:hover { background: var(--zk-action-hover); }
+.zk-chat [data-slot="button"]:disabled { background: var(--action-disabled-bg); color: var(--text-muted); opacity: 1; }
+.zk-chat [data-slot="button"][data-variant="outline"] { background: var(--zk-surface); border-color: var(--noreon-gray-300); color: var(--zk-action-ink); }
+.zk-chat [data-slot="button"][data-variant="outline"]:hover { background: var(--zk-tint); }
+/* One blue main action per card. Quiet actions keep their weight from the prototype. */
+.zk-chat [data-slot="button"]:is([data-variant="ghost"], [data-variant="ghost-muted"], [data-variant="secondary"]) { background: transparent; color: var(--zk-action); }
+.zk-chat [data-slot="button"]:is([data-variant="ghost"], [data-variant="ghost-muted"], [data-variant="secondary"]):hover { background: var(--zk-tint); }
+.zk-chat [data-slot="button"]:is([data-variant="ghost"], [data-variant="ghost-muted"], [data-variant="secondary"]):disabled { background: transparent; color: var(--text-muted); }
+
+/* The side-effect choices are the kit's tinted option (.zk-opt): the live card keeps its own radio markup. */
+.zk-chat [data-zoe-card="side_effect"] fieldset label.border:has(> input) {
+  gap: 9px; min-height: 48px; padding: 10px 16px 10px 12px; border: 0; border-radius: var(--radius-pill);
+  background: var(--zk-tint); color: var(--zk-action-ink); font-weight: 600; line-height: 1.3;
+}
+.zk-chat [data-zoe-card="side_effect"] fieldset label.border:has(> input)::before {
+  content: ""; flex: none; width: 18px; height: 18px; box-sizing: border-box;
+  border: 2px solid var(--zk-action); border-radius: var(--radius-pill); background: var(--zk-surface);
+}
+.zk-chat [data-zoe-card="side_effect"] fieldset label.border:has(> input):hover { background: var(--zk-tint-2); }
+.zk-chat [data-zoe-card="side_effect"] fieldset label.border:has(> input:checked) { background: var(--zk-action); color: var(--text-on-inverse); }
+.zk-chat [data-zoe-card="side_effect"] fieldset label.border:has(> input:checked)::before { border-color: var(--surface-card); box-shadow: inset 0 0 0 4px var(--zk-action); }
+
+/* The strip's pill is painted 44 px high, as the prototype's, inside a 48 px tap target: a transparent border. */
+.zk-chat [data-zoe-card-offer] button {
+  min-height: 48px; border: 0; border-radius: var(--radius-pill); background: var(--zk-surface); box-shadow: var(--shadow-xs);
+  color: var(--zk-action-ink); font-size: 15px; font-weight: 600;
+}
+.zk-chat [data-zoe-quick-actions] > div { gap: 4px; }
+.zk-chat [data-zoe-quick-actions] a, .zk-chat [data-zoe-quick-actions] button {
+  min-height: 48px; padding: 5px 14px; border: 2px solid transparent; border-radius: var(--radius-pill);
+  background: var(--zk-surface) padding-box; color: var(--zk-action-ink); font-size: 13.5px; font-weight: 600;
+}
+.zk-chat [data-zoe-quick-actions] a:hover, .zk-chat [data-zoe-quick-actions] button:hover { background: var(--zk-tint) padding-box; }
+
+/* The composer is a pill on a canvas dock: the thread goes behind the dock, never around the pill, and what it covers
+   scrolls clear at the end of the page. The dock's background is the form's; the pill is painted behind its content. */
+.zk-chat [data-zoe-composer] {
+  position: sticky; z-index: 10; margin: -16px -16px 0; padding: 8px 20px 8px 34px; border: 0; border-radius: initial;
+  background: var(--zk-canvas); box-shadow: 0 12px 0 var(--zk-canvas);
+}
+.zk-chat [data-zoe-composer]::before {
+  content: ""; position: absolute; z-index: -1; inset: 8px 16px; border-radius: var(--zoe-pill-radius);
+  background: var(--zk-surface); box-shadow: var(--shadow-xs);
+}
+.zk-chat [data-zoe-composer] > * { margin-block: 0; }
+.zk-chat [data-zoe-composer] > .flex { gap: 4px; padding-block: 4px; }
+.zk-chat [data-zoe-composer] > [data-zoe-doctor-mode], .zk-chat [data-zoe-composer] > [data-zoe-enter-hint] { padding: 8px 12px 0 0; }
+.zk-chat [data-zoe-composer] > [aria-live]:not(:empty) { padding: 0 12px 10px 0; }
+.zk-chat [data-zoe-composer]:has(textarea:focus-visible)::before { outline: 3px solid var(--zk-action); outline-offset: 2px; }
+.zk-chat [data-zoe-composer] textarea {
+  min-height: 48px; padding: 12.5px 0; border: 0; border-radius: initial; background: transparent; color: var(--zk-ink); font-size: 15.5px; line-height: 1.45;
+}
+.zk-chat [data-zoe-composer] textarea:focus-visible { outline: none; }
+.zk-chat [data-zoe-composer] textarea::placeholder { color: var(--zk-muted); opacity: 1; }
+.zk-chat [data-zoe-composer] button[type="submit"] {
+  width: 48px; height: 48px; padding: 0; border: 2px solid transparent; border-radius: var(--radius-pill);
+  background: var(--zk-action) padding-box; color: var(--text-on-inverse);
+}
+.zk-chat [data-zoe-composer] button[type="submit"]:hover { background: var(--zk-action-hover) padding-box; }
+.zk-chat [data-zoe-composer] button[type="submit"] span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.zk-chat [data-zoe-attach] { border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--zoe-ghost); }
+.zk-chat [data-zoe-attach]:hover { background: var(--zk-tint); color: var(--zk-action-ink); }
+@media (max-width: 1023px) { .zk-chat [data-zoe-composer] { bottom: calc(var(--member-tabbar-height, 4.75rem + env(safe-area-inset-bottom)) + 0.5rem); } }
+@media (min-width: 1024px) { .zk-chat [data-zoe-composer] { bottom: 0; margin: -16px 0 0; padding-inline: 18px 4px; box-shadow: none; } .zk-chat [data-zoe-composer]::before { inset: 8px 0; } }
+/* Short screens (a phone turned sideways, the keyboard up on Android): the dock would take most of the screen. It stays
+   at the end of the thread, where the chat already scrolls to. */
+@media (max-height: 520px) { .member-journey .zk-chat form[data-zoe-composer] { position: relative; inset-block: auto; box-shadow: none; } }
+
+/* The header above the chat and the page around it, in the same canvas and ink. */
+.member-journey:has(.zk-chat) { background: var(--zoe-canvas); }
+[data-zoe-page]:has(.zk-chat) [data-zoe-header] { background: var(--zoe-canvas); }
+[data-zoe-page]:has(.zk-chat) [data-zoe-header] h1 { font-family: var(--font-body); color: var(--zoe-ink); letter-spacing: -0.02em; }
+[data-zoe-page]:has(.zk-chat):lang(hy) [data-zoe-header] h1 { letter-spacing: 0; }

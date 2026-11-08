@@ -1,0 +1,106 @@
+/* Chat-only presentation. Clinical cards and all writes retain their existing components. */
+[data-member-chat-only] {
+  background: var(--zoe-canvas);
+  font-family: var(--font-body);
+  overflow-wrap: anywhere;
+}
+.member-chat-brand { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-h3-size); font-weight: 800; }
+.member-chat-brand .member-home-orb { width: var(--control-height-sm); height: var(--control-height-sm); }
+[data-member-chat-only] .journey-header { z-index: 30; background: var(--surface-card); }
+[data-member-chat-only] .journey-header > div {
+  max-width: 48rem;
+  padding-block: var(--space-2);
+  padding-inline: max(var(--gutter-screen), env(safe-area-inset-left)) max(var(--gutter-screen), env(safe-area-inset-right));
+}
+[data-member-chat-only] .emergency-pill { color: var(--status-danger-fg); min-height: var(--control-height-md); }
+.member-chat-menu { position: relative; overflow-wrap: normal; word-break: normal; hyphens: none; }
+/* Armenian words need the full menu width, including the longer helper lines. */
+:lang(hy) .member-chat-menu .grid { grid-template-columns: minmax(0, 1fr); }
+.member-chat-menu > summary {
+  display: flex; align-items: center; justify-content: center; list-style: none;
+  min-width: var(--control-height-md); min-height: var(--control-height-md); padding: var(--space-1); font-size: var(--text-body2-size);
+  background: var(--noreon-navy-600); color: var(--text-on-inverse);
+  border-radius: var(--radius-pill); cursor: pointer; font-weight: 700;
+}
+.member-chat-menu > summary::-webkit-details-marker { display: none; }
+.member-chat-menu > nav {
+  position: absolute; inset-inline-end: 0; top: calc(100% + .5rem); z-index: 40;
+  width: min(20rem, calc(100vw - 2rem)); max-height: 70dvh; overflow-y: auto;
+  background: var(--surface-card); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: .5rem; box-shadow: var(--shadow-lg);
+}
+.member-chat-menu a { display: flex; align-items: center; min-height: 2.75rem; padding: .625rem; color: var(--text-primary); font-size: .9375rem; }
+.member-chat-menu a:hover { background: var(--zoe-tint); }
+.member-chat-menu :is(a, summary):focus-visible { outline: 3px solid var(--zoe-action); outline-offset: 2px; }
+.member-journey .member-chat-card.ms-screen { margin: 0; padding: 1rem; }
+.member-chat-card { background: var(--surface-card); padding: 1rem; border-radius: var(--zoe-card-radius); min-width: 0; }
+/* One scroll area leaves the composer in flow at the bottom, including in installed Safari. */
+html:has([data-chat-only-page]), body:has([data-chat-only-page]) { height: 100%; overflow: clip; }
+/* Clip, not hidden: nothing can scroll these layers, so a focus or scrollIntoView can't lift the page off the bottom. */
+[data-member-chat-only]:has([data-chat-only-page]) { position: fixed; inset-inline: 0; top: var(--chat-view-top, 0px); height: var(--chat-view-height, 100dvh); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+[data-member-chat-only]:has([data-chat-only-page]) > .journey-header { flex: none; }
+[data-member-chat-only]:has([data-chat-only-page]) > div { flex: 1; min-height: 0; width: 100%; display: flex; }
+[data-member-chat-only]:has([data-chat-only-page]) .journey-main {
+  display: flex; min-height: 0; padding-block: 0; max-width: 48rem;
+  /* The chat uses rem text sizing below; the existing Me preference still scales the content. */
+}
+[data-chat-only-page] { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; width: 100%; margin-block: 0; }
+[data-chat-only-page] > [data-zoe-header] { position: static; flex: none; margin-block: 0; padding-block: .375rem; background: var(--zoe-canvas); }
+[data-chat-only-page] > [data-zoe-header] .journey-orb { display: none; }
+[data-chat-only-page] > [data-zoe-header] h1 { font-size: 1rem; }
+[data-chat-only-page] > [data-zoe-header] a { font-size: .8125rem; }
+[data-member-chat-thread], [data-member-chat-thread].zk-chat { display: flex; flex: 1; flex-direction: column; min-height: 0; margin-block: 0; padding-block: 0; }
+[data-member-chat-thread] [data-zoe-thread] {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain;
+  padding-block: .75rem; scroll-padding-block: 1rem; margin-block: 0;
+}
+[data-member-chat-thread] [data-zoe-thread] > * { min-width: 0; }
+[data-member-chat-thread] .member-home h1 { font-size: 1.125rem; line-height: 1.3; }
+[data-member-chat-thread] .member-home h2 { font-size: 1rem; }
+[data-member-chat-thread] .member-home-facts { grid-template-columns: minmax(0, 1fr); }
+.member-chat-dock { flex: none; margin-block: 0; padding-block: .375rem max(.5rem, env(safe-area-inset-bottom)); background: var(--zoe-canvas); }
+[data-member-chat-thread] [data-zoe-quick-actions] { margin: 0; padding: 0; overflow-x: auto; }
+[data-member-chat-thread] [data-zoe-quick-actions] > div { flex-wrap: nowrap; }
+[data-member-chat-thread] [data-zoe-quick-actions] :is(a, button) {
+  font-size: .875rem;
+  min-height: var(--control-height-md);
+  max-width: none;
+  white-space: nowrap;
+  padding-inline: var(--space-4);
+}
+/* The prototype's composer: a white pill with its own edge, so the input is plain to see on the canvas. */
+[data-member-chat-thread] form[data-zoe-composer] {
+  position: relative; inset-block-end: auto; margin: .375rem 0 0; padding: .375rem .375rem .375rem 1.125rem; min-height: 3.375rem;
+  background: var(--surface-card); border: 1px solid var(--border-default); border-radius: 1.875rem; box-shadow: var(--shadow-xs);
+}
+[data-member-chat-thread] form[data-zoe-composer]::before { display: none; }
+[data-member-chat-thread] form[data-zoe-composer]:has(textarea:focus-visible) { outline: 2px solid var(--zoe-action); outline-offset: -2px; }
+[data-member-chat-thread] [data-zoe-enter-hint] { display: none; }
+[data-member-chat-thread] .text-body1 { font-size: 1rem; }
+[data-member-chat-thread] .text-body2 { font-size: .9375rem; }
+[data-member-chat-thread] .text-caption { font-size: .8125rem; }
+.member-chat-off { min-height: 0; overflow-y: auto; padding-block: 1rem; }
+/* Self-loading notices can return nothing. Their inventory markers must not create empty gaps. */
+.member-home > [data-home-notice], [data-zoe-thread] > [data-home-notice], .member-chat-off > [data-home-notice] { display: contents; }
+
+[data-member-chat-only] .journey-header a[aria-label="Noreon"] { min-height: var(--control-height-md); }
+
+/* Below 16px iOS zooms the page when the field takes focus. */
+[data-member-chat-thread] form[data-zoe-composer] textarea {
+  font-size: max(16px, 1rem);
+  min-height: var(--control-height-lg);
+  padding: var(--space-2) 0;
+}
+[data-member-chat-thread] [data-zoe-composer] button[type="submit"] {
+  min-width: var(--control-height-md);
+  min-height: var(--control-height-md);
+  padding: var(--space-3);
+}
+[data-member-chat-only]:has([data-chat-only-page]),
+[data-member-chat-only]:has([data-chat-only-page]) > div,
+[data-member-chat-only]:has([data-chat-only-page]) .journey-main,
+[data-chat-only-page],
+[data-member-chat-thread] { overflow: clip; }
+[data-member-chat-thread] [data-zoe-thread] { overflow-y: auto; }
+/* Headings take focus for screen readers only. */
+[data-member-chat-thread] h2[tabindex="-1"]:focus { outline: none; box-shadow: none; }

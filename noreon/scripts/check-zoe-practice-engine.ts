@@ -1,0 +1,155 @@
+import assert from 'node:assert/strict';
+import {startPractice,runPracticeTurn,editPracticeRecord,validatePracticeState,practiceJob} from '@/lib/zoe/practice/engine';
+import {PRACTICE_PATIENTS} from '@/lib/zoe/practice/patients';
+import {createFakeProvider} from '@/lib/zoe/provider';
+import {createFakeJudge} from '@/lib/zoe/reply-check';
+import type {FinishInput} from '@/lib/zoe/pipeline';
+import type {ProviderRequest} from '@/lib/zoe/provider';
+import {ALARM_WARNING} from '@/lib/zoe/alarm-conversation';
+const visible=(finish:FinishInput)=>finish.answer??finish.receipt?.text??'';
+const setVisible=(finish:FinishInput,text:string)=>{if(finish.answer!==null)finish.answer=text;else if(finish.receipt)finish.receipt.text=text;else throw Error('Expected a visible synthetic baseline');};
+const safeReply='Your earlier concern is still recorded. Blood pressure measures the force of blood against artery walls.';
+const fake=createFakeProvider();const providerCalls:ProviderRequest[]=[];
+const provider={...fake,complete:async(request:ProviderRequest)=>{
+ providerCalls.push(request);
+ return request.purpose==='health_answer'?{kind:'ok' as const,raw:JSON.stringify({reply:safeReply,urgency:'planned',forward:'none',forward_reason:'none',language:'en',summary:{asked:'The member asks about the earlier warning.'}}),finishReason:'stop' as const,usage:{inputTokens:100,outputTokens:30},responseModel:'practice-safe-fixture',responseId:'practice-safe-response'}:fake.complete(request);
+}};
+const deps={provider,judge:createFakeJudge(),env:{NOREON_ZOE_TEST_LEXICON:'false',NOREON_ZOE_MEMBER_CLEAR:'true',NOREON_ZOE_URGENT_PLACEHOLDER:'true'}};
+assert.equal(PRACTICE_PATIENTS.length,5);
+assert.throws(()=>startPractice('real-member-id'));
+let state=startPractice(PRACTICE_PATIENTS[0]!.id);
+state=editPracticeRecord(state,{kind:'ldl',mmol:3.8});
+state=editPracticeRecord(state,{kind:'medicine',name:'rosuvastatin',dose:'10 mg'});
+state=editPracticeRecord(state,{kind:'sideEffect',text:'Mild muscle aches since yesterday'});
+state=editPracticeRecord(state,{kind:'reading',systolic:198,diastolic:106});
+const next=practiceJob(state,'I feel weak');
+assert.equal(next.memberRecord?.ldl?.latest?.mmol,3.8);
+assert.equal(next.topic?.profile?.medicines[0]?.name,'rosuvastatin');
+assert.ok(next.messages.some(m=>m.text.includes('Mild muscle aches')));
+assert.equal(next.intake?.latestReading?.systolic,198);
+state=await runPracticeTurn(state,'I feel weak',deps);
+assert.ok(['intake_escalated','discarded'].includes(state.turns[0]!.finish.outcome));
+state=validatePracticeState(JSON.parse(JSON.stringify(state)));
+state=editPracticeRecord(state,{kind:'reading',systolic:128,diastolic:78});
+const follow=practiceJob(state,'why');
+assert.equal(follow.urgentThroughSeq,1);
+assert.equal(follow.memberClear?.trigger?.reading?.systolic,198);
+assert.equal(follow.memberClear?.readingVersion,'3');
+assert.equal(follow.intake?.latestReading?.systolic,128);
+const beforeWhy=providerCalls.length;
+state=await runPracticeTurn(state,'why',deps);
+assert.equal(state.turns[1]?.finish.reason,'urgent_alarm_explained');
+assert.ok(visible(state.turns[1]!.finish).includes('198/106'),'explanation uses the saved trigger rather than the edited 128/78 reading');
+assert.equal(providerCalls.length,beforeWhy,'explanation does not call a provider');
+assert.ok(!Object.values(ALARM_WARNING).some(line=>visible(state.turns[1]!.finish).includes(line)));
+assert.doesNotMatch(visible(state.turns[1]!.finish),/103/u);
+assert.equal(state.turns[1]?.finish.alarmTrigger,undefined,'the explanation does not replace the recorded trigger');
+assert.deepEqual(state.turns[1]?.job.messages.map(m=>m.seq),[-2,1,2]);
+assert.ok(state.turns[1]?.job.answers.length);
+assert.throws(()=>validatePracticeState({...state,patientId:'real-member-id'}));
+assert.throws(()=>validatePracticeState({...state,turns:[{...state.turns[0],job:{...state.turns[0]!.job,memberId:'11111111-1111-4111-8111-111111111111'}}]}));
+assert.throws(()=>editPracticeRecord(state,{kind:'reading',systolic:NaN,diastolic:90}));
+assert.throws(()=>practiceJob(state,'x'.repeat(4001)));
+console.log('Practice engine: fictional fixtures, edited context, serialized urgent follow-ups and isolation passed');
+const {exportPracticeCorrections,replayPracticeCorrections}=await import('@/lib/zoe/practice/replay');
+const exported=exportPracticeCorrections({marks:[{id:'offline-mark-1',rating:'wrong',reason:'Too vague',correction:'Use the held LDL result',snapshot:{...state,markedTurn:state.turns[1],configVersion:'fixture'}}]});
+assert.equal(exported.cases.length,1);
+assert.deepEqual(exported.cases[0]?.job,state.turns[1]?.job);
+const replay=await replayPracticeCorrections(exported,async()=>deps);
+assert.equal(replay.results[0]?.assessment,'same');
+assert.ok(replay.results[0]?.baseline.answer);
+assert.throws(()=>exportPracticeCorrections({marks:[{snapshot:{...state,patientId:'real-person',markedTurn:state.turns[1]}}]}));
+console.log('Practice corrections: saved job parity and baseline comparison passed');
+const historical=structuredClone(state);
+const dbExport=exportPracticeCorrections({marks:[{id:'db-mark',rating:'wrong',reason:'Use the reading',correction:'Explain 198/106',snapshot:{...historical,record:historical.turns[1]!.record,markedTurn:historical.turns[1],configVersion:'fixture'}}]});
+assert.deepEqual(dbExport.cases[0]?.job,historical.turns[1]?.job);
+const changed=structuredClone(dbExport);
+setVisible(changed.cases[0]!.baseline.finish,'No reading is recorded.');
+setVisible(changed.cases[0]!.conversation.turns[1]!.finish,'No reading is recorded.');
+let comparisons=0;
+const better=await replayPracticeCorrections(changed,()=>deps,async input=>{
+ comparisons++;
+ assert.equal(visible(input.correction.baseline.finish),'No reading is recorded.');
+ assert.ok(visible(input.candidate).includes('198/106'),'candidate uses the saved trigger, not the mutated saved baseline');
+ assert.notEqual(visible(input.candidate),visible(input.correction.baseline.finish));
+ return {assessment:'better',reason:'Explicit independent comparison fixture prefers the recorded-trigger explanation over the altered baseline.'};
+});
+assert.equal(better.results[0]?.assessment,'better');
+const worse=await replayPracticeCorrections(changed,()=>deps,async()=>({assessment:'worse',reason:'Explicit independent comparison fixture exercises a negative verdict without overriding it.'}));
+assert.equal(worse.results[0]?.assessment,'worse');
+assert.equal(comparisons,1);
+const {mkdtempSync,writeFileSync,readFileSync,rmSync}=await import('node:fs');
+const {tmpdir}=await import('node:os');
+const {execFileSync}=await import('node:child_process');
+const {join}=await import('node:path');
+const temp=mkdtempSync(join(tmpdir(),'zoe-practice-'));
+const output=`docs/reference/zoe-eval/.practice-check-${process.pid}.json`;
+try{
+ const source=join(temp,'marks.json');
+ writeFileSync(source,JSON.stringify({marks:[{id:'cli-mark',rating:'wrong',reason:'Use the reading',correction:'Explain 198/106',snapshot:{...state,markedTurn:state.turns[1],configVersion:'fixture'}}]}));
+ execFileSync(process.execPath,['--no-warnings','--import','./scripts/register-alias.mjs','scripts/zoe-practice-export.ts',source,output]);
+ const actual=JSON.parse(readFileSync(output,'utf8'));
+ assert.deepEqual(actual.cases[0].job,state.turns[1]!.job);
+ assert.equal(actual.cases[0].correction,'Explain 198/106');
+}finally{rmSync(temp,{recursive:true,force:true});rmSync(output,{force:true});}
+console.log('Practice corrections: historical DB snapshots, explicit better/worse judging and offline CLI output passed');
+
+// Fresh process: deny production data/write modules before importing the engine.
+// An accidental future transitive import fails here even if it never executes a query.
+const isolated=mkdtempSync(join(tmpdir(),'zoe-practice-isolation-'));
+try{
+ const guard=join(isolated,'guard.mjs');
+ writeFileSync(guard,`
+ import {registerHooks} from 'node:module';
+ const forbidden=value=>/@supabase(?:\\/|%2f)|(?:^|\\/)lib\\/(?:db(?:\\/|$)|telegram[^/]*(?:\\/|$)|queues?(?:\\/|$)|zoe\\/server(?:[./]|$)|chat\\/server(?:[./]|$))/i.test(decodeURIComponent(value));
+ registerHooks({resolve(specifier,context,next){
+  if(forbidden(specifier))throw Error('Practice import denied: '+specifier);
+  const result=next(specifier,context);
+  if(forbidden(result.url))throw Error('Practice import denied: '+result.url);
+  return result;
+ }});
+ globalThis.fetch=()=>{throw Error('Practice network denied');};
+ `);
+ const child=`
+ import assert from 'node:assert/strict';
+ await assert.rejects(import('@/lib/db/server'),/Practice import denied/);
+ await assert.rejects(import('@supabase/supabase-js'),/Practice import denied/);
+ await assert.rejects(import('@/lib/zoe/server'),/Practice import denied/);
+ await assert.rejects(import('@/lib/telegram-runtime/server'),/Practice import denied/);
+ await assert.rejects(import('@/lib/queues/server'),/Practice import denied/);
+ const {startPractice,runPracticeTurn}=await import('@/lib/zoe/practice/engine');
+ const {createFakeProvider}=await import('@/lib/zoe/provider');
+ const {createFakeJudge}=await import('@/lib/zoe/reply-check');
+ let calls=0,writePortTouches=0;
+ const fake=createFakeProvider();
+ const provider={...fake,complete:async request=>{calls++;return fake.complete(request);}};
+ const ports=new Proxy({}, {get(){writePortTouches++;throw Error('Production write port accessed');}});
+ const state=await runPracticeTurn(startPractice('practice-ldl-well'),'Can you explain my LDL result?',{provider,judge:createFakeJudge(),ports,env:{NOREON_ZOE_TEST_LEXICON:'false',NOREON_ZOE_URGENT_PLACEHOLDER:'true'}});
+ assert.equal(state.turns.length,1);
+ assert.ok(calls>0,'Actual fake provider path must execute');
+ assert.equal(writePortTouches,0,'Caller-supplied write ports must be ignored');
+ assert.equal(state.turns[0].job.memberId,'00000000-0000-4000-9000-000000000001');
+ console.log('Practice isolation subprocess passed');
+ `;
+ const evidence=execFileSync(process.execPath,['--no-warnings','--import','./scripts/register-alias.mjs','--import',guard,'--input-type=module','--eval',child],{env:{PATH:process.env.PATH??'',NODE_ENV:'test'},encoding:'utf8'});
+ assert.match(evidence,/Practice isolation subprocess passed/);
+}finally{rmSync(isolated,{recursive:true,force:true});}
+console.log('Practice isolation: fresh import denial, network denial and ignored injected production ports passed');
+
+// Replay every earlier turn and carry the candidate's answer into the next job.
+const baselineConversation=structuredClone(state);
+const oldFirst=visible(baselineConversation.turns[0]!.finish);
+setVisible(baselineConversation.turns[0]!.finish,'SAVED BASELINE FIRST ANSWER');
+baselineConversation.turns[1]!.job.answers=baselineConversation.turns[1]!.job.answers.map(a=>a.body===oldFirst?{...a,body:'SAVED BASELINE FIRST ANSWER'}:a);
+const conversationSet=exportPracticeCorrections({marks:[{id:'whole-conversation',rating:'wrong',reason:'Review follow-up',correction:'Keep the alarm context',snapshot:{...baselineConversation,record:baselineConversation.turns[1]!.record,markedTurn:baselineConversation.turns[1],configVersion:'fixture'}}]});
+const factoryTurns:number[]=[];
+const conversationReplay=await replayPracticeCorrections(conversationSet,c=>{factoryTurns.push(c.job.messageSeq);return deps;});
+assert.deepEqual(factoryTurns,[1,2]);
+const candidateTurns=conversationReplay.results[0]!.candidate.turns;
+assert.equal(candidateTurns.length,2);
+assert.notEqual(visible(candidateTurns[0]!.finish),'SAVED BASELINE FIRST ANSWER');
+assert.ok(candidateTurns[1]!.job.answers.some(a=>a.body===visible(candidateTurns[0]!.finish)));
+assert.ok(!candidateTurns[1]!.job.answers.some(a=>a.body==='SAVED BASELINE FIRST ANSWER'));
+assert.equal(candidateTurns[1]!.job.memberClear?.trigger?.reading?.systolic,198);
+assert.equal(candidateTurns[1]!.job.intake?.latestReading?.systolic,128);
+console.log('Practice replay: complete chronological candidate conversation uses regenerated answers and preserved record edits');

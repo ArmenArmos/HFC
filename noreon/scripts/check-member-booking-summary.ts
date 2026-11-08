@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {summarizeMemberBooking} from '@/lib/staff/member-booking-summary';
+const clinic='c0000000-0000-4000-8000-000000000001';
+const arrangement=(startsAt:string,mode:'home'|'clinic'='clinic')=>({offerId:'b0000000-0000-4000-8000-000000000001',offerVersion:'v1',clinicId:clinic,mode,startsAt,endsAt:startsAt,timezone:'Asia/Yerevan' as const,location:'Yerevan',preparation:'',preparationVersion:'v1',coveredTests:[]});
+const appointment=(status:string,startsAt:string,mode:'home'|'clinic'='clinic',current:string|null=null)=>({status,proposed:arrangement(startsAt,mode),current:current?arrangement(current,mode):null}) as never;
+const clinics={[clinic]:'Davidyants Polyclinics'};
+assert.equal(summarizeMemberBooking({appointments:[],clinics}),null,'No appointment, no line');
+assert.equal(summarizeMemberBooking({appointments:[appointment('cancelled','2026-10-20T07:00:00Z')],clinics}),null,'Cancelled visits are not shown');
+assert.deepEqual(summarizeMemberBooking({appointments:[appointment('notification-pending','2026-10-20T07:00:00Z')],clinics}),{state:'waiting-clinic',mode:'clinic',startsAt:'2026-10-20T07:00:00Z',clinicName:'Davidyants Polyclinics'});
+assert.equal(summarizeMemberBooking({appointments:[appointment('confirmed','2026-10-21T07:00:00Z','clinic','2026-10-22T07:00:00Z')],clinics})?.startsAt,'2026-10-22T07:00:00Z','A confirmed visit shows its current arrangement');
+assert.equal(summarizeMemberBooking({appointments:[appointment('confirmed','2026-10-19T07:00:00Z'),appointment('unknown','2026-10-25T07:00:00Z')],clinics})?.state,'attention','An uncertain visit outranks a confirmed one');
+assert.equal(summarizeMemberBooking({appointments:[appointment('notification-pending','2026-10-20T07:00:00Z','home')],clinics:{}})?.mode,'home');
+console.log('Member booking summary: cancelled hidden, waiting/confirmed/attention mapped with date and clinic, uncertain visits first.');

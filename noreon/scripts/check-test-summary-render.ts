@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import {createElement} from "react";
+import {renderToStaticMarkup} from "react-dom/server";
+import {TestSummary} from "@/components/patient-care/test-summary";
+import type {CareResult} from "@/lib/patient-care/types";
+const result={id:'one',marker:'LDL',unit:'mmol/L',value:3.1,collectedAt:'2026-10-11T10:00:00Z',referenceLow:null,referenceHigh:null,reviewedAt:'2026-10-12T10:00:00Z'} as CareResult;
+const render=(results:CareResult[])=>renderToStaticMarkup(createElement(TestSummary,{results,locale:'en'}));
+assert.ok(render([result]).includes('1 range unknown'));
+assert.ok(!render([result]).includes('outside supplied ranges'),'An unknown range must never contribute an apparent normal/outside denominator');
+const mixed=render([result,{...result,id:'two',marker:'Glucose',value:7,referenceHigh:5},{...result,id:'three',marker:'Calcium',value:2,referenceLow:1,referenceHigh:3}]);
+assert.ok(mixed.includes('1 of 2 outside supplied ranges')&&mixed.includes('1 range unknown'));
+assert.ok(render([]).includes('No approved results available yet.'));
+const history=render([result,{...result,id:'later',collectedAt:'2026-10-12T10:00:00Z'}]);
+assert.ok(history.includes('1 published result'),'Summary counts latest marker/unit groups, not historical repeats');
+console.log('Actual test summary: unknown ranges excluded from the supplied-range denominator; mixed bounds, empty and historical states passed.');

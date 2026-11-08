@@ -1,0 +1,50 @@
+name: Supply chain
+# SBOM (CycloneDX) and a production dependency audit (docs/operations/supply-chain.md).
+# Runs on main, weekly, by hand, and on ready PRs that change dependencies. About two minutes.
+on:
+  push:
+    branches: [main]
+    paths: [package.json, pnpm-lock.yaml, apps/patient-mobile/package.json, apps/patient-mobile/pnpm-lock.yaml, .github/workflows/supply-chain.yml, scripts/audit-gate.mjs, scripts/audit-accepted.json]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths: [package.json, pnpm-lock.yaml, apps/patient-mobile/package.json, apps/patient-mobile/pnpm-lock.yaml, .github/workflows/supply-chain.yml, scripts/audit-gate.mjs, scripts/audit-accepted.json]
+  schedule:
+    - cron: "30 3 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: supply-chain-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sbom-and-audit:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    # Same switch as Verify: the self-hosted Mac runner when VERIFY_RUNS_ON says so.
+    runs-on: ${{ fromJSON(vars.VERIFY_RUNS_ON || '"ubuntu-latest"') }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - name: Generate CycloneDX SBOM from the lockfiles (no install, no scripts run)
+        run: |
+          npx --yes @cyclonedx/cdxgen@12.8.5 -t js --no-install-deps -o sbom-web.cdx.json .
+          # From inside the app: given a relative subdirectory, cdxgen reads its package.json but not its lockfile.
+          (cd apps/patient-mobile && npx --yes @cyclonedx/cdxgen@12.8.5 -t js --no-install-deps -o "$GITHUB_WORKSPACE/sbom-mobile.cdx.json" .)
+          node -e 'for (const f of ["sbom-web.cdx.json","sbom-mobile.cdx.json"]) { const s = JSON.parse(require("fs").readFileSync(f, "utf8")); if (s.bomFormat !== "CycloneDX" || !(s.components?.length > 50)) throw Error(f + " looks empty"); console.log(f, s.specVersion, s.components.length, "components"); }'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom-*.cdx.json
+          retention-days: 90
+      # Fails on high or critical advisories in runtime dependencies, for both lockfiles; a failed
+      # scheduled run emails the repository admins. Dev-only tooling is reported by Dependabot alerts.
+      # Accepted advisories (no fix published, build tooling only) are listed with a reason and an
+      # expiry date in scripts/audit-accepted.json.
+      - name: Audit production dependencies (high and critical), web
+        run: pnpm audit --prod --json | node scripts/audit-gate.mjs .
+      - name: Audit production dependencies (high and critical), mobile
+        working-directory: apps/patient-mobile
+        run: pnpm audit --prod --json | node ../../scripts/audit-gate.mjs apps/patient-mobile

@@ -1,0 +1,123 @@
+name: End-to-end suites
+# The web and Telegram journeys (e2e/README.md) against a local stack on one runner: fictional
+# people, fake model, fake Telegram, network guard on. Nightly on main and by hand on any ref.
+on:
+  schedule:
+    # 06:20 Yerevan: no Verify ran between 05:00 and 14:00 Yerevan in the week of 24 Oct, it is far
+    # from midnight, and it ends before the servers' 04:00 UTC reboot window.
+    - cron: "20 2 * * *"
+  workflow_dispatch:
+    inputs:
+      suites:
+        description: 'Suites to run, as a JSON list (web, chat-v2, staff-chat, member-home, zoe-kit, telegram)'
+        default: '["web","chat-v2","staff-chat","member-home","zoe-kit","telegram"]'
+      filter:
+        description: 'Only tests whose file or title matches this text (for example doctor-chat); empty runs everything'
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  # One group for every ref, never cancelled: a run holds one runner, so the other keeps taking Verify.
+  group: e2e
+  cancel-in-progress: false
+jobs:
+  e2e:
+    name: e2e (${{ matrix.suite }})
+    # One leg per suite, one after the other: a red web suite cannot hide the Telegram result, and each has its own status and artifact.
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        suite: ${{ fromJSON(inputs.suites || '["web","chat-v2","staff-chat","member-home","zoe-kit","telegram"]') }}
+    # Hetzner only: the app stopped mid-suite both times this ran on the ARM Mac runner.
+    runs-on: ${{ fromJSON(vars.MOBILE_RUNS_ON || vars.VERIFY_RUNS_ON || '"ubuntu-latest"') }}
+    timeout-minutes: 90
+    env:
+      SUITE: ${{ matrix.suite }}
+      # The browser's system libraries are not on the runner and must not be installed there, so
+      # Chromium runs in Playwright's own image. Keep it the same version as @playwright/test.
+      PLAYWRIGHT_IMAGE: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
+      NOREON_E2E_BROWSER_WS: ws://127.0.0.1:54333/
+      # Nothing here reads mail, and Studio is off, so these two only take memory.
+      NOREON_E2E_SUPABASE_EXCLUDE: mailpit,postgres-meta
+    steps:
+      - name: Record the server's memory
+        run: |
+          ARTIFACTS="$RUNNER_TEMP/e2e-artifacts"
+          echo "ARTIFACTS=$ARTIFACTS" >> "$GITHUB_ENV"
+          mkdir -p "$ARTIFACTS"
+          df -h / > "$ARTIFACTS/disk-before.txt"
+          (
+            n=0
+            while :; do
+              awk -v t="$(date -u +%T)" '/^MemTotal/{m=$2}/^MemAvailable/{a=$2}/^SwapTotal/{st=$2}/^SwapFree/{sf=$2}END{printf "%s used_mb=%d available_mb=%d swap_used_mb=%d\n",t,(m-a)/1024,a/1024,(st-sf)/1024}' /proc/meminfo
+              if [ $((n % 12)) = 0 ]; then
+                { date -u +%T; docker stats --no-stream --format '{{.Name}} {{.MemUsage}}'; ps -eo rss=,args= --sort=-rss | head -4 | cut -c1-120; } >> "$ARTIFACTS/containers.log" 2>&1
+              fi
+              n=$((n + 1))
+              sleep 5
+            done
+          ) >> "$ARTIFACTS/memory.log" 2>&1 &
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          # Self-hosted runners keep the pnpm store on disk.
+          cache: ${{ runner.environment == 'github-hosted' && 'pnpm' || '' }}
+      - run: pnpm install --frozen-lockfile
+      - name: Clear a stack left by a cancelled run (self-hosted only)
+        if: runner.environment == 'self-hosted'
+        run: |
+          pnpm exec supabase stop --no-backup || true
+          docker rm -f noreon-e2e-browser || true
+      - name: Start the browser
+        run: |
+          want="$(node -p 'require("./node_modules/@playwright/test/package.json").version')"
+          case "$PLAYWRIGHT_IMAGE" in *":v$want-"*) ;; *) echo "::error::PLAYWRIGHT_IMAGE is not version $want"; exit 1;; esac
+          docker pull -q "$PLAYWRIGHT_IMAGE"
+          docker run -d --rm --init --name noreon-e2e-browser --network host --shm-size=256m --user pwuser \
+            -v "$GITHUB_WORKSPACE:/e2e:ro" -w /e2e "$PLAYWRIGHT_IMAGE" \
+            timeout 3h node node_modules/@playwright/test/cli.js run-server --port 54333 --host 127.0.0.1
+          for i in $(seq 30); do curl -s -o /dev/null http://127.0.0.1:54333/ && exit 0; sleep 1; done
+          docker logs noreon-e2e-browser; exit 1
+      - name: Journeys
+        env:
+          FILTER: ${{ inputs.filter }}
+        # The stack starts empty on a CI runner, so the web suite skips its database reset. $FILTER is split on purpose.
+        run: |
+          case "$SUITE" in
+            web) pnpm e2e:web --no-reset $FILTER ;;
+            # The new member chat is behind a switch that also changes where sign-up lands, so it runs on its own.
+            chat-v2) NOREON_E2E_CHAT_V2=true pnpm e2e:web --no-reset member-chat-v2 send-before-hydration ;;
+            # The rebuilt doctor chat and the new nurse chat also change where those staff land, so their journeys run on their own.
+            staff-chat) NOREON_E2E_DOCTOR_CHAT=true NOREON_E2E_NURSE_CHAT=true pnpm e2e:web --no-reset doctor-chat-journey nurse-home ;;
+            # The prototype Home, and the chat kit's look on every Zoe journey: both are on in staging, so each runs with its switch on.
+            member-home) NOREON_E2E_MEMBER_HOME=true pnpm e2e:web --no-reset member-home ;;
+            zoe-kit) NOREON_E2E_ZOE_KIT=true pnpm e2e:web --no-reset zoe- ;;
+            *) pnpm e2e:"$SUITE" $FILTER ;;
+          esac
+      - name: Keep the results
+        if: always()
+        run: scripts/e2e-keep-results.sh "$SUITE"
+      - name: Stop the stack and the browser
+        if: always()
+        run: |
+          docker logs noreon-e2e-browser > "$ARTIFACTS/browser.log" 2>&1 || true
+          docker rm -f noreon-e2e-browser || true
+          docker rmi "$PLAYWRIGHT_IMAGE" || true
+          pnpm exec supabase stop --no-backup || true
+          df -h / > "$ARTIFACTS/disk-after.txt"
+      - name: Memory peak
+        if: always()
+        run: |
+          awk -F'[= ]' '{ if ($3>u) u=$3; if (!a || $5<a) a=$5; if ($7>s) s=$7 } END { printf "Peak used %d MB, lowest available %d MB, peak swap %d MB, %d samples\n", u, a, s, NR }' "$ARTIFACTS/memory.log" | sed "s/^/${SUITE}: /" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: e2e-${{ matrix.suite }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/e2e-artifacts
+          retention-days: 7
+          if-no-files-found: warn

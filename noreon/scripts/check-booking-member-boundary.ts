@@ -1,0 +1,13 @@
+import assert from'node:assert/strict';
+import{createMemberBookingContext}from'@/lib/real-booking/member-runtime-context';
+import{readAppointmentData,createAppointmentPorts,type BookingRpc}from'@/lib/real-booking/appointment-runtime';
+const id='b2300000-0000-4000-8000-000000000001';
+let readers=0,writers=0,runtimes=0;const calls:string[]=[];
+const arrangement={offerId:id,offerVersion:'v1',clinicId:id,mode:'clinic',startsAt:'2030-01-01T09:00:00+04:00',endsAt:'2030-01-01T10:00:00+04:00',timezone:'Asia/Yerevan',location:'Synthetic',preparation:'Synthetic',preparationVersion:'v1',coveredTestIds:['synthetic'],followUps:[]};
+const appointment={version:'email-pilot-v1',id,memberId:id,revision:0,status:'confirmed',program:[{id:'synthetic',title:'Synthetic',method:'lab',preparation:''}],current:arrangement,proposed:arrangement,noticeId:id,createdAt:'2026-10-16T00:00:00Z'};
+const read:BookingRpc={rpc:async name=>{calls.push(name);return{data:name==='booking_pilot_workspace_details'?{memberId:id,phone:null,purposes:{},clinics:{}}:{member:{id,name:'Synthetic'},appointments:[appointment]},error:null};}};
+const make=(enabled:boolean)=>createMemberBookingContext({memberId:id,enabled,createRead:()=>{readers++;return read;},createWrite:()=>{writers++;throw Error('Disabled writer must never be created');},createRuntime:()=>{runtimes++;throw Error('Disabled runtime must never be created');},invalidate:()=>{}});
+const disabled=await make(false);assert.equal(readers,1);assert.equal(writers,0);assert.equal(runtimes,0);
+const saved=await readAppointmentData(disabled);assert.equal(saved.data.appointments.length,1,'Kill switch preserves saved visits through RLS read');assert.equal(saved.data.unavailableReason,'configuration-unavailable');assert.deepEqual(calls,['booking_pilot_workspace','booking_pilot_workspace_details','booking_pilot_programme_state'],'Disabled read may not seal programs or fetch offers');
+calls.length=0;await createAppointmentPorts(disabled).recover({commandId:id,offerId:id,offerVersion:'v1',homeAddress:null});assert.deepEqual(calls,[],'Disabled recovery must never reach a service writer');
+console.log('Member boundary: config-disabled real RLS preserves saved visits, no writer/runtime/recovery. Injected factories, not Auth.');

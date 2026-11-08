@@ -1,0 +1,9 @@
+# Assigned nurse care boundary
+
+The user approved separate doctor and nurse accounts: nurses collect measurements and evidence and coordinate follow-up for assigned members; doctors retain these duties plus treatment authority. This supersedes the earlier follow-up specification's instruction not to introduce a nurse role.
+
+The implementation adds explicit nurse assignment alongside the accountable doctor. An administrator assigns an active nurse in the doctor's active clinic. Changing the doctor clears nurse assignment. Every read and write checks current nurse assignment, clinic activity and doctor coverage; unrelated nurses and administrators cannot use clinical evidence or care commands. Existing administrator coordination remains unchanged.
+
+Narrow attributed commands record blood pressure measurements and append evidence/contact notes. Notes do not mark evidence received, resolve clinical review, approve reports or change treatment. Shared-demo referral notes open/advance doctor review. Native referral notes are visible handoffs in the case, with no claim of external notification. Existing shared monitoring contact outcomes remain independent from clinical completion. Clinical report approval, result receipt, consultations, drafts, medication and publication remain doctor-only. Nurses can read raw assigned evidence and approved care; private drafts are redacted.
+
+Verification: replay all migrations only in the isolated noreon-twilio-hook-replay project, regenerate types there, test unassigned/cross-clinic/inactive access, doctor reassignment, actual measurement persistence, attributed notes, RLS/direct-write rejection, and clinical command denial. Root verifies actual nurse and doctor browser flows. No hosted database writes or existing account modifications are authorized by this work.

@@ -1,0 +1,68 @@
+.ncv2-card { white-space:normal; }
+.ncv2-card > * + *, .ncv2-card [data-today-reply] > * + * { margin-top:8px; }
+.ncv2-list { list-style:none; margin:8px 0 0; padding:0; }
+.ncv2-list li + li { margin-top:8px; }
+.cv2-root .ncv2-choice { display:block; min-height:44px; padding:8px 12px; border-radius:var(--cv2-pill); background:var(--cv2-blue-soft); color:var(--cv2-blue-text); text-align:start; }
+.ncv2-urgent { flex:none; min-height:44px; padding:8px 16px; background:var(--cv2-white); color:var(--cv2-muted); text-align:start; border-bottom:1px solid var(--cv2-hair)!important; font-size:13px!important; }
+.ncv2-urgent span { text-decoration:underline; }
+.ncv2-replying { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 8px; color:var(--cv2-muted); font-size:13px; }
+.ncv2-replying button { min-width:44px; min-height:44px; background:transparent; color:var(--cv2-ink); font-size:24px; }
+.ncv2-replying > span { min-width:0; overflow-wrap:anywhere; }
+.ncv2-replying .ncv2-switch { margin-left:auto; padding:0 8px; font-size:13px; text-decoration:underline; text-underline-offset:2px; }
+.ncv2-body { white-space:pre-wrap; overflow-wrap:anywhere; }
+.cv2-root [data-nurse-sent-handoffs] { overflow-wrap:anywhere; }
+.cv2-root [data-nurse-sent-handoffs] li > * + *, .cv2-root [data-handoff-resolution] > * + * { margin-top:8px; }
+.cv2-root [data-nurse-sent-handoffs] li + li { margin-top:20px; padding-top:16px; border-top:1px solid var(--cv2-hair); }
+.cv2-root [data-nurse-sent-handoffs] .ncv2-choice { min-width:44px; max-width:100%; white-space:normal; }
+.ncv2-handoff-status { display:inline-block; padding:4px 8px; border:1px solid var(--cv2-hair); border-radius:var(--cv2-pill); font-size:13px; }
+.ncv2-guidance { max-height:85dvh; overflow-y:auto; }
+.ncv2-guidance aside { margin-top:32px; }
+.ncv2-guidance p + p { margin-top:12px; }
+
+.ncv2-new { position:static; display:block; transform:none; margin:0 auto 8px; }
+.cv2-say > .cv2-time, .cv2-me > .cv2-time { text-align:start; }
+.ncv2-safety { margin:0 4px; text-align:start; }
+[data-conversation-item] [role="button"] { cursor:pointer; user-select:text; }
+[data-conversation-item] [role="button"]:focus-visible { outline:2px solid var(--cv2-blue-text); outline-offset:2px; }
+[data-handoff-state="failed"] .cv2-say { border:1px solid var(--cv2-muted); }
+.ncv2-topics { display:flex; flex-wrap:wrap; gap:8px; }
+[data-conversation-item] > .ncv2-choice { margin-top:8px; }
+.cv2-root [data-visit-question] .ncv2-choice { display:inline-block; margin:8px 8px 0 0; vertical-align:top; border-radius:var(--cv2-bubble); }
+.ncv2-confirm { flex-wrap:wrap; padding:8px; }
+.cv2-root .ncv2-confirm button { font-size:15px; background:var(--cv2-blue-soft); color:var(--cv2-blue-text); border-radius:var(--cv2-pill); padding:8px 12px; }
+.cv2-root [data-urgent-alerts] { margin:0 0 12px; padding:10px 12px; border:2px solid var(--cv2-alert); border-radius:12px; }
+.cv2-root [data-urgent-alerts] ul { list-style:none; margin:8px 0 0; padding:0; }
+.cv2-root [data-urgent-alerts] li + li { margin-top:12px; }
+.cv2-root [data-urgent-alerts] p { margin:0 0 4px; }
+
+.cv2-root .ncv2-sample-reason { display:block; box-sizing:border-box; width:100%; min-width:0; min-height:88px; padding:12px; border:1px solid var(--cv2-hair); border-radius:var(--cv2-bubble); background:var(--cv2-white); color:var(--cv2-ink); font:inherit; font-size:16px; resize:vertical; scroll-margin-block:24px; }
+.cv2-root [data-sample-collection] { overflow-wrap:anywhere; }
+.cv2-root [data-sample-collection] button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+
+.cv2-root [data-sample-collection] .ncv2-sample-confirm { background:var(--cv2-blue); color:var(--cv2-white); font-weight:600; }
+
+.cv2-root [data-visit-checklist], .cv2-root [data-visit-baseline] { overflow-wrap:anywhere; }
+.cv2-root [data-visit-checklist] summary, .cv2-root [data-visit-baseline] summary { min-height:44px; padding-block:8px; cursor:pointer; }
+.cv2-root .ncv2-visit-fields { display:grid; gap:12px; margin-block:12px; }
+.cv2-root .ncv2-visit-field, .cv2-root .ncv2-preview-sample label { display:block; min-width:0; }
+.cv2-root .ncv2-stepper { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:8px; align-items:center; }
+.cv2-root .ncv2-stepper input, .cv2-root [data-visit-preview] select { box-sizing:border-box; width:100%; min-width:0; min-height:44px; padding:8px; border:1px solid var(--cv2-hair); border-radius:var(--cv2-bubble); background:var(--cv2-white); color:var(--cv2-ink); font:inherit; font-size:16px; scroll-margin-block:24px; }
+.cv2-root [data-visit-question] .ncv2-stepper .ncv2-choice { display:block; width:44px; margin:0; text-align:center; }
+.cv2-root [data-visit-preview] { overflow-wrap:anywhere; }
+.cv2-root [data-visit-preview] > * + *, .cv2-root .ncv2-preview-sample { margin-top:12px; }
+.cv2-root [data-visit-preview] .ncv2-choice[aria-pressed="true"] { background:var(--cv2-blue); color:var(--cv2-white); }
+.cv2-root [data-visit-preview] button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+.cv2-root .ncv2-stepper :focus-visible, .cv2-root [data-visit-preview] :focus-visible { outline:2px solid var(--cv2-blue-text); outline-offset:2px; }
+
+.cv2-root .ncv2-visit-progress { margin:8px 16px 16px; color:var(--cv2-muted); font-size:13px; }
+.cv2-root .ncv2-visit-progress p { margin-bottom:6px; }
+.cv2-root .ncv2-group-item { margin-top:16px; padding-top:12px; border-top:1px solid var(--cv2-hair); }
+.cv2-root .ncv2-group-item > * + * { margin-top:8px; }
+.cv2-root .ncv2-tick { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 0; color:var(--cv2-ink); text-align:start; }
+.cv2-root .ncv2-tick > svg { flex:none; width:20px; height:20px; border:1px solid var(--cv2-muted); border-radius:var(--radius-sm); }
+.cv2-root .ncv2-tick[aria-pressed="false"] > svg path { visibility:hidden; }
+.cv2-root .ncv2-tick[aria-pressed="true"] { color:var(--cv2-blue-text); }
+.cv2-root .ncv2-tick:disabled { opacity:.5; }
+.cv2-root [data-visit-details] summary, .cv2-root .ncv2-protocol-details summary { min-height:44px; padding-block:8px; cursor:pointer; }
+.cv2-root [data-visit-group] button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+.cv2-root [data-visit-group] :focus-visible, .cv2-root [data-visit-details] summary:focus-visible { outline:2px solid var(--cv2-blue-text); outline-offset:2px; }

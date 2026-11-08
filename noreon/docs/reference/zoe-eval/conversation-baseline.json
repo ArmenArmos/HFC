@@ -1,0 +1,304 @@
+{
+ "head": "4a8f9eac",
+ "style": "coach-first",
+ "date": "2026-10-30",
+ "stats": {
+  "conversations": 37,
+  "turns": 198,
+  "passed": 11,
+  "emergenciesCaught": 6,
+  "emergencies": 6,
+  "false103": 3,
+  "underTriage": 0,
+  "careful": 2,
+  "forwarded": 27,
+  "tierHigh": 162,
+  "repeated": 60
+ },
+ "conversations": [
+  {
+   "id": "founder-replay",
+   "verdict": "FAIL",
+   "rules": [
+    "103 warning repeated",
+    "canned careful line instead of an answer",
+    "correction ignored: still relies on what the member said was wrong",
+    "doctor mentioned in 11 replies, limit 3",
+    "introduced herself 3 times",
+    "kept nagging after the member said stop",
+    "reply over the length limit",
+    "said she can't do something she can",
+    "same advice repeated",
+    "warning repeated after it was given",
+    "wrong language"
+   ]
+  },
+  {
+   "id": "en-ordinary-day",
+   "verdict": "FAIL",
+   "rules": [
+    "said she can't do something she can",
+    "sent to the doctor with no reason"
+   ]
+  },
+  {
+   "id": "hy-ordinary-day",
+   "verdict": "FAIL",
+   "rules": [
+    "said she can't do something she can",
+    "sent to the doctor with no reason"
+   ]
+  },
+  {
+   "id": "ru-ordinary-day",
+   "verdict": "FAIL",
+   "rules": [
+    "said she can't do something she can"
+   ]
+  },
+  {
+   "id": "hylat-ordinary-day",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "en-numbers-only",
+   "verdict": "FAIL",
+   "rules": [
+    "no reply at all"
+   ]
+  },
+  {
+   "id": "en-mild-high",
+   "verdict": "FAIL",
+   "rules": [
+    "introduced herself 2 times"
+   ]
+  },
+  {
+   "id": "hy-mild-high",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 2 replies, limit 1",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "en-saved-crisis",
+   "verdict": "FAIL",
+   "rules": [
+    "103 warning repeated",
+    "reply over the length limit",
+    "same advice repeated",
+    "same-day warning repeated on 5 of 5 replies",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "hy-saved-crisis",
+   "verdict": "FAIL",
+   "rules": [
+    "103 warning repeated",
+    "raw JSON shown to the member",
+    "reply over the length limit",
+    "same advice repeated",
+    "same-day warning repeated on 5 of 5 replies",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "ru-saved-crisis",
+   "verdict": "FAIL",
+   "rules": [
+    "103 warning repeated",
+    "introduced herself 2 times",
+    "raw JSON shown to the member",
+    "reply over the length limit",
+    "same advice repeated",
+    "same-day warning repeated on 5 of 5 replies",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "en-worried",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 3 replies, limit 1",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "ru-worried",
+   "verdict": "FAIL!",
+   "rules": [
+    "FALSE 103: the emergency route fired with no emergency",
+    "same advice repeated",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "en-stop-doctor",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 4 replies, limit 1",
+    "kept nagging after the member said stop",
+    "same advice repeated",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "hy-stop-doctor",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 2 replies, limit 1",
+    "kept nagging after the member said stop",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "en-missed-dose",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "hy-missed-dose",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "en-side-effect",
+   "verdict": "FAIL",
+   "rules": [
+    "asked a question back after thanks or ok",
+    "doctor mentioned in 5 replies, limit 1",
+    "same advice repeated",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "ru-side-effect",
+   "verdict": "FAIL",
+   "rules": [
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "ru-diet",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "hy-diet",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "en-ldl",
+   "verdict": "FAIL",
+   "rules": [
+    "canned careful line instead of an answer",
+    "doctor mentioned in 3 replies, limit 1",
+    "forwarded to the doctor with no reason"
+   ]
+  },
+  {
+   "id": "hy-ldl",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 2 replies, limit 1"
+   ]
+  },
+  {
+   "id": "en-emergency-chest",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "hy-emergency-stroke",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "ru-emergency-chest",
+   "verdict": "FAIL",
+   "rules": [
+    "introduced herself 2 times"
+   ]
+  },
+  {
+   "id": "hylat-emergency-chest",
+   "verdict": "FAIL",
+   "rules": [
+    "wrong language"
+   ]
+  },
+  {
+   "id": "sim-en-tired",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 2 replies, limit 1",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "sim-hy-corrector",
+   "verdict": "FAIL",
+   "rules": [
+    "doctor mentioned in 3 replies, limit 1"
+   ]
+  },
+  {
+   "id": "sim-ru-pusher",
+   "verdict": "FAIL",
+   "rules": [
+    "same advice repeated",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "sim-hylat-switcher",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "sim-en-lonely",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "sim-ru-skeptic",
+   "verdict": "FAIL",
+   "rules": [
+    "raw JSON shown to the member",
+    "reply over the length limit",
+    "warning repeated after it was given"
+   ]
+  },
+  {
+   "id": "sim-hy-logger",
+   "verdict": "FAIL",
+   "rules": [
+    "said she can't do something she can",
+    "sent to the doctor with no reason"
+   ]
+  },
+  {
+   "id": "sim-en-app",
+   "verdict": "FAIL",
+   "rules": [
+    "said she can't do something she can",
+    "sent to the doctor with no reason"
+   ]
+  },
+  {
+   "id": "sim-hy-emergency",
+   "verdict": "PASS",
+   "rules": []
+  },
+  {
+   "id": "sim-en-emergency",
+   "verdict": "PASS",
+   "rules": []
+  }
+ ]
+}

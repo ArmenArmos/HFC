@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {createClinicAdminGateway} from '@/lib/clinic-portal/admin-gateway';
+const id=(n:number)=>`c4700000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const clinic=id(1),membership=id(2),user=id(3),submission=id(4);
+const command={version:'clinic-admin-command-v1',op:'grant-existing',clinicId:clinic,membershipId:membership,userId:user,email:'synthetic@example.invalid',displayName:'Synthetic colleague',submissionId:submission};
+let calls=0,guards=0;let data:unknown={status:'committed',submissionId:submission,membershipId:membership,revision:1};
+const gateway=createClinicAdminGateway(async()=>{guards++;return{actorScope:'current',rpc:{rpc:async()=>{calls++;return{data,error:null};}}};});
+assert.equal((await gateway.command(clinic,command,'old')).status,'access');assert.equal(calls,0);
+assert.equal((await gateway.command(id(9),command,'current')).status,'access');assert.equal(calls,0);
+assert.equal((await gateway.command(clinic,command,'current')).status,'committed');assert.equal(calls,1);
+assert.equal((await gateway.lookup(clinic,'synthetic@example.invalid','old')).status,'unavailable');assert.equal(calls,1);
+assert.equal((await gateway.read(clinic,null,'old')).status,'unavailable');assert.equal(calls,1);
+assert.equal((await gateway.recover(clinic,command,'old')).status,'unavailable');assert.equal(calls,1);
+data={status:'loaded',receipt:{status:'retired',submissionId:submission,serialized:true},membership:null};assert.equal((await gateway.recover(clinic,command,'current')).status,'loaded');assert.equal(calls,2);assert.equal(guards,7);
+let deniedGuards=0;const denied=createClinicAdminGateway(async()=>{deniedGuards++;throw Error('denied');});await assert.rejects(()=>denied.command(clinic,command,'current'));assert.equal(deniedGuards,1);
+console.log('Clinic admin gateway PASS: current admin gate on every operation, stale scope and cross-clinic commands never reach RPC, exact recovery only. Injected guard/RPC, not actual Auth.');

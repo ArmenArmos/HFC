@@ -1,0 +1,1925 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Noreon two-phase screening simulator, aligned with the compiled CQL libraries.">
+<meta name="color-scheme" content="light dark">
+<title>Noreon Triage Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;500;600;700&family=Noto+Serif+Armenian:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ground:#F5F7F8; --surface:#FFFFFF; --surface-2:#EDF2F3; --surface-3:#E3EAEC;
+  --ink:#0F1A1D; --ink-2:#41565C; --ink-3:#6F868D;
+  --line:#D8E1E3; --line-2:#B7C6CA;
+  --accent:#0B6A70; --accent-2:#084A4F; --accent-wash:#DFEFEF;
+  --red:#A81E12;    --red-wash:#FAE6E3;   --red-line:#E5B3AC;
+  --orange:#964B05; --orange-wash:#FAEBDA; --orange-line:#E3BE93;
+  --amber:#725700;  --amber-wash:#F6EECC; --amber-line:#DCC98A;
+  --green:#1B5F37;  --green-wash:#DFEFE5; --green-line:#A8CDB6;
+  --shadow:0 1px 2px rgba(15,26,29,.06), 0 8px 24px -12px rgba(15,26,29,.18);
+  --r:10px;
+  --f-disp:"Noto Serif Armenian",Georgia,"Times New Roman",serif;
+  --f-body:"Noto Sans Armenian",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C1214; --surface:#131C1F; --surface-2:#1A2529; --surface-3:#223035;
+    --ink:#E5ECED; --ink-2:#A4B7BC; --ink-3:#7A9096;
+    --line:#222E32; --line-2:#33454B;
+    --accent:#57C6CB; --accent-2:#8EDCDF; --accent-wash:#0E2D30;
+    --red:#FF9080;    --red-wash:#3A1510;   --red-line:#6B2A21;
+    --orange:#F0A85C; --orange-wash:#331E0B; --orange-line:#65401A;
+    --amber:#DFC451;  --amber-wash:#2B2307; --amber-line:#584917;
+    --green:#6BC98F;  --green-wash:#0E2918; --green-line:#255339;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C1214; --surface:#131C1F; --surface-2:#1A2529; --surface-3:#223035;
+  --ink:#E5ECED; --ink-2:#A4B7BC; --ink-3:#7A9096;
+  --line:#222E32; --line-2:#33454B;
+  --accent:#57C6CB; --accent-2:#8EDCDF; --accent-wash:#0E2D30;
+  --red:#FF9080;    --red-wash:#3A1510;   --red-line:#6B2A21;
+  --orange:#F0A85C; --orange-wash:#331E0B; --orange-line:#65401A;
+  --amber:#DFC451;  --amber-wash:#2B2307; --amber-line:#584917;
+  --green:#6BC98F;  --green-wash:#0E2918; --green-line:#255339;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--f-body); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--f-disp); font-weight:600; text-wrap:balance; margin:0; line-height:1.25}
+p{margin:0}
+a{color:var(--accent)}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+
+.mono{font-family:var(--f-data); font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px; margin:0 auto; padding:0 24px}
+
+/* ── masthead ─────────────────────────────── */
+.mast{border-bottom:1px solid var(--line); background:var(--surface); position:sticky; top:0; z-index:40}
+.mast-in{display:flex; align-items:center; gap:20px; padding:14px 24px; max-width:1240px; margin:0 auto; flex-wrap:wrap}
+.brand{display:flex; align-items:baseline; gap:10px; margin-right:auto}
+.brand b{font-family:var(--f-disp); font-size:19px; font-weight:700; letter-spacing:-.01em}
+.brand span{font-family:var(--f-data); font-size:11px; color:var(--ink-3); letter-spacing:.04em}
+.pillrow{display:flex; gap:6px; flex-wrap:wrap}
+.tpill{font-family:var(--f-data); font-size:10.5px; letter-spacing:.06em; padding:3px 8px; border-radius:99px; border:1px solid}
+.t-red{color:var(--red); background:var(--red-wash); border-color:var(--red-line)}
+.t-org{color:var(--orange); background:var(--orange-wash); border-color:var(--orange-line)}
+.t-amb{color:var(--amber); background:var(--amber-wash); border-color:var(--amber-line)}
+.t-grn{color:var(--green); background:var(--green-wash); border-color:var(--green-line)}
+.themebtn{border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:12px; color:var(--ink-2); background:var(--surface)}
+.themebtn:hover{border-color:var(--line-2); color:var(--ink)}
+
+/* ── notice ───────────────────────────────── */
+.notice{background:var(--amber-wash); border-bottom:1px solid var(--amber-line); color:var(--amber)}
+.notice .wrap{display:flex; gap:10px; align-items:baseline; padding-top:8px; padding-bottom:8px; font-size:12.5px}
+.notice b{font-family:var(--f-data); font-size:10.5px; letter-spacing:.08em}
+
+/* ── tabs ─────────────────────────────────── */
+.tabs{border-bottom:1px solid var(--line); background:var(--surface); position:sticky; top:57px; z-index:30}
+.tabs-in{display:flex; gap:2px; max-width:1240px; margin:0 auto; padding:0 24px; overflow-x:auto}
+.tab{padding:11px 15px; font-size:13.5px; font-weight:500; color:var(--ink-3); border-bottom:2px solid transparent; white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent); border-bottom-color:var(--accent)}
+.tab .n{font-family:var(--f-data); font-size:10px; opacity:.65; margin-left:6px}
+
+main{padding:28px 0 80px}
+.view[hidden]{display:none}
+
+/* ── section headers ──────────────────────── */
+.eyebrow{font-family:var(--f-data); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3)}
+.shead{margin-bottom:18px}
+.shead h2{font-size:24px; margin-top:4px}
+.shead p{color:var(--ink-2); font-size:14px; max-width:70ch; margin-top:6px}
+
+/* ── cards ────────────────────────────────── */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r)}
+.grid{display:grid; gap:14px}
+</style>
+<style>
+.shead{margin-bottom:18px}
+.shead h2{font-size:24px; margin-top:4px}
+.shead p{color:var(--ink-2); font-size:14px; max-width:74ch; margin-top:6px}
+
+.cite{border-left:2px solid var(--accent); background:var(--accent-wash); padding:10px 13px; border-radius:0 8px 8px 0; font-size:13px; color:var(--ink-2)}
+.cite > b:first-child{color:var(--accent-2); font-family:var(--f-data); font-size:10px; letter-spacing:.06em; display:block; margin-bottom:4px}
+.cite em{color:var(--ink); font-style:italic}
+.warn{border-left:2px solid var(--orange); background:var(--orange-wash); padding:10px 13px; border-radius:0 8px 8px 0; font-size:13px; color:var(--ink-2)}
+.warn > b:first-child{color:var(--orange); font-family:var(--f-data); font-size:10px; letter-spacing:.06em; display:block; margin-bottom:4px}
+
+.tblwrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:13px; min-width:600px}
+th{text-align:left; font-family:var(--f-data); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500; padding:10px 13px; border-bottom:1px solid var(--line); background:var(--surface-2); position:sticky; top:0}
+td{padding:10px 13px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink-2)}
+tr:last-child td{border-bottom:0}
+td.k{color:var(--ink); font-weight:500}
+.nw{white-space:nowrap}
+td .mono{color:var(--ink); font-size:12.5px}
+tbody tr:hover td{background:var(--surface-2)}
+.srcpill{font-family:var(--f-data); font-size:9.5px; letter-spacing:.04em; padding:2px 6px; border-radius:4px; white-space:nowrap}
+.s-esc{background:var(--green-wash); color:var(--green)}
+.s-ext{background:var(--amber-wash); color:var(--amber)}
+.s-nrn{background:var(--accent-wash); color:var(--accent)}
+
+/* source documents */
+.srcdoc{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.srcdoc + .srcdoc{margin-top:12px}
+.srcdoc-h{width:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:13px; align-items:center;
+  padding:14px 16px; text-align:left; background:var(--surface-2); border-bottom:1px solid transparent}
+.srcdoc-h:hover{background:var(--surface-3)}
+.srcdoc[open] .srcdoc-h{border-bottom-color:var(--line)}
+.srcdoc-h .yr{font-family:var(--f-disp); font-size:19px; font-weight:700; color:var(--accent); line-height:1}
+.srcdoc-h .ti{font-size:13.5px; color:var(--ink); font-weight:600}
+.srcdoc-h .ti small{display:block; font-weight:400; color:var(--ink-3); font-size:11.5px; margin-top:3px; font-family:var(--f-data)}
+.srcdoc-h .cnt{font-family:var(--f-data); font-size:10.5px; color:var(--ink-3); white-space:nowrap}
+.srcdoc-b{padding:14px 16px; display:none; flex-direction:column; gap:10px}
+.srcdoc[open] .srcdoc-b{display:flex}
+.qrow{display:grid; grid-template-columns:150px minmax(0,1fr); gap:14px; align-items:start; font-size:12.5px}
+@media (max-width:640px){.qrow{grid-template-columns:1fr; gap:5px}}
+.qrow .sec{font-family:var(--f-data); font-size:10.5px; letter-spacing:.05em; color:var(--accent); padding-top:2px}
+.qrow .txt{color:var(--ink-2); font-style:italic; border-left:2px solid var(--line-2); padding-left:12px}
+.qrow .txt b{font-style:normal; color:var(--ink); font-weight:600}
+</style>
+<style>
+/* ── SIM view ─────────────────────────────── */
+.simlay{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start}
+@media (max-width:960px){.simlay{grid-template-columns:1fr}}
+.stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+.stage-h{padding:12px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; background:var(--surface-2)}
+.prog{flex:1; height:3px; background:var(--line); border-radius:99px; overflow:hidden}
+.prog i{display:block; height:100%; background:var(--accent); transition:width .3s ease}
+.stage-b{padding:26px 28px 28px}
+@media (max-width:600px){.stage-b{padding:20px}}
+.qkicker{font-family:var(--f-data); font-size:10.5px; letter-spacing:.09em; color:var(--accent); text-transform:uppercase}
+.qtext{font-family:var(--f-disp); font-size:22px; font-weight:600; margin:8px 0 4px; line-height:1.3; text-wrap:balance}
+.qhelp{font-size:13px; color:var(--ink-3); margin-bottom:16px; max-width:62ch}
+.answers{display:flex; flex-direction:column; gap:8px; margin-top:14px}
+.ans{display:flex; align-items:flex-start; gap:11px; padding:12px 14px; border:1px solid var(--line); border-radius:9px;
+  background:var(--surface); font-size:14px; text-align:left; width:100%; transition:border-color .15s, background .15s}
+.ans:hover{border-color:var(--accent); background:var(--accent-wash)}
+.ans[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-wash); font-weight:600}
+.ans .box{width:17px; height:17px; border:1.5px solid var(--line-2); border-radius:5px; flex:none; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--surface)}
+.ans[aria-pressed="true"] .box{background:var(--accent); border-color:var(--accent); color:#fff}
+.ans.radio .box{border-radius:99px}
+.ans .sub{display:block; font-size:12px; color:var(--ink-3); font-weight:400; margin-top:2px}
+.ans.danger{border-color:var(--red-line); background:var(--red-wash); color:var(--red); font-weight:700; font-size:16px; padding:18px}
+.ans.danger:hover{background:var(--red); color:#fff; border-color:var(--red)}
+.ans.danger .box{display:none}
+
+.numrow{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px}
+.numf{display:flex; flex-direction:column; gap:5px; min-width:130px}
+.numf label{font-family:var(--f-data); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3)}
+.numf input{font-family:var(--f-data); font-size:19px; padding:9px 12px; width:100%; border:1px solid var(--line);
+  border-radius:8px; background:var(--surface); color:var(--ink); font-variant-numeric:tabular-nums}
+.numf input:focus{border-color:var(--accent); outline:none}
+.numf .u{font-size:11px; color:var(--ink-3)}
+.slider{width:100%; margin-top:16px; accent-color:var(--accent)}
+.sliderval{font-family:var(--f-data); font-size:32px; color:var(--accent); text-align:center; margin-top:8px}
+.simfoot{display:flex; gap:10px; align-items:center; margin-top:22px; padding-top:16px; border-top:1px solid var(--line); flex-wrap:wrap}
+.btn{padding:9px 17px; border-radius:8px; font-size:13.5px; font-weight:600; border:1px solid transparent}
+.btn-p{background:var(--accent); color:#fff}
+.btn-p:hover{background:var(--accent-2)}
+.btn-p[disabled]{opacity:.4; cursor:not-allowed}
+.btn-g{border-color:var(--line); color:var(--ink-2)}
+.btn-g:hover{border-color:var(--line-2); color:var(--ink)}
+.simhint{font-size:11.5px; color:var(--ink-3); margin-left:auto; font-family:var(--f-data)}
+
+/* live metrics */
+.live{position:sticky; top:112px; display:flex; flex-direction:column; gap:12px}
+@media (max-width:960px){.live{position:static}}
+.mcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px}
+.mcard h4{font-family:var(--f-data); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); font-weight:500; margin-bottom:10px}
+.mrow{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:5px 0; border-bottom:1px dashed var(--line); font-size:12.5px}
+.mrow:last-child{border-bottom:0}
+.mrow .lbl{color:var(--ink-2)}
+.mrow .val{font-family:var(--f-data); font-size:13px; color:var(--ink); font-weight:500}
+.mrow .val.pend{color:var(--ink-3); font-weight:400; font-size:11px}
+.tbanner{border-radius:var(--r); padding:13px 15px; border:1px solid}
+.tbanner .lv{font-family:var(--f-data); font-size:10px; letter-spacing:.1em; text-transform:uppercase}
+.tbanner .ms{font-family:var(--f-disp); font-size:16px; font-weight:600; margin-top:3px}
+.tbanner .rf{font-size:11.5px; margin-top:6px; font-family:var(--f-data)}
+.b-red{background:var(--red-wash); border-color:var(--red-line); color:var(--red)}
+.b-org{background:var(--orange-wash); border-color:var(--orange-line); color:var(--orange)}
+.b-amb{background:var(--amber-wash); border-color:var(--amber-line); color:var(--amber)}
+.b-grn{background:var(--green-wash); border-color:var(--green-line); color:var(--green)}
+.flaglist{display:flex; flex-direction:column; gap:5px}
+.flagitem{font-size:11.5px; padding:6px 9px; border-radius:6px; display:flex; gap:7px; align-items:baseline}
+.flagitem .fid{font-family:var(--f-data); font-size:10px; flex:none}
+
+/* ── emergency overlay ────────────────────── */
+.emg{position:fixed; inset:0; z-index:900; background:#A81E12; color:#fff; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; padding:28px; text-align:center; overflow-y:auto; animation:emgIn .18s ease-out}
+@keyframes emgIn{from{opacity:0} to{opacity:1}}
+.emg[hidden]{display:none}
+.emgdemo{position:absolute; top:0; left:0; right:0; background:#12191C; color:#F5D76E; font-family:var(--f-data);
+  font-size:10.5px; letter-spacing:.12em; padding:7px; text-transform:uppercase}
+.emg-i{font-size:46px; line-height:1}
+.emg h2{font-family:var(--f-disp); font-size:clamp(24px,5vw,36px); font-weight:700; color:#fff; margin:16px 0 8px; max-width:21ch; line-height:1.22}
+.emg .lead{font-size:17px; opacity:.94; max-width:34ch}
+.emgcall{background:#fff; color:#A81E12; font-family:var(--f-disp); font-size:23px; font-weight:700; padding:22px 34px;
+  border-radius:12px; margin:26px 0 20px; width:min(440px,100%); box-shadow:0 12px 32px rgba(0,0,0,.3)}
+.emgcall:hover{background:#FFF3F1}
+.emglist{background:rgba(0,0,0,.17); border-radius:10px; padding:16px 20px; text-align:left; width:min(440px,100%); font-size:14px}
+.emglist > b:first-child{display:block; font-size:12px; letter-spacing:.05em; opacity:.85; margin-bottom:8px; font-family:var(--f-data)}
+.emglist ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:5px}
+.emgexit{margin-top:22px; font-size:13px; color:#fff; opacity:.68; text-decoration:underline; text-underline-offset:3px}
+.emgexit:hover{opacity:1}
+
+/* ── results ──────────────────────────────── */
+.res{display:flex; flex-direction:column; gap:16px}
+.domgrid{display:grid; gap:8px}
+.domrow{display:grid; grid-template-columns:auto 132px minmax(0,1fr); gap:12px; align-items:start; padding:11px 13px;
+  border:1px solid var(--line); border-radius:9px; background:var(--surface); font-size:12.5px}
+@media (max-width:620px){.domrow{grid-template-columns:1fr}}
+.domrow .sev{width:8px; align-self:stretch; border-radius:99px; min-height:32px}
+.domrow .dn{font-weight:600; overflow-wrap:anywhere; color:var(--ink); font-size:13px}
+.domrow .dn small{display:block; font-family:var(--f-data); font-size:9.5px; color:var(--ink-3); letter-spacing:.06em; font-weight:400}
+.domrow .df{color:var(--ink-2)}
+.labs{display:flex; flex-direction:column; gap:6px}
+.lab{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:11px; align-items:center; padding:10px 13px;
+  border:1px solid var(--line); border-radius:9px; font-size:13px; background:var(--surface)}
+.lab .n{font-family:var(--f-data); font-size:11px; color:var(--ink-3)}
+.lab .t{color:var(--ink); font-weight:500}
+.lab .t small{display:block; font-weight:400; color:var(--ink-3); font-size:11.5px; margin-top:2px}
+.lab .w{font-family:var(--f-data); font-size:10.5px; padding:3px 8px; border-radius:5px; white-space:nowrap}
+.summary{font-size:14px; line-height:1.7; color:var(--ink-2)}
+.summary b{color:var(--ink)}
+</style>
+<style>
+.p2bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.p2hint{font-family:var(--f-data);font-size:11.5px;color:var(--ink-3);margin-left:auto}
+.p2lay{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:18px;align-items:start}
+.p2lay > *{min-width:0}
+@media (max-width:980px){.p2lay{grid-template-columns:minmax(0,1fr)}}
+.p2lay > .pnl{position:sticky;top:112px}
+@media (max-width:980px){.p2lay > .pnl{position:static}}
+.fgrp{margin-bottom:16px}
+.fgrp:last-child{margin-bottom:0}
+.fgh{font-family:var(--f-data);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:10px;align-items:center;padding:5px 0}
+.frow label{font-size:13px;color:var(--ink-2)}
+.frow label small{display:block;font-size:11px;color:var(--ink-3);font-family:var(--f-data)}
+.frow input[type=number]{width:100%;font-family:var(--f-data);font-size:14px;padding:6px 9px;border:1px solid var(--line);
+  border-radius:7px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+.frow input:focus{border-color:var(--accent);outline:none}
+.frow select{width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--ink)}
+.fwide{grid-template-columns:minmax(0,1fr)}
+.fwide select{width:100%}
+.fnote{font-size:11.5px;color:var(--ink-3);margin-top:7px;line-height:1.5}
+.rep{display:flex;flex-direction:column;gap:16px}
+.repsec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.repsec-h{padding:11px 15px;background:var(--surface-2);border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:baseline}
+.repsec-h .n{font-family:var(--f-data);font-size:11px;color:var(--accent);font-weight:700}
+.repsec-h .t{font-family:var(--f-disp);font-size:15px;font-weight:600}
+.repsec-b{padding:15px}
+.repsec-b.p0{padding:0}
+.stat{display:flex;gap:9px;align-items:center;font-size:11px;font-family:var(--f-data);padding:2px 7px;border-radius:5px}
+.chainrow{display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;font-size:12.5px;padding:4px 0}
+.chainrow .cl{font-family:var(--f-data);font-size:9.5px;letter-spacing:.07em;color:var(--ink-3);padding-top:3px}
+.chain{border:1px solid var(--line);border-radius:9px;padding:12px 14px;background:var(--surface-2)}
+.chain + .chain{margin-top:9px}
+.ifthen{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.15fr);gap:12px;align-items:center;
+  padding:11px 13px;border:1px solid var(--line);border-radius:9px;font-size:12.5px}
+@media (max-width:700px){.ifthen{grid-template-columns:1fr;gap:6px}.ifthen .arw{display:none}}
+.ifthen + .ifthen{margin-top:8px}
+.ifthen .arw{color:var(--ink-3);font-family:var(--f-data)}
+.ifthen .cnd b{color:var(--ink)}
+.ifthen .act{color:var(--ink-2)}
+.ifthen .act b{color:var(--ink)}
+.gate{border:1px dashed var(--orange-line);background:var(--orange-wash);border-radius:9px;padding:11px 13px;font-size:12.5px;color:var(--ink-2)}
+.gate + .gate{margin-top:8px}
+.gate b{color:var(--orange);display:block;font-family:var(--f-data);font-size:10px;letter-spacing:.06em;margin-bottom:3px}
+.ptoggle{display:flex;gap:4px;background:var(--surface-2);padding:3px;border-radius:9px;margin-bottom:0}
+.ptoggle button{flex:1;padding:7px 12px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--ink-3)}
+.ptoggle button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.pv{font-size:14px;line-height:1.7}
+.pv h4{font-family:var(--f-disp);font-size:16px;margin:16px 0 7px;font-weight:600}
+.pv h4:first-child{margin-top:0}
+.pv p{margin:0 0 9px}
+.pv .lead{background:var(--accent-wash);border-radius:9px;padding:13px 15px;color:var(--ink);margin-bottom:14px}
+.pv .item{border-left:2px solid var(--line-2);padding-left:13px;margin-bottom:12px}
+.pv .item b{display:block;font-size:14px;margin-bottom:3px}
+.pv .item em{color:var(--ink-3);font-style:normal;font-size:12.5px;display:block;margin-bottom:4px}
+.pv ul{margin:0 0 10px;padding-left:19px}
+.pv li{margin-bottom:5px}
+.pv .er{background:var(--red-wash);border:1px solid var(--red-line);border-radius:9px;padding:13px 15px;margin-top:14px}
+.pv .er b{color:var(--red);display:block;margin-bottom:6px}
+.pv .er ul{margin:0;padding-left:19px}
+.pv .er li{color:var(--ink-2)}
+.empty{text-align:center;padding:50px 26px;color:var(--ink-3);font-size:13.5px}
+.empty .ic{font-size:30px;margin-bottom:12px;opacity:.5}
+</style>
+<style>
+.cmbchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.cmbchip{font-size:11.5px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);line-height:1.25}
+.cmbchip:hover{border-color:var(--accent);color:var(--ink)}
+.cmbchip[aria-pressed="true"]{background:var(--accent-wash);border-color:var(--accent);
+  color:var(--accent-2);font-weight:600}
+</style>
+<style>
+.p2mode{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:10px;
+  border:1px solid var(--line);background:var(--surface-2);margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.p2mode .dot{width:9px;height:9px;border-radius:99px;flex:none}
+.p2mode .txt{color:var(--ink-2)}
+.p2mode .txt b{color:var(--ink)}
+.p2mode .go{margin-left:auto}
+.p2mode.linked{background:var(--accent-wash);border-color:transparent}
+.p2mode.linked .txt b{color:var(--accent-2)}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="mast-in">
+    <div class="brand">
+      <b>Noreon Triage Simulator</b>
+      <span>NRN-CLIN-ALG-001 · v1.0</span>
+    </div>
+    <div class="pillrow" aria-label="Triage levels">
+      <span class="tpill t-red">RED · շտապ</span>
+      <span class="tpill t-org">ORANGE · 24ժ–7օր</span>
+      <span class="tpill t-amb">YELLOW · 2–4 շաբ.</span>
+      <span class="tpill t-grn">GREEN · 12 ամիս</span>
+    </div>
+    <button class="themebtn" id="themeBtn" type="button">◐ Թեմա</button>
+  </div>
+</header>
+
+<div class="notice">
+  <div class="wrap">
+    <b>ՆԱԽԱԴԻՏՈՒՄ</b>
+    <p>Սա Noreon-ի սկրինինգային ալգորիթմի <strong>տեխնիկական բնութագիրն է ծրագրավորողների և դիզայներների համար</strong>։ Սա բժշկական սարք չէ, ախտորոշում չի տալիս և իրական պացիենտների հետ չի օգտագործվում։ Սիմուլյատորի «շտապ օգնության» էկրանը դիզայնի նախադիտում է — զանգ չի կատարում։</p>
+  </div>
+</div>
+
+<nav class="tabs">
+  <div class="tabs-in" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-view="sim">Սիմուլյատոր</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="ph2">Փուլ 2 · Հետ-դիագնոստիկ</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="flags">Կարմիր դրոշներ<span class="n">12</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-view="thr">Շեմեր և աղբյուրներ<span class="n">66</span></button>
+  </div>
+</nav>
+
+<main>
+  <!-- SIM -->
+  <section class="view wrap" id="v-sim" role="tabpanel">
+    <div class="shead">
+      <div class="eyebrow">Interactive walkthrough · §2 &amp; §4</div>
+      <h2>Ճյուղավորման սիմուլյատոր</h2>
+      <p>Անցեք հարցաշարը այնպես, ինչպես պացիենտը կանցներ։ Ճյուղավորումը, ածանցյալ մետրիկները և triage-ի աստիճանը հաշվարկվում են ուղիղ եթերում։ Կարմիր դրոշ գործարկելու համար Q8-ում կամ Q9-ում ընտրեք «ԱՅՈ, ՀԻՄԱ ՈՒՆԵՄ», կամ Q4-ում մուտքագրեք 185/115։</p>
+    </div>
+    <div class="simlay">
+      <div class="stage">
+        <div class="stage-h">
+          <span class="eyebrow" id="simStep">Քայլ 1</span>
+          <span class="prog"><i id="simProg" style="width:0%"></i></span>
+          <button class="btn btn-g" id="simReset" type="button" style="padding:5px 11px;font-size:12px">Վերսկսել</button>
+        </div>
+        <div class="stage-b" id="simBody"></div>
+      </div>
+      <aside class="live">
+        <div id="simTriage"></div>
+        <div class="mcard">
+          <h4>Ածանցյալ մետրիկներ</h4>
+          <div id="simMetrics"></div>
+        </div>
+        <div class="mcard">
+          <h4>Ակտիվ դրոշներ</h4>
+          <div class="flaglist" id="simFlags"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+
+  <!-- PHASE 2 -->
+  <section class="view wrap" id="v-ph2" role="tabpanel" hidden>
+    <div class="shead">
+      <div class="eyebrow">Փուլ 2 · Հետ-դիագնոստիկ գնահատում</div>
+      <h2>Լաբորատոր արդյունքների ինտեգրում</h2>
+      <p>Փուլ 1-ը գեներացնում է լաբորատոր ուղեգիր և կանգնում <span class="mono">SCORE2_PENDING</span> վիճակում։ Այստեղ մուտքագրվում են վերադարձած արդյունքները, և շարժիչը լրացնում է ռիսկի դասակարգումը, LDL-C-ի թիրախը, «եթե X → ապա Y» գործողությունները և բժշկի ու պացիենտի երկու տարբեր զեկույցները։ Բոլոր հաշվարկները դետերմինիստիկ են և հղումով։</p>
+    </div>
+    <div class="p2bar">
+      <button class="btn btn-g" id="p2Pull" type="button">↓ Լրացնել Փուլ 1-ից</button>
+      <button class="btn btn-g" id="p2Clear" type="button">Մաքրել</button>
+      <span class="p2hint" id="p2Base">Ելակետ՝ դատարկ</span>
+    </div>
+    <div class="p2mode" id="p2Mode"></div>
+    <div style="display:none">
+    </div>
+    <div class="p2lay">
+      <div class="pnl">
+        <div class="pnl-h"><span class="eyebrow">Լաբորատոր և գործիքային արդյունքներ</span></div>
+        <div class="pnl-b" id="p2Form"></div>
+      </div>
+      <div id="p2Out"></div>
+    </div>
+  </section>
+
+  <!-- FLAGS -->
+  <section class="view wrap" id="v-flags" role="tabpanel" hidden>
+    <div class="shead">
+      <div class="eyebrow">§3 · Single source of truth</div>
+      <h2>Կարմիր դրոշների ռեեստր</h2>
+      <p>Escalation-ի ոսկե կանոնը՝ <span class="mono">session.triage_level = MAX(all_triggered_flags)</span> — երբեք միջին, երբեք գումար, երբեք «վերջին հաղթում է»։ Ցանկացած փոփոխություն պահանջում է Clinical Safety Officer-ի ստորագրություն և տարբերակի բարձրացում։</p>
+    </div>
+    <div class="tblwrap"><table id="flagTable"></table></div>
+
+    <div class="shead" style="margin-top:34px">
+      <div class="eyebrow">§3.2 · ≤300 ms</div>
+      <h2>Escalation-ի վարքագիծ</h2>
+    </div>
+    <div id="escPane"></div>
+
+    <div class="shead" style="margin-top:34px">
+      <div class="eyebrow">§3.2.5</div>
+      <h2>Անվտանգության ինվարիանտներ</h2>
+      <p>Պարտադիր ավտոմատ թեստավորման ենթակա։ Ոչ մի թողարկում առանց այս յոթի կանաչ կարգավիճակի։</p>
+    </div>
+    <div class="tblwrap"><table id="siTable"></table></div>
+  </section>
+
+  <!-- THRESHOLDS -->
+  <section class="view wrap" id="v-thr" role="tabpanel" hidden>
+    <div class="shead">
+      <div class="eyebrow">§6.2 · Verified against source PDFs</div>
+      <h2>Բոլոր թվային շեմերի ռեեստր</h2>
+      <p>Յուրաքանչյուր տող ստուգված է սկզբնաղբյուրի դեմ առանձին verification pass-ով։ <span class="srcpill s-esc">ESC</span> = ուղղակի մեջբերում վերբեռնված ուղեցույցից · <span class="srcpill s-ext">EXTERNAL</span> = պահանջում է առանձին վավերացում · <span class="srcpill s-nrn">NOREON</span> = արտադրանքային որոշում։</p>
+    </div>
+    <div style="margin-bottom:12px; display:flex; gap:8px; flex-wrap:wrap">
+      <input id="thrSearch" type="search" placeholder="Փնտրել շեմ, ցուցանիշ կամ աղբյուր…"
+        style="flex:1; min-width:220px; padding:9px 13px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font:inherit; font-size:13px">
+      <button class="btn btn-g" data-thrf="all" type="button">Բոլորը</button>
+      <button class="btn btn-g" data-thrf="esc" type="button">ESC</button>
+      <button class="btn btn-g" data-thrf="ext" type="button">External</button>
+    </div>
+    <div class="tblwrap"><table id="thrTable"></table></div>
+
+    <div class="shead" style="margin-top:38px">
+      <div class="eyebrow">Provenance · բառացի մեջբերումներ</div>
+      <h2>Աղբյուր փաստաթղթերը</h2>
+      <p>Ձեր վերբեռնումը սքրինշոթներ չէին — դրանք հինգ ամբողջական ESC ուղեցույց էին։ Ստորև՝ յուրաքանչյուրից այն հատվածները, որոնց վրա ուղղակիորեն հենվում է ալգորիթմը։ Սեղմեք վերնագրին՝ բացելու համար։</p>
+    </div>
+    <div id="srcPane"></div>
+    <div class="warn" style="margin-top:16px"><b>⚠ Source provenance</b>STOP-BANG, Epworth Sleepiness Scale, AASM AHI դասակարգումը և ADA-ի ախտորոշիչ չափանիշները <b>չեն պարունակվում</b> վերոնշյալ աղբյուրներում։ Դրանք պիտակավորված են <span class="srcpill s-ext">EXTERNAL</span> և պահանջում են առանձին վավերացում Noreon-ի Clinical Board-ի կողմից նախքան production։ Verification pass-ը գտավ մեկ սխալ attribution (BMI &gt;30-ը վերագրված էր 2021 Prevention-ին, ճիշտը՝ 2024 HTN) — ուղղված է։</p></div>
+  </section>
+</main>
+
+<div class="emg" id="emgScreen" hidden role="alertdialog" aria-labelledby="emgTitle">
+  <div class="emgdemo">Դիզայնի նախադիտում · զանգ չի կատարվում</div>
+  <div class="emg-i">⚠</div>
+  <h2 id="emgTitle">Ձեր ախտանիշները կարող են վտանգավոր լինել</h2>
+  <p class="lead">Անմիջապես զանգահարեք շտապ օգնություն։</p>
+  <button class="emgcall" type="button" id="emgCall">📞&nbsp; ԶԱՆԳԱՀԱՐԵԼ 103</button>
+  <div class="emglist">
+    <b>Մինչև շտապ օգնության ժամանումը</b>
+    <ul>
+      <li>Դադարեցրեք ցանկացած ֆիզիկական ծանրաբեռնվածություն և նստեք կամ պառկեք</li>
+      <li>Բացեք պատուհանը, թուլացրեք հագուստը</li>
+      <li>Մի մնացեք մենակ — կանչեք որևէ մեկին</li>
+      <li>Մի վարեք մեքենա</li>
+      <li>Եթե բժիշկը Ձեզ նշանակել է նիտրոգլիցերին — ընդունեք ըստ նշանակման</li>
+    </ul>
+  </div>
+  <button class="emgexit" type="button" id="emgExit">Փակել նախադիտումը և վերադառնալ սիմուլյատոր</button>
+</div>
+<script>
+/* ══════════ flags · invariants · thresholds ══════════ */
+const FLAGS=[
+['RF-01','Կրծքավանդակի ցավ/ճնշվածություն ԱՅՍ ՊԱՀԻՆ','Q8.2 == TRUE','red','ESC ACS §3.1.1, §4.1.1'],
+['RF-02','Սրտխփոց + գլխապտույտ/պրեսինկոպ/օդի պակաս ԱՅՍ ՊԱՀԻՆ','Q9.2 == TRUE','red','ESC ACS §4.1.1 · Prevention §3.4.2'],
+['RF-03','BP ≥180/110 ԵՎ ≥1 emergency ախտանիշ','Q4.2 + Q4.3','red','2024 ESC HTN §10.1.1 (Class I)'],
+['RF-04','Նևրոլոգիական դեֆիցիտ ԱՅՍ ՊԱՀԻՆ (խոսք, շարժում, դեմքի ասիմետրիա)','Q4.3 checkbox','red','2024 ESC HTN §10.1.1'],
+['RF-05','Ցնցումներ / գիտակցության պղտորում','Q4.3 checkbox','red','2024 ESC HTN §10.1.1'],
+['RF-06','BP ≥180/110 առանց ախտանիշների','Q4.2 + «Ոչ մեկը»','org','2024 ESC HTN §7.1 — հաստատում ≤1 շաբաթ'],
+['RF-07','Crescendo անգինա (վատացող · հանգստի · >15 ր · ≥օրական)','Q8.4–Q8.6','org','ESC ACS §4.1.1'],
+['RF-08','Սինկոպ ֆիզիկական ծանրաբեռնվածության ժամանակ','Q9.3','org','NOREON + Prevention (SCD ռիսկ)'],
+['RF-09','Սինկոպ առանց նախանշանների (հանգստի)','Q9.3','org','NOREON'],
+['RF-10','Առիթմիկ նոպաներ >30 րոպե','Q9.5','org','NOREON'],
+['RF-11','HbA1c ≥9.0%','Q5.2e','org','NOREON (ESC թիրախ <7.0% Class I)'],
+['RF-12','Հանկարծամահություն ընտանիքում <50 տ. ԵՎ ցանկացած Q9 դրական','Q6 + Q9','org','NOREON']];
+
+const SI=[
+['SI-1','Emergency screen-ը render-վում է առանց ցանցի','Airplane mode E2E'],
+['SI-2','1-03 dial intent-ը աշխատում է առանց ցանցի','Airplane mode E2E'],
+['SI-3','Հետընթաց նավիգացիա emergency screen-ից անհնար է առանց confirmation-ի','Android back · iOS swipe-back · hardware keys'],
+['SI-4','Ցանկացած նոր կարմիր դրոշ վերաակտիվացնում է էկրանը, նույնիսկ POST_EMERGENCY_MONITORING վիճակում','State machine test'],
+['SI-5','Ոչ մի երրորդ կողմի SDK (analytics, ads, crash reporter) չի կարող overlay ցուցադրել','SDK isolation test'],
+['SI-6','Emergency event-ը միշտ գրանցվում է local audit log-ում, նույնիսկ API-ի ձախողման դեպքում','Offline queue test'],
+['SI-7','EMERGENCY_NUMBER-ը կախված է երկրից (AM 1-03/103 · EU 112)','Locale test']];
+
+const THR=[
+['SCORE2 տարիքային կիրառելիություն','40–69 տ.','esc','ESC Prevention'],
+['SCORE2-OP','≥70 տ.','esc','ESC Prevention'],
+['Ռիսկի շեմեր <50 տ.','<2.5% / 2.5–<7.5% / ≥7.5%','esc','ESC Prevention Table 5'],
+['Ռիսկի շեմեր 50–69 տ.','<5% / 5–<10% / ≥10%','esc','ESC Prevention Table 5'],
+['Ռիսկի շեմեր ≥70 տ.','<7.5% / 7.5–<15% / ≥15%','esc','ESC Prevention Table 5'],
+['Հայաստան — SCORE2 կալիբրացիա','Very high-risk region','esc','ESC Prevention §3.2.3.2'],
+['BMI նորմա','~20–25 kg/m²','esc','2024 ESC HTN'],
+['BMI ճարպակալում','>30 kg/m²','esc','2024 ESC HTN'],
+['Գոտկատեղ — «no further gain»','♂ ≥94 / ♀ ≥80 սմ','esc','ESC Prevention §3.3.10'],
+['Գոտկատեղ — «reduction advised»','♂ ≥102 / ♀ ≥88 սմ','esc','ESC Prevention §3.3.10'],
+['Ֆիզ. ակտիվություն (չափավոր)','150–300 ր/շաբաթ','esc','ESC Prevention §4.3.1.2'],
+['Ֆիզ. ակտիվություն (ինտենսիվ)','75–150 ր/շաբաթ','esc','ESC Prevention §4.3.1.2'],
+['Ուժային վարժություններ','≥2 օր/շաբ. · 1–3 × 8–12 կրկն. · 60–80% 1RM','esc','ESC Prevention §4.3.1.3'],
+['Աղ','<5 գ/օր (≈2 գ Na)','esc','ESC Prevention Table 8 · 2024 HTN'],
+['Բջջանյութ','30–45 գ/օր','esc','ESC Prevention Table 8'],
+['Միրգ','≥200 գ/օր (2–3 բաժին)','esc','ESC Prevention Table 8'],
+['Բանջարեղեն','≥200 գ/օր (2–3 բաժին)','esc','ESC Prevention Table 8'],
+['Կարմիր միս','≤350–500 գ/շաբաթ','esc','ESC Prevention Table 8'],
+['Ձուկ','1–2 ×/շաբաթ, հատկապես ճարպոտ','esc','ESC Prevention Table 8'],
+['Ընկույզ','30 գ/օր, չաղած','esc','ESC Prevention Table 8'],
+['Ալկոհոլ','≤100 գ/շաբ. · ♂ <14 միավոր · ♀ <8 միավոր','esc','ESC Prevention Table 8 · 2024 HTN'],
+['Հագեցած ճարպաթթուներ','<10% ընդհանուր էներգիայի','esc','ESC Prevention Table 8'],
+['Ազատ շաքար','≤10% էներգիայի','esc','2024 ESC HTN'],
+['Կալիում (ընտրված դեպքերում)','+0.5–1.0 գ/օր (75% NaCl / 25% KCl)','esc','2024 ESC HTN'],
+['BP — non-elevated','<120/70','esc','2024 ESC HTN'],
+['BP — elevated','120–139 / 70–89','esc','2024 ESC HTN'],
+['BP — հիպերտոնիա I','140–159 / 90–99','esc','2024 ESC HTN Fig. 10'],
+['BP — հիպերտոնիա II','160–179 / 100–109','esc','2024 ESC HTN Fig. 10'],
+['BP — hypertensive emergency assessment','≥180/110','esc','2024 ESC HTN §10.1.1'],
+['HBPM — հիպերտոնիա','≥135/85','esc','2024 ESC HTN §5.2.3'],
+['HBPM — elevated','SBP 120–134 / DBP 70–84','esc','2024 ESC HTN §5.2.3'],
+['Դեղորայքի շեմ (բարձր ռիսկ, 3 ամսից հետո)','հաստատված ≥130/80','esc','2024 ESC HTN Class I'],
+['Դեղորայք անկախ ռիսկից','հաստատված ≥140/90','esc','2024 ESC HTN Class I'],
+['SBP թիրախ բուժման ժամանակ','120–129 mmHg','esc','2024 ESC HTN'],
+['«Increased CVD risk» շեմ elevated BP-ի դեպքում','SCORE2 ≥10%','esc','2024 ESC HTN'],
+['Borderline ռիսկ (up-classification գոտի)','5% – <10%','esc','2024 ESC HTN'],
+['HbA1c թիրախ (ընդհանուր)','<7.0% (53 mmol/mol)','esc','ESC Prevention §4.8 Class I'],
+['HbA1c թիրախ (ընտրված)','≤6.5% (48 mmol/mol)','esc','ESC Prevention §4.8'],
+['HbA1c թիրախ (փխրուն/տարեց)','<8.0% (64 mmol/mol)','esc','ESC Prevention §4.8'],
+['LDL-C թիրախ — very high','<1.4 mmol/L (55 mg/dL)','esc','2025 ESC/EAS Table 4'],
+['LDL-C թիրախ — high','<1.8 mmol/L (70 mg/dL)','esc','2025 ESC/EAS Table 4'],
+['LDL-C թիրախ — moderate','<2.6 mmol/L (100 mg/dL)','esc','2025 ESC/EAS Table 4'],
+['LDL-C թիրախ — low','<3.0 mmol/L (116 mg/dL)','esc','2025 ESC/EAS Table 4'],
+['«At least high risk» լիպիդային շեմ','LDL-C ≥4.9 mmol/L (190 mg/dL) · TC >8 mmol/L (310 mg/dL)','esc','2025 ESC/EAS'],
+['Lp(a) բարձրացած','>50 mg/dL (105 nmol/L) · աճ սկսվում է 30 mg/dL-ից','esc','2025 ESC/EAS'],
+['LDL-C նվազեցման էֆեկտ','−1 mmol/L (38.67 mg/dL)','esc','2025 ESC/EAS'],
+['ACS red flag — տևողություն','ցավ >15 րոպե','esc','2023 ESC ACS §4.1.1'],
+['ACS red flag — կրկնություն','կրկնվող ցավ 1 ժամվա ընթացքում','esc','2023 ESC ACS §4.1.1'],
+['ԷՍԳ առաջին բժշկական շփումից','≤10 րոպե','esc','2023 ESC ACS §3.2'],
+['Օպտիմալ քնի տևողություն','~7 ժ','esc','ESC Prevention §3.4.9'],
+['Ապնոէի էպիզոդի սահմանում','>10 վայրկյան','esc','ESC Prevention §3.4.9'],
+['PAP-ի արդյունավետության շեմ (ռեզիստենտ ԱՀ)','>5.8 ժ/գիշեր','esc','ESC Prevention §3.4.9'],
+['Հոգեսոցիալական սթրես','RR 1.2–2.0','esc','ESC Prevention §3.3.1'],
+['Ռևմատոիդ արթրիտ — ՍԱՀ ռիսկ','~+50%','esc','ESC Prevention §3.4.6'],
+['ԱԱԲՀ — ՍԱՀ ռիսկ','~+20%','esc','ESC Prevention §3.4.6'],
+['ՆՖ (AF) տարածվածություն','2–4% · lifetime risk 1/3 (index 55 տ.)','esc','ESC Prevention §3.4.2'],
+['«Ծանր ծխող»','≥20 ծխախոտ/օր','esc','ESC Prevention §4.5.1'],
+['Ռիսկի նվազում ծխելը թողնելուց','5 տարվա ընթացքում','esc','ESC Prevention §4.5.1'],
+['CVD-զերծ տարիների շահ (45 տ.-ից)','3–5 տարի','esc','ESC Prevention §4.5.1'],
+['Քաշի ավելացում ծխելը թողնելուց','~5 կգ','esc','ESC Prevention §4.5.1'],
+['Վաղաժամ ՍԱՀ ընտանիքում','♂ <55 տ. / ♀ <65 տ.','ext','Կոնվենցիոնալ սահմանում'],
+['STOP-BANG շերտավորում','0–2 ցածր / 3–4 միջին / 5–8 բարձր','ext','STOP-BANG — ՉԿԱ վերբեռնման մեջ'],
+['AHI դասակարգում','5–15 թեթև / 15–30 միջին / >30 ծանր','ext','AASM — ՉԿԱ վերբեռնման մեջ'],
+['ESS ախտաբանական շեմ','>10','ext','Epworth — ՉԿԱ վերբեռնման մեջ'],
+['ՇԴ ախտորոշում','HbA1c ≥6.5% · FPG ≥7.0 mmol/L (126 mg/dL)','ext','ADA — ՉԿԱ վերբեռնման մեջ'],
+['Նախաշաքարախտ','HbA1c 5.7–6.4% · FPG 5.6–6.9 mmol/L (100–125 mg/dL)','ext','ADA — ՉԿԱ վերբեռնման մեջ']];
+</script>
+<script>
+/* ══════════ source documents · verbatim passages ══════════ */
+const SRC=[
+['2021','ESC Guidelines on cardiovascular disease prevention in clinical practice','Eur Heart J 2021;42(34):3227–3337 · doi:10.1093/eurheartj/ehab484',[
+ ['Table 5','CVD risk categories based on SCORE2 and SCORE2-OP in apparently healthy people according to age. <b>&lt;50 years:</b> low-to-moderate &lt;2.5%, high 2.5 to &lt;7.5%, very high ≥7.5%. <b>50–69 years:</b> &lt;5%, 5 to &lt;10%, ≥10%. <b>≥70 years:</b> &lt;7.5%, 7.5 to &lt;15%, ≥15%.'],
+ ['§3.2.3.3','The cut-off risk levels for these categories are numerically different for various age groups <b>to avoid undertreatment in the young and to avoid overtreatment in older persons</b>… Many patients can move themselves towards a lower risk category without taking drugs just by stopping smoking.'],
+ ['§3.2.3.2','<b>Very high-risk countries:</b> Algeria, <b>Armenia</b>, Azerbaijan, Belarus, Bulgaria, Egypt, Georgia, Kyrgyzstan, Latvia, Lebanon, Libya, Lithuania, Montenegro, Morocco, Republic of Moldova, Romania, Russian Federation, Serbia, Syria, The Former Yugoslav Republic (Macedonia), Tunisia, Ukraine, and Uzbekistan.'],
+ ['§3.2.3.2','The SCORE2 charts <b>do not apply</b> to persons with documented CVD or other high-risk conditions such as DM, FH, or other genetic or rare lipid or BP disorders, CKD, and in pregnant women.'],
+ ['§3.3.1','Psychosocial stress is associated, in a dose-response pattern, with the development and progression of ASCVD, independently of conventional risk factors and sex… The RRs of psychosocial stress are commonly between <b>1.2 and 2.0</b>… only <b>\'vital exhaustion\'</b> has been proven to improve risk reclassification.'],
+ ['Box 2','There are simple questions to get into a conversation about significant stressors: <b>Are you bothered by stress at work, financial problems, difficulties in the family, loneliness, or any stressful events?</b> Are you interested in a referral to a psychotherapist or mental health service?'],
+ ['§3.3.5','Family history of premature CVD is a simple indicator of CVD risk… However, family history <b>only marginally improves the prediction of CVD risk beyond conventional ASCVD risk factors</b>… [it] is simple, inexpensive information that can trigger comprehensive risk assessment.'],
+ ['§3.3.10','Waist circumference <b>≥94 cm in men and ≥80 cm in women: no further weight gain.</b> Waist circumference <b>≥102 cm in men and ≥88 cm in women: weight reduction advised.</b>'],
+ ['§3.3.10.2','The associations between BMI, waist circumference, and waist-to-hip ratio and CVD are maintained after adjustment for conventional risk factors. However, these measures <b>did not improve CVD risk prediction as assessed by reclassification</b>.'],
+ ['§3.4.2','Atrial fibrillation appears to be associated with an increased risk of death and of CVD and kidney disease. Furthermore, <b>AF appears to be a stronger risk factor for CVD in women than in men</b>… The prevalence ranges between 2% and 4%… lifetime AF risk is now <b>1 in 3</b> individuals of European ancestry at an index age of 55 years.'],
+ ['§3.4.6','The best evidence for chronic inflammation increasing CVD risk is available for rheumatoid arthritis, which increases CVD risk by <b>approximately 50%</b> beyond established risk factors… evidence for an <b>approximately 20%</b> increased CVD risk in patients with active inflammatory bowel disease.'],
+ ['§3.4.9','Regarding sleep duration, <b>7 h seems to be optimal</b> for CV health… OSA is characterized by repetitive episodes of apnoea, <b>each exceeding 10 seconds</b>… interventions that include behaviour change (reduction of obesity, alcohol abstinence), sleep hygiene, and stress reduction <b>in addition to PAP are needed</b>… modest effects of PAP on BP levels, but only in patients with ABPM-confirmed resistant hypertension who use PAP for <b>more than 5.8 h/night</b>.'],
+ ['§4.3.1.2','Adults are recommended to perform at least <b>150–300 min a week of moderate-intensity PA, or 75–150 min of vigorous-intensity PA</b>, or an equivalent combination of both, spread throughout the week… In sedentary individuals, a gradual increase in activity level is recommended… PA accumulated in bouts of <b>even &lt;10 min</b> is associated with favourable outcomes.'],
+ ['§4.3.1.3','The suggested prescription is <b>one to three sets of 8–12 repetitions at 60–80% of 1 repetition maximum at a frequency of at least 2 days a week</b> in a variety of 8–10 different exercises involving each major muscle group.'],
+ ['Table 8','Saturated fatty acids <b>&lt;10%</b> of total energy · trans fats minimized · <b>&lt;5 g</b> total salt/day · <b>30–45 g</b> fibre/day · <b>≥200 g</b> fruit/day · <b>≥200 g</b> vegetables/day · red meat max <b>350–500 g</b>/week · fish <b>1–2 times</b>/week · <b>30 g</b> unsalted nuts/day · alcohol max <b>100 g</b>/week · sugar-sweetened beverages discouraged.'],
+ ['§4.5.1','Even in <b>heavy smokers (≥20 cigarettes/day)</b>, cessation lowers CVD risk <b>within 5 years</b>, although it remains elevated beyond 5 years… From age 45 years, gains of <b>3–5 years</b> persist in men to age 65 and in women to age 75… Smokers who quit may expect an average weight gain of <b>5 kg</b>, but the health benefits of tobacco cessation outweigh risks from weight gain.'],
+ ['Table 9','\'Very brief advice\' on smoking is a proven <b>30-second</b> clinical intervention… three elements: <b>ASK</b> — establishing and recording smoking status · <b>ADVISE</b> — advising on the best ways of stopping · <b>ACT</b> — offering help.'],
+ ['§4.8','HbA1c: <b>&lt;53 mmol/mol (&lt;7.0%)</b> (Class I)… A target HbA1c of <b>≤6.5% (48 mmol/mol)</b> should be considered [in selected patients]… In old or frail adults, a relaxing of the HbA1c targets should be considered — <b>&lt;64 mmol/mol (8.0%)</b>.']]],
+
+['2024','ESC Guidelines for the management of elevated blood pressure and hypertension','Eur Heart J 2024;45(38):3912–4018 · doi:10.1093/eurheartj/ehae178',[
+ ['What is new','The 2024 Guidelines continue to define hypertension as office systolic BP of ≥140 mmHg or diastolic BP of ≥90 mmHg. However, a new BP category called <b>\'Elevated BP\'</b> is introduced. Elevated BP is defined as an office systolic BP of <b>120–139 mmHg</b> or diastolic BP of <b>70–89 mmHg</b>.'],
+ ['Figure 10','Screening for hypertension by office BP: non-elevated <b>&lt;120/70</b> · elevated <b>120–139/70–89</b> · hypertension <b>140–159/90–99</b> · <b>160–179/100–109</b> · <b>≥180/110</b> → evaluate for hypertensive emergency (Class I).'],
+ ['§5.2.3','An average HBPM of <b>≥135/85 mmHg</b> (equivalent to an office BP of ≥140/90 mmHg) should be used to diagnose hypertension and an average systolic BP of <b>120–134 mmHg</b> or diastolic BP of <b>70–84 mmHg</b> should be used to diagnose elevated BP… Measurements should be made twice a day (morning and evening) at the same time for a <b>minimum of 3 days and up to 7 days</b>… Devices older than 4 years may be inaccurate.'],
+ ['§10.1.1','<b>Hypertensive emergency is defined as BP of ≥180/110 mmHg</b> associated with acute HMOD, often in the presence of symptoms… Symptoms… may include <b>headache, visual disturbances, chest pain, shortness of breath, dizziness, and other neurological deficits</b>. In patients with hypertensive encephalopathy, somnolence, lethargy, tonic–clonic seizures, and cortical blindness may precede a loss of consciousness.'],
+ ['Class I','It is recommended when BP ≥180/110 mmHg that <b>hypertensive emergency be excluded</b>.'],
+ ['§7.1','BP of &gt;180/110 mmHg at screening but <b>without</b> hypertensive emergency — prompt confirmation (<b>preferably within a week</b>) can be considered prior to commencing treatment.'],
+ ['Class I','In adults with elevated BP and <b>low/medium CVD risk (&lt;10% over 10 years)</b>, BP lowering with <b>lifestyle measures</b> is recommended… In adults with elevated BP and sufficiently high CVD risk, <b>after 3 months of lifestyle intervention</b>, BP lowering with pharmacological treatment is recommended for those with <b>confirmed BP ≥130/80 mmHg</b>… in hypertensive patients with confirmed BP ≥140/90 mmHg, irrespective of CVD risk, lifestyle measures and pharmacological treatment [are] initiated promptly.'],
+ ['Class I','…irrespective of age, individuals with elevated BP and a <b>SCORE2 or SCORE2-OP CVD risk of ≥10%</b> [are] considered at increased risk for CVD… In individuals with increased CVD risk where their screening office BP is 120–139/70–89 mmHg, it is recommended to <b>measure BP out of office</b>, using ABPM and/or HBPM.'],
+ ['Risk modifiers','…sex-specific risk modifiers that should be considered to up-classify individuals with elevated BP and <b>borderline increased 10-year CVD risk (5% to &lt;10% risk)</b>.'],
+ ['Class IIa','Opportunistic screening for elevated BP and hypertension should be considered: at least every <b>3 years</b> for adults aged &lt;40 years; at least <b>annually</b> for adults aged ≥40 years.'],
+ ['Class I, Level A','Adopting a healthy and balanced diet, such as the <b>Mediterranean or DASH diets</b>, is recommended to help reduce BP and CVD risk.'],
+ ['Class I, Level A','Body-weight control is indicated to avoid obesity (<b>BMI &gt;30 kg/m² or waist circumference &gt;102 cm in men and &gt;88 cm in women</b>), as is aiming at healthy BMI (<b>about 20–25 kg/m²</b>) and waist circumference values (&lt;94 cm in men and &lt;80 cm in women).'],
+ ['§8.2.1','It is recommended to restrict total dietary sodium intake to approximately <b>2 g/day or less</b> (equivalent to approximately <b>5 g or about a teaspoon of salt</b> per day)… an increase of potassium intake by <b>0.5–1.0 g/day</b> — for example through sodium substitution with potassium-enriched salt (<b>75% NaCl / 25% KCl</b>) — should be considered [⚠ not in CKD or on potassium-sparing medication].'],
+ ['Alcohol · sugar','It is recommended to restrict alcohol consumption to: <b>less than 14 units/week for men, less than 8 units/week for women</b>… Preferably, it is recommended to avoid alcohol… restrict free sugar consumption to a maximum of <b>10% of energy intake</b>.'],
+ ['SCORE2-Diabetes','<b>SCORE2-Diabetes</b> should be considered to estimate CVD risk among type 2 diabetes mellitus patients with elevated BP.']]],
+
+['2023','ESC Guidelines for the management of acute coronary syndromes','Eur Heart J 2023;44(38):3720–3826 · doi:10.1093/eurheartj/ehad191',[
+ ['§3.1.1','Acute chest discomfort — which may be described as <b>pain, pressure, tightness, heaviness, or burning</b> — is the leading presenting symptom prompting consideration of the clinical diagnosis of ACS… Chest pain descriptors should be classified as <b>cardiac, possibly cardiac, and likely non-cardiac</b>. The use of the descriptor <b>\'atypical\' should be avoided</b>. Chest pain-equivalent symptoms include <b>dyspnoea, epigastric pain, and pain in the left or right arm or neck/jaw</b>.'],
+ ['§4.1.1','It is important that awareness of the symptoms associated with ACS is high among the general population, in particular red flag symptoms such as <b>prolonged chest pain (&gt;15 min) and/or recurrent pain within 1 h</b>, which should prompt patients or other members of the public to <b>seek urgent medical help</b>.'],
+ ['§4.1.1','<b>The recommended action should be to contact the EMS rather than to self-present to an ED or primary care clinician.</b>'],
+ ['§4.1.1','An initial diagnosis of suspected STEMI portends a <b>higher risk of immediate, life-threatening complications (e.g. ventricular fibrillation)</b>… there is an indication for initiating an emergency reperfusion strategy and direct transfer to a centre with 24/7 PCI capabilities.'],
+ ['§3.2','It is recommended that an ECG is obtained <b>immediately upon first medical contact</b> and interpreted by a qualified emergency medical technician or physician <b>within 10 min</b>.'],
+ ['§3.1.1','Misdiagnosis or delayed diagnosis is sometimes due to an incomplete history or difficulty in eliciting symptoms from the patient… careful history taking and comprehensive interaction with the patient are crucial.']]],
+
+['2025','Focused Update of the 2019 ESC/EAS Guidelines for the management of dyslipidaemias','Eur Heart J 2025;46:4359–4378 · doi:10.1093/eurheartj/ehaf190',[
+ ['Table 4','LDL-C goals by total CV risk — <b>very high: &lt;1.4 mmol/L (55 mg/dL)</b> · <b>high: &lt;1.8 mmol/L (70 mg/dL)</b> · <b>moderate: &lt;2.6 mmol/L (100 mg/dL)</b> · <b>low: &lt;3.0 mmol/L (116 mg/dL)</b>.'],
+ ['Table 3','<b>Young patients (T1DM &lt;35 years; T2DM &lt;50 years) with DM duration &lt;10 years, without other risk factors</b> [= moderate risk]… <b>Patients with DM without target organ damage, with DM duration ≥10 years or another additional risk factor</b> [= high risk].'],
+ ['Table 3','Calculated SCORE2 or SCORE2-OP <b>&lt;2%</b> for 10-year risk = low risk · <b>≥2% and &lt;10%</b> = moderate risk.'],
+ ['Risk factors','Markedly elevated single risk factors, in particular <b>TC &gt;8 mmol/L (&gt;310 mg/dL)</b>, <b>LDL-C &gt;4.9 mmol/L (&gt;190 mg/dL)</b>… In individuals with untreated LDL-C levels ≥4.9 mmol/L, <b>total CV risk is already at least high</b>.'],
+ ['Lp(a)','<b>Lp(a) measurement should be considered at least once in a person\'s lifetime</b>… Elevated Lp(a): <b>&gt;50 mg/dL (&gt;105 nmol/L)</b>; risk begins to increase slightly at levels of <b>30 mg/dL (62 nmol/L)</b>… if Lp(a) level is not considered, risk might be substantially underestimated.'],
+ ['Effect size','Lowering LDL-C by <b>1 mmol/L (38.67 mg/dL)</b> would reduce the risk of a person with a 20% absolute risk of having an acute [event]…']]],
+
+['2023','Focused Update of the 2021 ESC Guidelines for acute and chronic heart failure','Eur Heart J 2023;44(37):3627–3639 · doi:10.1093/eurheartj/ehad195',[
+ ['Usage in Noreon','Օգտագործվում է Q9-ի «օդի պակաս» ճյուղում՝ եթե պացիենտը նշում է շնչարգելություն, բայց Q5-ում սրտի անբավարարություն <b>չկա</b>, ալգորիթմը առաջարկում է քննարկել <b>NT-proBNP + ԷխոԿԳ</b> բժշկի հետ։ Այս ուղեցույցից թվային շեմեր ուղղակիորեն ինտեգրված չեն սկրինինգային տրամաբանության մեջ։']]]
+];
+</script>
+<script>
+/* ══════════ SIMULATOR FLOW ══════════ */
+const S={};                       // answers
+const FLOW=[
+{id:'Q1.1',q:'Քանի՞ տարեկան եք։',h:'Տարիքը սրտանոթային ռիսկի ամենաուժեղ գործոններից է։',t:'num',
+ f:[{k:'age',l:'Տարիք',u:'տարի',min:18,max:110}]},
+{id:'Q1.2',q:'Ձեր կենսաբանական սեռը',h:'Հարցնում ենք, քանի որ սրտանոթային ռիսկի հաշվարկը տարբերվում է տղամարդկանց և կանանց մոտ։',t:'radio',k:'sex',
+ o:[['male','Արական'],['female','Իգական']]},
+{id:'Q2.1',q:'Ինչպե՞ս կգնահատեք Ձեր քաշը։',t:'radio',k:'wperc',
+ o:[['ok','Կարծում եմ՝ նորմալ է'],['over','Կարծում եմ՝ ավելորդ քաշ ունեմ'],['idk','Չգիտեմ']]},
+{id:'Q2.2',q:'Նշեք Ձեր հասակը և քաշը։',h:'Գոտկատեղի շրջագիծը ըստ ցանկության — ESC-ը դրա համար տալիս է առանձին շեմեր։',t:'num',
+ f:[{k:'h',l:'Հասակ',u:'սմ',min:120,max:230},{k:'w',l:'Քաշ',u:'կգ',min:30,max:300},{k:'waist',l:'Գոտկատեղ',u:'սմ',min:40,max:200,opt:1}]},
+{id:'Q2.3',q:'Ինչպե՞ս կնկարագրեք Ձեր ֆիզիկական ակտիվությունը վերջին 3 ամսվա ընթացքում։',t:'radio',k:'pa',
+ o:[['A','Ակտիվ եմ՝ շաբաթը 3 կամ ավելի անգամ մարզվում եմ'],['B','Երբեմն եմ մարզվում, անկանոն'],
+    ['C','Նստակյաց եմ՝ գրասենյակային աշխատանք, հազվադեպ եմ շարժվում'],['D','Առողջական պատճառով չեմ կարող մարզվել']]},
+{id:'Q2.3a',q:'Շաբաթվա ընթացքում ընդհանուր որքա՞ն ժամանակ եք մարզվում։',h:'Չափավոր՝ շնչառությունս արագանում է, բայց կարող եմ ազատ խոսել։ Ինտենսիվ՝ շնչում եմ շատ արագ, դժվարանում եմ խոսել։',
+ t:'numradio',f:[{k:'pamin',l:'Րոպե/շաբաթ',u:'ր',min:0,max:1200}],k:'paint',
+ o:[['mod','Չափավոր ինտենսիվություն'],['vig','Ինտենսիվ']],
+ w:s=>s.pa==='A'||s.pa==='B'},
+{id:'Q2.4',q:'Ինչպե՞ս եք սնվում։ Նշեք այն ամենը, ինչը ճիշտ է Ձեր դեպքում։',h:'ESC-ի Table 8 «Healthy diet characteristics»-ի ինը բաղադրիչը։',t:'check',k:'diet',
+ o:[['veg','Օրական ≥200 գ բանջարեղեն (2–3 բաժին)'],['fruit','Օրական ≥200 գ միրգ (2–3 բաժին)'],
+    ['fish','Շաբաթը 1–2 անգամ ձուկ, հատկապես ճարպոտ'],['nuts','Ամեն օր 30 գ չաղած ընկույզ'],
+    ['meat','Կարմիր միս շաբաթը 350–500 գ-ից քիչ'],['grain','Ամբողջական հացահատիկ (թեփով հաց, ձավարեղեն)'],
+    ['salt','Աղը՝ օրական 5 գ-ից (1 թեյի գդալ) քիչ'],['ssb','Չեմ խմում շաքարով ըմպելիքներ'],
+    ['alc','Ալկոհոլ չեմ օգտագործում կամ շաբաթական <100 գ']]},
+{id:'Q3.1',q:'Ծխո՞ւմ եք։',t:'radio',k:'smoke',
+ o:[['cur','Այո, ներկայումս ծխում եմ'],['former','Նախկինում ծխել եմ, հիմա՝ ոչ'],
+    ['never','Երբեք չեմ ծխել'],['alt','Օգտագործում եմ էլեկտրոնային / տաքացվող ծխախոտ']]},
+{id:'Q3.2',q:'Ընդհանուր քանի՞ տարի եք ծխել (կամ ծխում)։',t:'num',
+ f:[{k:'smyr',l:'Տարի',u:'տ.',min:0,max:80}],w:s=>s.smoke==='cur'||s.smoke==='former'||s.smoke==='alt'},
+{id:'Q3.3',q:'Օրական միջինում քանի՞ հատ ծխախոտ եք ծխում։',h:'1 տուփ = 20 հատ։',t:'num',
+ f:[{k:'cpd',l:'Հատ/օր',u:'հատ',min:0,max:100}],w:s=>s.smoke==='cur'||s.smoke==='former'},
+{id:'Q3.4',q:'Քանի՞ տարի առաջ եք թողել ծխելը։',t:'num',
+ f:[{k:'quit',l:'Տարի առաջ',u:'տ.',min:0,max:70}],w:s=>s.smoke==='former'},
+{id:'Q4.1',q:'Ձեզ մոտ երբևէ հայտնաբերվե՞լ է բարձր զարկերակային ճնշում։',t:'radio',k:'htn',
+ o:[['tx','Այո, և ընդունում եմ ճնշման դեղեր'],['notx','Այո, բայց դեղ չեմ ընդունում'],
+    ['no','Ոչ'],['idk','Չգիտեմ / երբեք չեմ չափել']]},
+{id:'Q4.2',q:'Նշեք Ձեր ճնշման վերջին չափման արդյունքը։',h:'Եթե հիմա չափեք՝ ավելի ճշգրիտ կլինի։ Փորձեք 185/115՝ hypertensive emergency-ի ուղին տեսնելու համար։',t:'num',
+ f:[{k:'sbp',l:'Վերին (SBP)',u:'mmHg',min:60,max:300},{k:'dbp',l:'Ստորին (DBP)',u:'mmHg',min:30,max:200}]},
+{id:'Q4.3',q:'Ձեր ճնշումը շատ բարձր է։ ԱՅՍ ՊԱՀԻՆ ունե՞ք հետևյալ ախտանիշներից որևէ մեկը։',t:'check',k:'bpsx',danger:1,
+ o:[['head','Ուժեղ գլխացավ'],['vis','Տեսողության խանգարում (մշուշ, կրկնատեսություն)'],
+    ['chest','Կրծքավանդակի ցավ'],['dysp','Օդի պակասի զգացում / շնչահեղձություն'],
+    ['dizz','Գլխապտույտ կամ թուլություն'],['neuro','Խոսքի կամ շարժման խանգարում, դեմքի ասիմետրիա'],
+    ['seiz','Ցնցումներ կամ գիտակցության պղտորում'],['none','Ոչ, վերոնշյալներից ոչ մեկը']],
+ w:s=>(s.sbp>=180||s.dbp>=110)},
+{id:'Q5.1',q:'Ունե՞ք բժշկի կողմից ախտորոշված որևէ քրոնիկ հիվանդություն։',t:'check',k:'cmb',
+ o:[['DM','Շաքարային դիաբետ'],['PREDM','Նախաշաքարախտ'],['ASCVD','Սրտի իշեմիկ հիվանդություն / ինֆարկտ / ստենտ'],
+    ['CVA','Ինսուլտ կամ անցողիկ իշեմիկ նոպա'],['HF','Սրտի անբավարարություն'],['AF','Առիթմիա / նախասրտերի ֆիբրիլյացիա'],
+    ['CKD','Երիկամային քրոնիկ հիվանդություն'],['DLP','Բարձր խոլեստերին / դիսլիպիդեմիա'],['FH','Ընտանեկան հիպերքոլեստերինեմիա'],
+    ['INFLAM','Բորբոքային հիվանդություն (ռևմատոիդ արթրիտ, պսորիազ)'],['OSA_DX','Քնային ապնոէ (արդեն ախտորոշված)'],
+    ['NAFLD','Ճարպակալված լյարդ (NAFLD/MASLD)'],['MENTAL','Հոգեկան առողջության խնդիր'],['none','Ոչ մեկը']]},
+{id:'Q5.2b',q:'Քանի՞ տարի առաջ է Ձեզ ախտորոշվել շաքարային դիաբետ։',h:'Այս թիվը որոշիչ է ռիսկի դասակարգման համար՝ 2025 ESC/EAS Table 3, <10 vs ≥10 տարի սահման։',t:'num',
+ f:[{k:'dmdur',l:'Տարի',u:'տ.',min:0,max:70}],w:s=>(s.cmb||[]).includes('DM')},
+{id:'Q5.2e',q:'Գիտե՞ք Ձեր վերջին գլիկոզիլացված հեմոգլոբինի (HbA1c) ցուցանիշը։',t:'numskip',
+ f:[{k:'hba1c',l:'HbA1c',u:'%',min:3,max:20,step:'0.1'}],skip:'Չգիտեմ / չեմ հանձնել',w:s=>(s.cmb||[]).includes('DM')},
+{id:'Q6.1',q:'Ձեր մերձավոր ազգականների մոտ եղե՞լ են հետևյալ հիվանդությունները։',h:'Ծնող, եղբայր, քույր, երեխա։',t:'check',k:'fhx',
+ o:[['CAD','Սրտի կաթված (ինֆարկտ) կամ ստենտ/շունտավորում'],['STROKE','Ինսուլտ'],
+    ['SCD','Հանկարծամահություն 50 տարեկանից շուտ'],['DM','Շաքարային դիաբետ'],
+    ['CKD','Երիկամային հիվանդություն'],['FH','Բարձր խոլեստերին / ընտանեկան հիպերքոլեստերինեմիա'],
+    ['HTN','Բարձր ճնշում'],['none','Ոչ մեկը / չգիտեմ']]},
+{id:'Q6.2',q:'Մոտավորապես քանի՞ տարեկան էր Ձեր ազգականը, երբ դա տեղի ունեցավ։',h:'Եթե մեկից ավելի են՝ նշեք ամենավաղ դեպքը։',t:'radio',k:'prem',
+ o:[['m55','Տղամարդ ազգական, 55 տարեկանից շուտ'],['f65','Կին ազգական, 65 տարեկանից շուտ'],
+    ['later','Ավելի ուշ տարիքում'],['idk','Չգիտեմ']],
+ w:s=>['CAD','STROKE','SCD'].some(x=>(s.fhx||[]).includes(x))},
+{id:'Q7.1',q:'Ինչպե՞ս կգնահատեք Ձեր քնի որակը։',h:'1 = շատ վատ, 10 = գերազանց։',t:'slider',k:'sleepq'},
+{id:'Q7.1a',q:'Միջինում քանի՞ ժամ եք քնում գիշերը։',t:'num',f:[{k:'sleeph',l:'Ժամ',u:'ժ',min:2,max:14,step:'0.5'}]},
+{id:'Q7.2',q:'Քնի ընթացքում խռմփո՞ւմ եք բարձր, կամ Ձեզ ասե՞լ են, որ քնած ժամանակ շնչառությունը ընդհատվում է։',t:'radio',k:'sdb',
+ o:[['snore','Այո, բարձր խռմփում եմ'],['apnoea','Այո, ասել են, որ շնչառությունս ընդհատվում է'],
+    ['both','Այո, երկուսն էլ'],['no','Ոչ / չգիտեմ']],
+ w:s=>s.sleepq!=null&&s.sleepq<7},
+{id:'Q7.3',q:'Օրվա ընթացքում հաճա՞խ եք զգում ուժեղ քնկոտություն կամ հոգնածություն։',h:'Օրինակ՝ հեռուստացույց դիտելիս, մեքենա վարելիս կամ զրուցելիս։',t:'radio',k:'sleepy',
+ o:[['never','Երբեք կամ գրեթե երբեք'],['some','Երբեմն'],['often','Հաճախ'],['daily','Գրեթե ամեն օր']],
+ w:s=>['snore','apnoea','both'].includes(s.sdb)},
+{id:'Q7.4a',q:'Եթե հնարավոր է, չափեք Ձեր պարանոցի շրջագիծը։',h:'STOP-BANG-ի ութ բաղադրիչից սա միակն է, որը Noreon-ը դեռ չունի — մնացած յոթը արդեն հավաքված են։',t:'numskip',
+ f:[{k:'neck',l:'Պարանոց',u:'սմ',min:25,max:70}],skip:'Չեմ կարող չափել',
+ w:s=>['snore','apnoea','both'].includes(s.sdb)},
+{id:'Q7.5',q:'Ձեր աշխատանքը կամ առօրյան սթրեսային համարո՞ւմ եք։',h:'Ցուցադրվում է բոլոր ուղիներով — OSA-ն և սթրեսը հաճախ համակցվում են։',t:'radio',k:'stress',
+ o:[['no','Ոչ, հանգիստ եմ'],['some','Երբեմն'],['often','Այո, հաճախ'],['always','Այո, մշտապես']]},
+{id:'Q8.1',q:'Զգո՞ւմ եք ցավ, ճնշվածություն, սեղմվածություն կամ ծանրություն կրծքավանդակում ֆիզիկական ծանրաբեռնվածության կամ սթրեսի ժամանակ։',
+ h:'Կարող է լինել սեղմող, ճնշող կամ այրող զգացողություն կրծքավանդակի կենտրոնում։ Երբեմն տարածվում է ձախ ձեռքին, պարանոցին, ծնոտին, թիկունքին կամ ստամոքսի շրջանին։',t:'radio',k:'cp',
+ o:[['yes','Այո'],['no','Ոչ'],['unsure','Համոզված չեմ']]},
+{id:'Q8.2',q:'ԱՅՍ ՊԱՀԻՆ ունե՞ք այդ ցավը կամ ճնշվածությունը։',t:'gate',k:'cpnow',rf:'RF-01',
+ w:s=>s.cp==='yes'||s.cp==='unsure'},
+{id:'Q8.3',q:'Որքա՞ն հաճախ է դա լինում։',t:'radio',k:'cpfreq',
+ o:[['multi','Օրական մի քանի անգամ'],['daily','Ամեն օր'],['week','Շաբաթը մի քանի անգամ'],
+    ['month','Ամսական մի քանի անգամ'],['rare','Հազվադեպ՝ տարվա մեջ մի քանի անգամ']],
+ w:s=>(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'},
+{id:'Q8.4',q:'Վերջին 4 շաբաթվա ընթացքում այդ ցավը դարձե՞լ է ավելի հաճախակի, ավելի ուժեղ, կամ առաջանո՞ւմ է ավելի փոքր ծանրաբեռնվածությունից։',
+ h:'Կայուն և անկայուն ստենոկարդիայի տարբերությունը հենց դինամիկան է։',t:'radio',k:'cresc',
+ o:[['yes','Այո, վատացել է'],['same','Ոչ, նույնն է'],['better','Բարելավվել է']],
+ w:s=>(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'},
+{id:'Q8.5',q:'Այդ ցավը երբևէ առաջանո՞ւմ է հանգստի ժամանակ կամ գիշերը՝ առանց ֆիզիկական ծանրաբեռնվածության։',t:'radio',k:'cprest',
+ o:[['yes','Այո'],['no','Ոչ']],w:s=>(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'},
+{id:'Q8.6',q:'Սովորաբար որքա՞ն է տևում ցավը։',t:'radio',k:'cpdur',
+ o:[['sec','Մի քանի վայրկյան'],['1_5','1–5 րոպե'],['5_15','5–15 րոպե'],
+    ['gt15','15 րոպեից ավելի'],['var','Փոփոխական']],
+ w:s=>(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'},
+{id:'Q9.1',q:'Զգացե՞լ եք հանկարծակի գլխապտույտ, թուլություն, օդի պակասի զգացում կամ մոտալուտ ուշագնացության վիճակ՝ սրտխփոցի հետ միաժամանակ։',t:'radio',k:'ar',
+ o:[['yes','Այո'],['no','Ոչ'],['palponly','Սրտխփոց ունեմ, բայց առանց գլխապտույտի']]},
+{id:'Q9.2',q:'ԱՅՍ ՊԱՀԻՆ ունե՞ք այդ գանգատները։',t:'gate',k:'arnow',rf:'RF-02',w:s=>s.ar==='yes'},
+{id:'Q9.3',q:'Երբևէ կորցրե՞լ եք գիտակցությունը (ուշաթափվել եք)։',t:'radio',k:'syn',
+ o:[['exert','Այո, ֆիզիկական ծանրաբեռնվածության ժամանակ'],
+    ['rest','Այո, հանգստի ժամանակ կամ առանց նախազգուշացնող նշանների'],
+    ['vaso','Այո, երկար կանգնելուց / արյան տեսքից / ցավից հետո'],['never','Ոչ, երբեք']],
+ w:s=>(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'},
+{id:'Q9.4',q:'Երբ սրտխփոց եք զգում, սրտի բաբախյունը՝',t:'radio',k:'rhy',
+ o:[['fast','Արագ է, բայց կանոնավոր'],['irreg','Անկանոն է, «թռչում» է'],
+    ['strong','Առանձին ուժեղ հարվածներ են'],['idk','Չեմ կարող որոշել']],
+ w:s=>(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'},
+{id:'Q9.5',q:'Որքա՞ն են տևում այդ նոպաները։',t:'radio',k:'ardur',
+ o:[['sec','Վայրկյաններ'],['lt5','5 րոպեից քիչ'],['5_30','5–30 րոպե'],['gt30','30 րոպեից ավելի']],
+ w:s=>(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'}
+];
+</script>
+<script>
+/* ══════════ helpers ══════════ */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el=(t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+
+/* ══════════ theme ══════════ */
+(function(){
+  let saved=null; try{saved=localStorage.getItem('nrn-theme')}catch(e){}
+  if(saved)document.documentElement.setAttribute('data-theme',saved);
+  $('#themeBtn').addEventListener('click',()=>{
+    const cur=document.documentElement.getAttribute('data-theme');
+    const dark=cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
+    const nxt=dark?'light':'dark';
+    document.documentElement.setAttribute('data-theme',nxt);
+    try{localStorage.setItem('nrn-theme',nxt)}catch(e){}
+  });
+})();
+
+/* ══════════ tabs ══════════ */
+$$('.tab').forEach(t=>t.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>x.setAttribute('aria-selected',String(x===t)));
+  $$('.view').forEach(v=>v.hidden=true);
+  $('#v-'+t.dataset.view).hidden=false;
+  if(t.dataset.view==='ph2' && typeof p2Pull==='function'){ p2Pull(); }
+  window.scrollTo({top:0,behavior:'instant'});
+}));
+
+/* ══════════ tables ══════════ */
+function buildTable(t,head,rows){
+  t.innerHTML='<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+rows+'</tbody>';
+}
+buildTable($('#flagTable'),['ID','Trigger','Աղբյուր հարց','Triage','Ուղեցույցային հիմք'],
+  FLAGS.map(f=>`<tr><td class="k"><span class="mono nw">${f[0]}</span></td><td class="k">${esc(f[1])}</td>
+   <td><span class="mono">${esc(f[2])}</span></td>
+   <td><span class="tpill t-${f[3]==='red'?'red':'org'}">${f[3]==='red'?'🔴 RED':'🟠 ORANGE'}</span></td>
+   <td>${esc(f[4])}</td></tr>`).join(''));
+buildTable($('#siTable'),['ID','Ինվարիանտ','Թեստ'],
+  SI.map(s=>`<tr><td class="k"><span class="mono nw">${s[0]}</span></td><td class="k">${esc(s[1])}</td><td><span class="mono">${esc(s[2])}</span></td></tr>`).join(''));
+
+function thrRows(f,q){
+  return THR.filter(r=>(f==='all'||r[2]===f)&&(!q||(r[0]+r[1]+r[3]).toLowerCase().includes(q)))
+    .map(r=>`<tr><td class="k">${esc(r[0])}</td><td><span class="mono">${esc(r[1])}</span></td>
+     <td><span class="srcpill s-${r[2]}">${r[2]==='esc'?'ESC':r[2]==='ext'?'EXTERNAL':'NOREON'}</span></td>
+     <td>${esc(r[3])}</td></tr>`).join('');
+}
+let thrF='all';
+function drawThr(){
+  const q=$('#thrSearch').value.trim().toLowerCase();
+  const rows=thrRows(thrF,q);
+  buildTable($('#thrTable'),['Պարամետր','Շեմ','Աղբյուր','Հղում'],
+    rows||'<tr><td colspan="4" style="text-align:center;padding:26px;color:var(--ink-3)">Համընկնում չկա</td></tr>');
+}
+$('#thrSearch').addEventListener('input',drawThr);
+$$('[data-thrf]').forEach(b=>b.addEventListener('click',()=>{
+  thrF=b.dataset.thrf; $$('[data-thrf]').forEach(x=>x.className='btn btn-g');
+  b.className='btn btn-p'; drawThr();
+}));
+$('[data-thrf="all"]').className='btn btn-p';
+drawThr();
+
+/* ══════════ source documents ══════════ */
+$('#srcPane').innerHTML=SRC.map((d,i)=>`<details class="srcdoc"${i===0?' open':''}>
+  <summary class="srcdoc-h">
+    <span class="yr">${d[0]}</span>
+    <span class="ti">${esc(d[1])}<small>${esc(d[2])}</small></span>
+    <span class="cnt">${d[3].length} հատված</span>
+  </summary>
+  <div class="srcdoc-b">${d[3].map(q=>`<div class="qrow"><span class="sec">${esc(q[0])}</span><span class="txt">“${q[1]}”</span></div>`).join('')}</div>
+</details>`).join('');
+
+/* ══════════ escalation behaviour pane ══════════ */
+$('#escPane').innerHTML=`
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(290px,1fr))">
+  <div class="card" style="padding:15px 17px;border-color:var(--red-line);background:var(--red-wash)">
+    <div class="eyebrow" style="color:var(--red)">🔴 RED · APP FREEZE</div>
+    <div style="font-size:12.5px;color:var(--ink-2);margin-top:9px">
+      <b style="color:var(--ink)">t=0</b> state := FROZEN_EMERGENCY (atomic, local first) · անջատել navigation, pending push, auto-logout, screen dimming · ջնջել բոլոր non-emergency շերտերը<br>
+      <b style="color:var(--ink)">t≤100ms</b> RENDER pre-cached emergency screen<br>
+      <b style="color:var(--ink)">t≤150ms</b> haptic feedback<br>
+      <b style="color:var(--ink)">t≤300ms</b> ASYNC · audit POST · բժշկի ծանուցում · վստահելի անձ<br><br>
+      <b style="color:var(--red)">Rendering-ը երբեք չի կախված ցանցից, API-ից կամ feature flag-ից։</b> 1-03-ը՝ compile-time constant, ոչ server-driven։
+    </div>
+  </div>
+  <div class="card" style="padding:15px 17px;border-color:var(--orange-line);background:var(--orange-wash)">
+    <div class="eyebrow" style="color:var(--orange)">🟠 ORANGE · ՉԻ սառեցնում</div>
+    <div style="font-size:12.5px;color:var(--ink-2);margin-top:9px">
+      Հարցաշարը շարունակվում է մինչև ավարտ (տվյալները արժեքավոր են բժշկի համար) · ավարտին persistent orange banner · ավտոմատ առաջարկվող այցի ամսաթիվ ըստ RF-ի (24ժ / 48ժ / 7օր) · push reminder +24ժ և +72ժ, եթե այցը չի ամրագրվել։<br><br>
+      <b style="color:var(--ink)">Safety-net — պարտադիր բոլոր ORANGE-երի համար․</b> «Եթե ախտանիշները վատանան, տևեն 15 րոպեից ավելի, կամ ի հայտ գան հանգստի ժամանակ — անմիջապես զանգահարեք 1-03։»
+    </div>
+  </div>
+  <div class="card" style="padding:15px 17px">
+    <div class="eyebrow">Post-emergency</div>
+    <div style="font-size:12.5px;color:var(--ink-2);margin-top:9px">
+      «Ես զանգահարել եմ» → confirmation modal → <span class="mono" style="font-size:11px">POST_EMERGENCY_MONITORING</span>։ Հարցաշարը <b style="color:var(--ink)">չի</b> շարունակվում ինքնաբերաբար · բժշկի այց ≤24ժ auto-schedule · red banner 48ժ · check-in push +2ժ, +6ժ, +24ժ։<br><br>
+      Doctor Dashboard՝ <b style="color:var(--red)">EMERGENCY EVENT — patient self-resolved, NOT medically cleared</b> (ամենաբարձր առաջնահերթություն)։
+    </div>
+  </div>
+</div>
+<div class="warn" style="margin-top:14px"><b>⚠ Ասպիրինի դիտավորյալ բացակայությունը</b>Չնայած ասպիրինը ACS-ի ստանդարտ վաղ բուժման մաս է, հավելվածը <b>չի կարող բացառել</b> աորտայի դիսեկցիան, հեմոռագիկ ինսուլտը կամ ալերգիան։ Այդ որոշումը պատկանում է շտապօգնության դիսպետչերին կամ բրիգադին։ Այս ընտրությունը պետք է փաստաթղթավորվի ռիսկերի կառավարման ֆայլում։</div>
+<div class="cite" style="margin-top:12px"><b>2023 ESC ACS §4.1.1</b><em>“The recommended action should be to contact the EMS rather than to self-present to an ED or primary care clinician.”</em> — Այս մեկ նախադասությունն է պատճառը, որ շտապ էկրանի միակ primary CTA-ն 1-03-ի զանգն է, և որ ցուցակում կա «Մի վարեք մեքենա»։</div>`;
+</script>
+<script>
+/* ══════════ derived metrics ══════════ */
+function bmi(){ if(!S.h||!S.w)return null; const m=S.h/100; return Math.round(S.w/(m*m)*10+Number.EPSILON)/10; }
+function bmiClass(b){ if(b==null)return null; if(b<18.5)return['UNDERWEIGHT','amb']; if(b<25)return['NORMAL','grn'];
+  if(b<30)return['OVERWEIGHT · no further gain','amb']; return['OBESITY · reduction advised','org']; }
+function waistClass(){ if(!S.waist||!S.sex)return null; const m=S.sex==='male';
+  if(S.waist>=(m?102:88))return['REDUCTION ADVISED','org']; if(S.waist>=(m?94:80))return['NO FURTHER GAIN','amb']; return['NORMAL','grn']; }
+function packYears(){ if(S.cpd==null||S.smyr==null)return null; return Math.round(S.cpd/20*S.smyr*10+Number.EPSILON)/10; }
+function bpCat(){ if(S.sbp==null||S.dbp==null)return null;
+  if(S.sbp>=180||S.dbp>=110)return['HTN ≥180/110','red'];
+  if(S.sbp>=160||S.dbp>=100)return['HTN 160–179/100–109','org'];
+  if(S.sbp>=140||S.dbp>=90)return['HTN 140–159/90–99','amb'];
+  if(S.sbp>=120||S.dbp>=70)return['ELEVATED BP','amb'];
+  return['NON-ELEVATED','grn']; }
+function paAdequacy(){ if(S.pa==='D')return['MEDICALLY_LIMITED','amb'];
+  if(S.pa==='C')return['BELOW_TARGET','amb'];
+  if(S.pamin==null)return null;
+  const eq=S.pamin*(S.paint==='vig'?2:1);
+  if(eq>=150)return['MEETS_TARGET · '+eq+' ր','grn'];
+  if(eq>=75)return['PARTIAL · '+eq+' ր','amb'];
+  return['BELOW_TARGET · '+eq+' ր','amb']; }
+function dietScore(){ return S.diet? S.diet.filter(x=>x!=='none').length : null; }
+function stopbang(){
+  if(!['snore','apnoea','both'].includes(S.sdb))return null;
+  let n=0, partial=false;
+  if(S.sdb==='snore'||S.sdb==='both')n++;                       // S
+  if(['often','daily'].includes(S.sleepy))n++;                  // T
+  if(S.sdb==='apnoea'||S.sdb==='both')n++;                      // O
+  if(S.htn==='tx'||S.htn==='notx'||(S.sbp>=140||S.dbp>=90))n++; // P
+  const b=bmi(); if(b!=null&&b>35)n++;                           // B
+  if(S.age>50)n++;                                               // A
+  if(S.neck!=null){ if(S.neck>40)n++; } else partial=true;      // N
+  if(S.sex==='male')n++;                                         // G
+  return {n,partial};
+}
+function osaRisk(){ const sb=stopbang(); if(!sb)return null;
+  if(sb.n>=5)return['HIGH · '+sb.n+'/8'+(sb.partial?' (partial)':''),'org'];
+  if(sb.n>=3)return['INTERMEDIATE · '+sb.n+'/8'+(sb.partial?' (partial)':''),'amb'];
+  return['LOW · '+sb.n+'/8'+(sb.partial?' (partial)':''),'grn']; }
+function modifiers(){
+  const m=[];
+  if(S.prem==='m55'||S.prem==='f65')m.push('Վաղաժամ ՍԱՀ ընտանիքում');
+  if(['often','always'].includes(S.stress))m.push('Հոգեսոցիալական սթրես');
+  const w=waistClass(); const b=bmi();
+  if((w&&w[0]==='REDUCTION ADVISED')||(b!=null&&b>=30))m.push('Աբդոմինալ ճարպակալում');
+  if(S.pa==='C')m.push('Նստակյաց ապրելակերպ');
+  const o=osaRisk(); if(o&&o[0].startsWith('HIGH'))m.push('OSA բարձր կասկած');
+  const c=S.cmb||[];
+  if(c.includes('INFLAM'))m.push('Բորբոքային հիվանդություն');
+  if(c.includes('MENTAL'))m.push('Հոգեկան առողջության խնդիր');
+  if(c.includes('NAFLD'))m.push('NAFLD');
+  if(c.includes('AF'))m.push('Նախասրտերի ֆիբրիլյացիա');
+  return m;
+}
+function score2State(){
+  const c=S.cmb||[];
+  if(['ASCVD','CVA','HF','CKD','FH'].some(x=>c.includes(x)))return['NOT_APPLICABLE','Ուղղակի դասակարգում'];
+  if(c.includes('DM'))return['SCORE2_DM_PENDING','SCORE2-Diabetes'];
+  if(S.age==null)return['—',''];
+  if(S.age<40)return['LIFETIME_ONLY','<40 տ.'];
+  if(S.age>=70)return['SCORE2_OP · PENDING','non-HDL-C պակասում է'];
+  return['SCORE2 · PENDING','non-HDL-C պակասում է'];
+}
+/* ══════════ triage ══════════ */
+function activeFlags(){
+  const f=[];
+  if(S.cpnow==='yes')f.push(['RF-01','Կրծքային ցավ ԱՅՍ ՊԱՀԻՆ','red']);
+  if(S.arnow==='yes')f.push(['RF-02','Սրտխփոց + պրեսինկոպ ԱՅՍ ՊԱՀԻՆ','red']);
+  const sx=(S.bpsx||[]).filter(x=>x!=='none');
+  if((S.sbp>=180||S.dbp>=110)&&sx.length)f.push(['RF-03','BP ≥180/110 + ախտանիշ','red']);
+  if((S.bpsx||[]).includes('neuro'))f.push(['RF-04','Նևրոլոգիական դեֆիցիտ','red']);
+  if((S.bpsx||[]).includes('seiz'))f.push(['RF-05','Ցնցումներ / գիտակցության պղտորում','red']);
+  if((S.sbp>=180||S.dbp>=110)&&!sx.length&&S.bpsx)f.push(['RF-06','BP ≥180/110 առանց ախտանիշների','org']);
+  if(S.cresc==='yes'||S.cprest==='yes'||S.cpdur==='gt15'||['multi','daily'].includes(S.cpfreq))
+    f.push(['RF-07','Crescendo / անկայուն անգինա','org']);
+  if(S.syn==='exert')f.push(['RF-08','Սինկոպ ծանրաբեռնվածությամբ','org']);
+  if(S.syn==='rest')f.push(['RF-09','Սինկոպ առանց նախանշանների','org']);
+  if(S.ardur==='gt30')f.push(['RF-10','Նոպաներ >30 րոպե','org']);
+  if(S.hba1c!=null&&S.hba1c>=9)f.push(['RF-11','HbA1c ≥9.0%','org']);
+  if((S.fhx||[]).includes('SCD')&&(S.ar==='yes'||S.ar==='palponly'))f.push(['RF-12','FH_SCD + Q9 դրական','org']);
+  return f;
+}
+function triage(){
+  const f=activeFlags();
+  if(f.some(x=>x[2]==='red'))return['red','ՇՏԱՊ · EMERGENCY','Անմիջապես 1-03',f];
+  if(f.some(x=>x[2]==='org'))return['org','URGENT','24 ժ – 7 օր',f];
+  const y=[];
+  const bc=bpCat(); if(bc&&(bc[1]==='amb'||bc[1]==='org'))y.push('ԱՃ');
+  const o=osaRisk(); if(o&&!o[0].startsWith('LOW'))y.push('OSA կասկած');
+  if(S.hba1c!=null&&S.hba1c>=7)y.push('HbA1c >թիրախ');
+  const b=bmi(); if(b!=null&&b>=30)y.push('Ճարպակալում');
+  if(S.smoke==='cur')y.push('Ընթացիկ ծխող');
+  if(y.length)return['amb','ROUTINE-PRIORITY',y.join(' · '),f];
+  return['grn','ROUTINE','Վերագնահատում 12 ամսից',f];
+}
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   REQUISITION — the bridge between Phase 1 and Phase 2.
+   Phase 1 decides which investigations are indicated; Phase 2
+   renders input fields for exactly those, and nothing else.
+   ══════════════════════════════════════════════════════════ */
+const REQ_CATALOG={
+ ecg:   {title:'ԷՍԳ 12 արտածում', fields:['ecg']},
+ echo:  {title:'ԷխոԿԳ (սրտի ուլտրաձայն)', fields:['echo']},
+ lipids:{title:'Լիպիդային պանել', sub:'TC · HDL-C · LDL-C · TG · non-HDL-C',
+         fields:['tc','hdl','ldl','tg']},
+ hba1c: {title:'HbA1c', sub:'ծոմ պահել պետք չէ', fields:['hba1c']},
+ dmdur: {title:'ՇԴ-ի տևողություն', sub:'անամնեզից', fields:['dmdur']},
+ renal: {title:'Երիկամային պանել', sub:'կրեատինին + eGFR · միզի ACR · կալիում',
+         fields:['egfr','acr','k']},
+ basic: {title:'Արյան ընդհանուր · Na⁺ · ԼՖՏ · TSH', sub:'2024 ESC HTN basic workup',
+         fields:[], note:'Թվային դաշտ չկա — արդյունքը գնում է բժշկի քարտ։'},
+ hbpm:  {title:'HBPM 7-օրյա գրանցում', sub:'2 չափում ×2/օր, միջինացնել',
+         fields:['sbp2','dbp2']},
+ psg:   {title:'Պոլիսոմնոգրաֆիա / HSAT', sub:'AHI-ի չափում', fields:['ahi']},
+ lpa:   {title:'Lp(a)', sub:'կյանքում մեկ անգամ', fields:['lpa']},
+ retino:{title:'Աչքի հատակի հետազոտություն', fields:['retino']},
+ neuro: {title:'Նեյրոպաթիայի գնահատում', fields:['neuro']}
+};
+
+/* Derived from Phase 1 answers (S). Pure — safe to call any time. */
+function buildRequisition(){
+  const r=[], add=(k,why,when,tone)=>r.push(Object.assign({key:k,why,when,tone},REQ_CATALOG[k]));
+  const bc=bpCat(), osa=osaRisk(), b=bmi(), c=S.cmb||[];
+  const dm=c.includes('DM'), prem=(S.prem==='m55'||S.prem==='f65');
+  const d4=(S.syn==='exert'||S.syn==='rest'||S.rhy==='irreg'||S.ardur==='gt30');
+  const s1=(S.cresc==='yes'||S.cprest==='yes'||S.cpdur==='gt15');
+  const bpAbn = bc && bc[1]!=='grn';
+
+  add('ecg', d4||s1 ? 'Առիթմիայի / անգինայի գնահատում'
+                    : 'Basic workup · ծխող / ԱՃ / ընտանեկան անամնեզ',
+      d4||s1 ? '≤24–48 ժ' : '≤2 շաբաթ', d4||s1?'org':'amb');
+  add('lipids','SCORE2-ի լրացման համար պարտադիր — առանց non-HDL-C տոկոս չկա','≤1 շաբաթ','org');
+  if(b!=null&&b>=25 || dm || c.includes('PREDM'))
+    add('hba1c', dm?'ՇԴ-ի կառավարման որակ':'Դիսգլիկեմիայի սկրինինգ · ավելորդ քաշ','≤2 շաբաթ','amb');
+  if(dm){
+    add('dmdur','Որոշիչ է ռիսկի դասակարգման համար — 2025 ESC/EAS Table 3','—','amb');
+    add('retino','ՇԴ-ի թիրախ-օրգանի գնահատում','տարեկան','amb');
+    add('neuro','ՇԴ-ի թիրախ-օրգանի գնահատում','տարեկան','amb');
+  }
+  if(bpAbn||dm) add('renal','HMOD-ի գնահատում · նեֆրոպաթիայի սկրինինգ','≤2 շաբաթ','amb');
+  if(bpAbn){
+    add('basic','2024 ESC HTN basic workup','≤2 շաբաթ','amb');
+    add('hbpm','Ախտորոշման հաստատում — Class I','Սկսել այսօր','amb');
+  }
+  if(osa&&osa[1]==='org') add('psg','STOP-BANG բարձր — AHI-ի չափում','≤4 շաբաթ','org');
+  if(d4) add('echo','Ուշաթափություն / առիթմիա — կառուցվածքային պատճառի բացառում','≤1 շաբաթ','org');
+  else if(S.sbp>=140||S.dbp>=90) add('echo','HMOD-ի հաստատում','≤4 շաբաթ','amb');
+  if(prem) add('lpa','Վաղաժամ ՍԱՀ ընտանիքում — 2025 ESC/EAS','Ցանկալի','amb');
+  return r;
+}
+function requisitionFields(){
+  const s=new Set(); buildRequisition().forEach(x=>x.fields.forEach(f=>s.add(f)));
+  if(S.age!=null&&S.age>=40&&S.age<=89) s.add('score2');
+  return s;
+}
+</script>
+<script>
+/* ══════════ simulator engine ══════════ */
+let idx=0, done=false;
+const visible=()=>FLOW.filter(s=>!s.w||s.w(S));
+function stepAt(i){ const v=visible(); return v[i]||null; }
+
+function renderSim(){
+  const v=visible(), st=v[idx];
+  $('#simProg').style.width=(done?100:Math.round(idx/v.length*100))+'%';
+  $('#simStep').textContent=done?'Ամփոփում':`Քայլ ${idx+1} / ~${v.length}`;
+  if(done){ renderResult(); paintLive(); return; }
+  if(!st){ done=true; renderSim(); return; }
+  const b=$('#simBody'); b.innerHTML='';
+  b.appendChild(el('div','qkicker',esc(st.id)));
+  b.appendChild(el('div','qtext',esc(st.q)));
+  if(st.h)b.appendChild(el('div','qhelp',esc(st.h)));
+
+  if(st.t==='radio'||st.t==='gate'||st.t==='check'){
+    const wrap=el('div','answers');
+    if(st.t==='gate'){
+      const y=el('button','ans danger','⚠  ԱՅՈ, ՀԻՄԱ ՈՒՆԵՄ'); y.type='button';
+      y.addEventListener('click',()=>{S[st.k]='yes'; showEmergency();});
+      const n=el('button','ans radio','<span class="box">✓</span>Ոչ, հիմա չկա'); n.type='button';
+      n.addEventListener('click',()=>{S[st.k]='no'; next();});
+      wrap.append(y,n);
+    } else if(st.t==='radio'){
+      st.o.forEach(([k,lab])=>{
+        const a=el('button','ans radio',`<span class="box">✓</span><span>${esc(lab)}</span>`); a.type='button';
+        a.setAttribute('aria-pressed',String(S[st.k]===k));
+        a.addEventListener('click',()=>{S[st.k]=k; next();});
+        wrap.appendChild(a);
+      });
+    } else {
+      S[st.k]=S[st.k]||[];
+      st.o.forEach(([k,lab])=>{
+        const a=el('button',`ans${st.danger&&k!=='none'?'':''}`,`<span class="box">✓</span><span>${esc(lab)}</span>`); a.type='button';
+        a.setAttribute('aria-pressed',String(S[st.k].includes(k)));
+        a.addEventListener('click',()=>{
+          let arr=S[st.k];
+          if(k==='none'){ arr=arr.includes('none')?[]:['none']; }
+          else { arr=arr.filter(x=>x!=='none');
+                 arr=arr.includes(k)?arr.filter(x=>x!==k):arr.concat(k); }
+          S[st.k]=arr; renderSim(); paintLive();
+          if(st.danger)checkEmergency();
+        });
+        wrap.appendChild(a);
+      });
+    }
+    b.appendChild(wrap);
+    if(st.t==='check')b.appendChild(foot(true));
+  }
+  else if(st.t==='slider'){
+    const val=S[st.k]!=null?S[st.k]:5;
+    const inp=el('input'); inp.type='range'; inp.min=1; inp.max=10; inp.step=1; inp.value=val; inp.className='slider';
+    const out=el('div','sliderval',String(val)+' / 10');
+    inp.addEventListener('input',()=>{S[st.k]=+inp.value; out.textContent=inp.value+' / 10'; paintLive();});
+    S[st.k]=S[st.k]!=null?S[st.k]:val;
+    b.append(inp,out,foot(true));
+  }
+  else { // num, numradio, numskip
+    const row=el('div','numrow');
+    st.f.forEach(f=>{
+      const box=el('div','numf');
+      box.innerHTML=`<label for="in_${f.k}">${esc(f.l)}${f.opt?' (ըստ ցանկության)':''}</label>`;
+      const i=el('input'); i.type='number'; i.id='in_'+f.k; i.min=f.min; i.max=f.max;
+      if(f.step)i.step=f.step;
+      if(S[f.k]!=null)i.value=S[f.k];
+      i.addEventListener('input',()=>{ S[f.k]=i.value===''?null:+i.value; paintLive(); validate(); });
+      box.appendChild(i); box.appendChild(el('div','u',esc(f.u))); row.appendChild(box);
+    });
+    b.appendChild(row);
+    if(st.t==='numradio'){
+      const wrap=el('div','answers');
+      st.o.forEach(([k,lab])=>{
+        const a=el('button','ans radio',`<span class="box">✓</span><span>${esc(lab)}</span>`); a.type='button';
+        a.setAttribute('aria-pressed',String(S[st.k]===k));
+        a.addEventListener('click',()=>{S[st.k]=k; renderSim(); paintLive();});
+        wrap.appendChild(a);
+      });
+      b.appendChild(wrap);
+    }
+    if(st.t==='numskip'){
+      const sk=el('button','btn btn-g',esc(st.skip)); sk.type='button'; sk.style.marginTop='14px';
+      sk.addEventListener('click',()=>{st.f.forEach(f=>S[f.k]=null); next();});
+      b.appendChild(sk);
+    }
+    b.appendChild(foot());
+  }
+  validate();
+}
+function foot(always){
+  const f=el('div','simfoot');
+  const back=el('button','btn btn-g','← Հետ'); back.type='button';
+  back.addEventListener('click',()=>{ if(idx>0){idx--; renderSim(); paintLive();} });
+  const nx=el('button','btn btn-p','Շարունակել →'); nx.type='button'; nx.id='btnNext';
+  nx.addEventListener('click',next);
+  const hint=el('div','simhint',always?'':'լրացրեք դաշտերը');
+  f.append(back,nx,hint);
+  return f;
+}
+function validate(){
+  const st=stepAt(idx), b=$('#btnNext'); if(!st||!b)return;
+  let ok=true;
+  if(st.t==='num'||st.t==='numradio'||st.t==='numskip')
+    ok=st.f.every(f=>f.opt||(S[f.k]!=null&&S[f.k]>=f.min&&S[f.k]<=f.max));
+  if(st.t==='numradio')ok=ok&&!!S[st.k];
+  if(st.t==='check')ok=(S[st.k]||[]).length>0;
+  b.disabled=!ok;
+  const h=b.parentElement.querySelector('.simhint');
+  if(h)h.textContent=ok?'':'լրացրեք դաշտերը';
+}
+function next(){
+  checkEmergency();
+  if(!$('#emgScreen').hidden)return;
+  const v=visible();
+  if(idx>=v.length-1){ done=true; } else { idx++; }
+  renderSim(); paintLive();
+}
+function checkEmergency(){
+  if(activeFlags().some(f=>f[2]==='red'))showEmergency();
+}
+function showEmergency(){ $('#emgScreen').hidden=false; document.body.style.overflow='hidden'; paintLive(); }
+$('#emgExit').addEventListener('click',()=>{
+  $('#emgScreen').hidden=true; document.body.style.overflow='';
+  done=true; renderSim(); paintLive();
+});
+$('#emgCall').addEventListener('click',()=>{
+  $('#emgCall').textContent='📞  Նախադիտում — զանգ չի կատարվում';
+  setTimeout(()=>{$('#emgCall').innerHTML='📞&nbsp; ԶԱՆԳԱՀԱՐԵԼ 103';},2200);
+});
+$('#simReset').addEventListener('click',()=>{
+  Object.keys(S).forEach(k=>delete S[k]); idx=0; done=false;
+  $('#emgScreen').hidden=true; document.body.style.overflow='';
+  renderSim(); paintLive();
+});
+</script>
+<script>
+/* ══════════ live panel + results ══════════ */
+function mrow(l,v,cls){
+  return `<div class="mrow"><span class="lbl">${esc(l)}</span><span class="val${v==null?' pend':''}">${v==null?'—':esc(v)}</span></div>`;
+}
+function paintLive(){
+  const [lv,ms,rf,fl]=triage();
+  $('#simTriage').innerHTML=`<div class="tbanner b-${lv}">
+    <div class="lv">${lv==='red'?'🔴 TRIAGE_RED':lv==='org'?'🟠 TRIAGE_ORANGE':lv==='amb'?'🟡 TRIAGE_YELLOW':'🟢 TRIAGE_GREEN'}</div>
+    <div class="ms">${esc(ms)}</div><div class="rf">${esc(rf)}</div></div>`;
+
+  const b=bmi(), bc=bmiClass(b), wc=waistClass(), py=packYears(),
+        bp=bpCat(), pa=paAdequacy(), ds=dietScore(), osa=osaRisk(),
+        s2=score2State(), mods=modifiers();
+  $('#simMetrics').innerHTML=
+    mrow('BMI', b!=null?b+' · '+bc[0]:null)+
+    mrow('Waist class', wc?wc[0]:null)+
+    mrow('Pack-years', py!=null?py:(S.smoke==='never'?'0':null))+
+    mrow('BP category', bp?bp[0]:null)+
+    mrow('PA adequacy', pa?pa[0]:null)+
+    mrow('Diet score', ds!=null?ds+' / 9':null)+
+    mrow('STOP-BANG', osa?osa[0]:null)+
+    mrow('SCORE2', s2[0]==='—'?null:s2[0])+
+    mrow('Modifiers', mods.length?mods.length+' ակտիվ':'0');
+
+  $('#simFlags').innerHTML = fl.length
+    ? fl.map(f=>`<div class="flagitem b-${f[2]}"><span class="fid">${f[0]}</span><span>${esc(f[1])}</span></div>`).join('')
+    : '<div class="flagitem b-grn"><span class="fid">—</span><span>Ակտիվ դրոշ չկա</span></div>';
+}
+
+function renderResult(){
+  const [lv,ms,rf,fl]=triage();
+  const b=bmi(), bc=bmiClass(b), wc=waistClass(), py=packYears(), bp=bpCat(),
+        osa=osaRisk(), s2=score2State(), mods=modifiers(), ds=dietScore();
+  const sexW=S.sex==='male'?'տղամարդ':'կին';
+
+  // domains
+  const dom=[];
+  const d1=[]; if(S.smoke==='cur')d1.push('ընթացիկ ծխող'+(py!=null?` ${py} pack-years`:''));
+  if(bp&&bp[1]!=='grn')d1.push(`ԱՃ ${S.sbp}/${S.dbp}`);
+  if(S.prem==='m55'||S.prem==='f65')d1.push('վաղաժամ ՍԱՀ ընտանիքում');
+  if(S.age>55&&S.sex==='male'||S.age>65&&S.sex==='female')d1.push('տարիքային խումբ՝ բարձրացած');
+  dom.push(['D1','Սրտանոթային',d1.length>=2?'org':d1.length?'amb':'grn',d1.join(' · ')||'Ռիսկի գործոն չկա','ԷՍԳ · լիպիդային պանել'+(bp&&bp[1]!=='grn'?' · HBPM 7 օր':'')]);
+  const d2=[]; if(b!=null&&b>=30)d2.push('BMI '+b);
+  if(wc&&wc[0]==='REDUCTION ADVISED')d2.push('գոտկատեղ '+S.waist+' սմ');
+  if((S.cmb||[]).includes('DM'))d2.push('ՇԴ'+(S.dmdur!=null?` ${S.dmdur} տ.`:''));
+  if(S.hba1c!=null)d2.push('HbA1c '+S.hba1c+'%');
+  if(ds!=null&&ds<=6)d2.push('diet_score '+ds+'/9');
+  dom.push(['D2','Մետաբոլիկ',d2.length>=2?'amb':d2.length?'amb':'grn',d2.join(' · ')||'Ուշադրության կարիք չկա','HbA1c · ծոմային գլյուկոզա']);
+  dom.push(['D3','Քուն / SDB',osa?(osa[1]):'grn',osa?osa[0]+(S.sleepy==='often'||S.sleepy==='daily'?' · ցերեկային քնկոտություն':''):'Սկրինինգը չի գործարկվել (քնի որակ ≥7)',osa&&osa[1]==='org'?'Պոլիսոմնոգրաֆիա · սոմնոլոգ':'—']);
+  const d4=[]; if(S.syn==='exert')d4.push('սինկոպ ծանրաբեռնվածությամբ');
+  if(S.syn==='rest')d4.push('սինկոպ առանց նախանշանների');
+  if(S.rhy==='irreg')d4.push('անկանոն ռիթմ · ՆՖ կասկած');
+  if(S.ardur==='gt30')d4.push('նոպաներ >30 ր');
+  dom.push(['D4','Ռիթմ',d4.length?'org':(S.ar==='palponly'?'amb':'grn'),d4.join(' · ')||(S.ar==='palponly'?'Սրտխփոց առանց պրեսինկոպի':'Գանգատ չկա'),d4.length?'ԷՍԳ ≤24ժ · Հոլտեր · ԷխոԿԳ':'ԷՍԳ ռութին']);
+  const s1=[]; if(S.cresc==='yes')s1.push('crescendo');
+  if(S.cprest==='yes')s1.push('հանգստի ցավ'); if(S.cpdur==='gt15')s1.push('>15 րոպե');
+  dom.push(['S1','Անվտանգություն',fl.some(f=>f[2]==='red')?'red':fl.length?'org':'grn',
+    s1.length?s1.join(' · '):(fl.length?fl.map(f=>f[0]).join(' · '):'Դրոշ չկա'),fl.length?'Տես §3':'—']);
+
+  // investigations — single source shared with Phase 2
+  const labs=buildRequisition().map(x=>[x.title,x.why,x.when,x.tone]);
+
+  const sum=`<b>${S.age||'—'}-ամյա ${sexW}</b>, ${lv==='red'?'<b>ընթացիկ շտապ դրոշով</b>':lv==='org'?'<b>շտապ գնահատման կարիքով</b>':'առանց շտապ դրոշների'}։
+   Առաջատար գտածոներ՝ ${[d1[0],d2[0],osa&&osa[1]!=='grn'?'քնային ապնոէի կասկած ('+osa[0]+')':null,d4[0]].filter(Boolean).slice(0,3).join(', ')||'ռիսկի էական գործոն չի հայտնաբերվել'}։
+   SCORE2՝ <b>${s2[0]}</b>${s2[1]?' ('+s2[1]+')':''}։ Մոդիֆիկատորներ՝ ${mods.length?mods.length+' ակտիվ — '+mods.join(', '):'չկան'}։
+   Հաջորդ քայլ՝ <b>${lv==='red'?'1-03':lv==='org'?'բժիշկ ≤24–48 ժ':lv==='amb'?'բժիշկ ≤2–4 շաբաթ':'վերագնահատում 12 ամսից'}</b>։`;
+
+  $('#simBody').innerHTML=`<div class="res">
+    <div class="tbanner b-${lv}" style="padding:16px 18px">
+      <div class="lv">${lv==='red'?'🔴 TRIAGE_RED':lv==='org'?'🟠 TRIAGE_ORANGE':lv==='amb'?'🟡 TRIAGE_YELLOW':'🟢 TRIAGE_GREEN'}</div>
+      <div class="ms" style="font-size:19px">${esc(ms)}</div><div class="rf">${esc(rf)}</div></div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px">§5.4 · Ավտոմատ ամփոփում բժշկի համար</div>
+      <div class="summary">${sum}</div>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px">§5.3 Block 4 · Domain matrix</div>
+      <div class="domgrid">${dom.map(d=>`<div class="domrow">
+        <span class="sev" style="background:var(--${d[2]==='red'?'red':d[2]==='org'?'orange':d[2]==='amb'?'amber':'green'})"></span>
+        <span class="dn">${esc(d[1])}<small>${d[0]}</small></span>
+        <span class="df">${esc(d[3])}${d[4]&&d[4]!=='—'?`<br><span class="mono" style="font-size:11px;color:var(--ink-3)">→ ${esc(d[4])}</span>`:''}</span>
+      </div>`).join('')}</div>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px">§5.3 Block 5 · Առաջարկվող հետազոտություններ (dedup + prioritised)</div>
+      <div class="labs">${labs.map((l,i)=>`<div class="lab">
+        <span class="n">${String(i+1).padStart(2,'0')}</span>
+        <span class="t">${esc(l[0])}<small>${esc(l[1])}</small></span>
+        <span class="w b-${l[3]}">${esc(l[2])}</span></div>`).join('')}</div>
+    </div>
+    <div class="warn"><b>⚠ Հիշեցում</b>Սա տեխնիկական բնութագրի նախադիտում է։ Ցուցադրվող ամփոփումը գեներացվում է <b>դետերմինիստիկ կաղապարով</b>, ոչ LLM-ով — կլինիկական ամփոփումը պետք է լինի 100% վերարտադրելի և աուդիտավորելի (§5.4)։</div>
+    <div class="simfoot"><button class="btn btn-g" type="button" id="resBack">← Խմբագրել պատասխանները</button>
+      <button class="btn btn-p" type="button" id="resNew">Նոր սեսիա</button></div>
+  </div>`;
+  $('#resBack').addEventListener('click',()=>{done=false; idx=Math.max(0,visible().length-1); renderSim(); paintLive();});
+  $('#resNew').addEventListener('click',()=>$('#simReset').click());
+}
+renderSim(); paintLive();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   PHASE 2 — POST-DIAGNOSTIC ENGINE
+   Բոլոր շեմերը հղումով։ Ոչ մի հաշվարկ չի կատարվում կռահումով.
+   SCORE2-ը մուտք է (ESC-ի հավաստագրված հաշվիչից), ոչ թե
+   վերարտադրված մոդել — տես §4.3 «չցուցադրել մոտավոր տոկոս»։
+   ══════════════════════════════════════════════════════════ */
+const L={};   // lab + instrumental results
+const B={};   // baseline carried from Phase 1
+
+/* ---- reference ranges (label, ok-range text) ---- */
+const REF={
+ hba1c:['HbA1c','<5,7% նորմա · 5,7–6,4% նախաշաքարախտ · ≥6,5% ՇԴ · ՇԴ-ի թիրախ <7,0%','%'],
+ tc:['Ընդհանուր խոլեստերին','ռիսկից կախված · >8,0 = առնվազն բարձր ռիսկ','մմոլ/լ'],
+ hdl:['HDL-C','♂ >1,0 · ♀ >1,2','մմոլ/լ'],
+ ldl:['LDL-C','թիրախը ռիսկային կատեգորիայից է · >4,9 = առնվազն բարձր ռիսկ','մմոլ/լ'],
+ tg:['Տրիգլիցերիդներ','<1,7','մմոլ/լ'],
+ egfr:['eGFR','≥90 նորմա · 60–89 թեթև · 30–59 չափավոր · <30 ծանր','մլ/րոպե/1,73մ²'],
+ acr:['Միզի ACR','<3 նորմա · 3–30 չափավոր ↑ · >30 ծանր ↑','մգ/մմոլ'],
+ k:['Կալիում','3,5–5,0','մմոլ/լ'],
+ ahi:['AHI (քնի հետազոտություն)','<5 նորմա · 5–15 թեթև · 15–30 միջին · >30 ծանր','դեպք/ժամ'],
+ sbp2:['Հաստատված SBP','HBPM միջին · ≥135 = հիպերտոնիա','mmHg'],
+ dbp2:['Հաստատված DBP','HBPM միջին · ≥85 = հիպերտոնիա','mmHg']
+};
+
+/* ---- status classifier per analyte ---- */
+function statusOf(k,v){
+  if(v==null||isNaN(v))return null;
+  const S=(t,c)=>({t,c});
+  switch(k){
+    case 'hba1c':
+      if(v>=9)   return S('Խիստ բարձր','r');
+      if(v>=7)   return S('Թիրախից բարձր','r');
+      if(v>=6.5) return S('ՇԴ-ի միջակայք','r');
+      if(v>=5.7) return S('Նախաշաքարախտ','a');
+      return S('Նորմա','g');
+    case 'ldl':
+      if(v>=4.9) return S('Խիստ բարձր','r');
+      if(v>=2.6) return S('Բարձր','a');
+      return S('Ցածր-միջին','g');
+    case 'tc':
+      if(v>8)    return S('Խիստ բարձր','r');
+      if(v>=5)   return S('Բարձր','a');
+      return S('Նորմա','g');
+    case 'hdl':
+      if(B.sex==='female'? v<1.2 : v<1.0) return S('Ցածր','a');
+      return S('Նորմա','g');
+    case 'tg':
+      if(v>=2.3) return S('Բարձր','a');
+      if(v>=1.7) return S('Սահմանային','a');
+      return S('Նորմա','g');
+    case 'egfr':
+      if(v<30)   return S('Ծանր ↓ (G4–G5)','r');
+      if(v<60)   return S('Չափավոր ↓ (G3)','r');
+      if(v<90)   return S('Թեթև ↓ (G2)','a');
+      return S('Նորմա','g');
+    case 'acr':
+      if(v>30)   return S('Ծանր ↑ (A3)','r');
+      if(v>=3)   return S('Չափավոր ↑ (A2)','a');
+      return S('Նորմա (A1)','g');
+    case 'ahi':
+      if(v>30)   return S('Ծանր ապնոէ','r');
+      if(v>=15)  return S('Միջին ապնոէ','o');
+      if(v>=5)   return S('Թեթև ապնոէ','a');
+      return S('Նորմա','g');
+    case 'k':
+      if(v>5.0)  return S('Հիպերկալիեմիա','r');
+      if(v<3.5)  return S('Հիպոկալիեմիա','a');
+      return S('Նորմա','g');
+    case 'sbp2': case 'dbp2': {
+      const s=L.sbp2, d=L.dbp2;
+      if(s==null||d==null)return null;
+      if(s>=135||d>=85) return S('Հիպերտոնիա (HBPM)','r');
+      if(s>=120||d>=70) return S('Elevated BP','a');
+      return S('Նորմա','g');
+    }
+  }
+  return null;
+}
+
+/* ---- HMOD detection ---- */
+function hmod(){
+  const r=[];
+  if(L.ecg==='lvh') r.push('ԷՍԳ՝ ձախ փորոքի հիպերտրոֆիա');
+  if(L.acr!=null && L.acr>=3) r.push('Միզի ACR ≥3 մգ/մմոլ (ալբումինուրիա)');
+  if(L.egfr!=null && L.egfr<60) r.push('eGFR <60 մլ/րոպե');
+  return r;
+}
+/* ---- DM-specific target organ damage (ESC/EAS definition) ---- */
+function dmTOD(){
+  const r=[];
+  if(L.acr!=null && L.acr>=3) r.push('միկրոալբումինուրիա');
+  if(L.retino==='yes') r.push('ռետինոպաթիա');
+  if(L.neuro==='yes')  r.push('նեյրոպաթիա');
+  return r;
+}
+</script>
+<script>
+/* ══════════ risk stratification ══════════ */
+function p2Risk(){
+  const c=B.cmb||[], H=hmod(), TOD=dmTOD();
+  const dm = c.includes('DM') || (L.hba1c!=null && L.hba1c>=6.5);
+  const dmKnown = c.includes('DM');
+  const ascvd = c.includes('ASCVD')||c.includes('CVA');
+  const excl=[];
+  if(ascvd) excl.push('Փաստագրված ԱՍՍՀ');
+  if(c.includes('HF')) excl.push('Սրտի անբավարարություն');
+  if(c.includes('FH')) excl.push('Ընտանեկան հիպերքոլեստերինեմիա');
+  if(dm) excl.push(dmKnown?'Շաքարային դիաբետ':'HbA1c ՇԴ-ի միջակայքում');
+  if(c.includes('CKD')||(L.egfr!=null&&L.egfr<60)) excl.push('Երիկամային քրոնիկ հիվանդություն');
+  if(H.length) excl.push('HMOD՝ '+H.join(', '));
+  const applicable = excl.length===0;
+
+  // direct assignment — 2025 ESC/EAS Table 3
+  let cat=null, why=null;
+  if(ascvd){cat='VERY_HIGH'; why='Փաստագրված ԱՍՍՀ — 2025 ESC/EAS Table 3';}
+  else if(L.egfr!=null&&L.egfr<30){cat='VERY_HIGH'; why='Ծանր ՔԵՀ, eGFR <30 — 2025 ESC/EAS Table 3';}
+  else if(dm&&TOD.length){cat='VERY_HIGH'; why='ՇԴ թիրախ-օրգանի վնասմամբ ('+TOD.join(', ')+') — 2025 ESC/EAS Table 3';}
+  else if(L.egfr!=null&&L.egfr>=30&&L.egfr<60){cat='HIGH'; why='Չափավոր ՔԵՀ, eGFR 30–59 — 2025 ESC/EAS Table 3';}
+  else if(c.includes('FH')){cat='HIGH'; why='Ընտանեկան հիպերքոլեստերինեմիա — 2025 ESC/EAS Table 3';}
+  else if(dm){
+    const rf=[];
+    if(B.smoke==='cur'||B.smoke==='alt') rf.push('ծխում');
+    if(L.sbp2>=135||L.dbp2>=85||B.sbp>=140||B.dbp>=90||['tx','notx'].includes(B.htn)) rf.push('զարկերակային հիպերտենզիա');
+    if(B.bmi!=null&&B.bmi>=30) rf.push('ճարպակալում');
+    if(H.length) rf.push('HMOD');
+    if(L.ldl!=null&&L.ldl>=2.6) rf.push('դիսլիպիդեմիա');
+    const long = L.dmdur!=null && L.dmdur>=10;
+    const young = (B.age!=null && B.age<50);
+    if(long||rf.length){cat='HIGH';
+      why='ՇԴ առանց ՇԴ-ի թիրախ-օրգանի վնասման, '+(long?'տևողություն ≥10 տ.':'լրացուցիչ ռիսկի գործոններ՝ '+rf.join(', '))+' — 2025 ESC/EAS Table 3';}
+    else if(young && L.dmdur!=null && L.dmdur<10 && rf.length===0){cat='MODERATE';
+      why='Երիտասարդ պացիենտ (<50 տ.), ՇԴ տևողություն <10 տ., առանց լրացուցիչ ռիսկի գործոնների — 2025 ESC/EAS Table 3';}
+    else {cat='HIGH';
+      why=(L.dmdur==null)
+        ? 'ՇԴ անհայտ տևողությամբ — «միջին» կատեգորիան պնդել հնարավոր չէ, լռելյայն՝ ԲԱՐՁՐ (2025 ESC/EAS Table 3)'
+        : 'ՇԴ, տևողություն <10 տ., բայց տարիքը ≥50 — 2025 ESC/EAS Table 3';}
+  }
+  else if((L.ldl!=null&&L.ldl>=4.9)||(L.tc!=null&&L.tc>8)){cat='HIGH';
+    why='LDL-C ≥4,9 մմոլ/լ կամ TC >8,0 մմոլ/լ — «total CV risk is already at least high», 2025 ESC/EAS';}
+  else if(applicable && L.score2!=null && B.age!=null){
+    const a=B.age, s=L.score2;
+    const band = a<50?[2.5,7.5,'<50 տ.'] : a<70?[5,10,'50–69 տ.'] : [7.5,15,'≥70 տ.'];
+    cat = s>=band[1]?'VERY_HIGH' : s>=band[0]?'HIGH' : 'LOW_MOD';
+    why='SCORE2 '+s+'% · տարիքային խումբ '+band[2]+' · շեմեր <'+band[0]+'% / '+band[0]+'–<'+band[1]+'% / ≥'+band[1]+'% — 2021 ESC Prevention Table 5';
+  }
+  if(cat==null){
+    const albuminuricPreserved = (L.acr!=null && L.acr>=3) && (L.egfr!=null && L.egfr>=60) && !dm;
+    why = albuminuricPreserved
+      ? 'Ալբումինուրիա պահպանված eGFR-ով։ 2025 ESC/EAS Table 3-ը ՔԵՀ-ը դասակարգում է ըստ eGFR-ի և այս պատկերին կատեգորիա չի վերագրում; KDIGO-ով սա ՔԵՀ է։ Պահանջվում է բժշկի դատողություն — ալգորիթմը կատեգորիա չի հորինում։'
+      : applicable
+        ? 'SCORE2-ը կիրառելի է, բայց տոկոսը մուտքագրված չէ — Noreon-ը մոտավոր արժեք չի ցուցադրում'
+        : 'SCORE2-ը կիրառելի չէ, իսկ ուղղակի դասակարգման համար բավարար տվյալ չկա (տես ներքևի gate-երը)';
+  }
+  const LDLT={VERY_HIGH:[1.4,55],HIGH:[1.8,70],MODERATE:[2.6,100],LOW_MOD:[3.0,116]};
+  return {applicable, excl, cat, why, dm, dmKnown, hmod:H, dmTOD:TOD, ldlTarget:cat?LDLT[cat]:null};
+}
+const CATNAME={VERY_HIGH:['ՇԱՏ ԲԱՐՁՐ','r'],HIGH:['ԲԱՐՁՐ','o'],MODERATE:['ՄԻՋԻՆ','a'],LOW_MOD:['ՑԱԾՐ-ՄԻՋԻՆ','g']};
+
+/* ══════════ missing-data gates ══════════ */
+function p2Gates(R){
+  const g=[];
+  if((R.dm||['tx','notx'].includes(B.htn)||L.sbp2>=135) && L.acr==null)
+    g.push(['Միզի ACR բացակայում է','Առանց ACR-ի հնարավոր չէ ո՛չ ՔԵՀ-ը դասակարգել, ո՛չ դիաբետային նեֆրոպաթիան հայտնաբերել։ ՇԴ-ի կամ ԱՀ-ի դեպքում սա պարտադիր անալիզ է, և հենց այն է որոշում ԲԱՐՁՐ / ՇԱՏ ԲԱՐՁՐ սահմանը։']);
+  if(R.dm && L.dmdur==null)
+    g.push(['ՇԴ-ի տևողությունն անհայտ է','2025 ESC/EAS Table 3-ը ուղիղ կախված է <10 / ≥10 տարի սահմանից։ Առանց այս թվի կատեգորիան մնում է նախնական։']);
+  if(R.dm && !R.dmKnown && L.hba1c!=null && L.hba1c>=6.5)
+    g.push(['ՇԴ-ի ախտորոշումը հաստատված չէ','Ասիմպտոմ պացիենտի մոտ մեկ բարձր HbA1c-ն ախտորոշում չէ։ Անհրաժեշտ է կրկնակի հաստատող անալիզ նախքան ՇԴ գրանցելը։']);
+  if(L.ldl!=null && (L.tc==null||L.hdl==null))
+    g.push(['Լիպիդային պանելը թերի է','Առանց ընդհանուր խոլեստերինի և HDL-C-ի հնարավոր չէ հաշվել non-HDL-C-ն՝ երկրորդային թիրախը։']);
+  if((B.cmb||[]).includes('CKD') && (L.egfr==null || L.acr==null))
+    g.push(['ՔԵՀ-ը նշված է, բայց փուլը որոշելի չէ','ՔԵՀ-ի ռիսկային կատեգորիան կախված է eGFR-ից և ACR-ից։ Առանց երկուսի էլ հնարավոր չէ որոշել՝ չափավոր (ԲԱՐՁՐ) թե ծանր (ՇԱՏ ԲԱՐՁՐ)։']);
+  if(R.applicable && L.score2==null)
+    g.push(['SCORE2 մուտքագրված չէ','Այս պացիենտի մոտ SCORE2-ը կիրառելի է, բայց տոկոսը բացակայում է։ Կատեգորիան չի հաշվարկվել — Noreon-ը մոտավոր տոկոս չի ցուցադրում։']);
+  if(L.ecg==='lvh' && L.echo!=='done')
+    g.push(['ԷխոԿԳ չի կատարվել','ԷՍԳ-ով ձախ փորոքի հիպերտրոֆիայի զգայունությունը սահմանափակ է։ Անհրաժեշտ է հաստատում և ձախ փորոքի ֆունկցիայի գնահատում։']);
+  if(L.ka==null && L.plannedRAS==='yes')
+    g.push(['Կալիում և կրեատինին ելակետային չկան','ՌԱՍ-բլոկատոր սկսելուց առաջ պարտադիր են ելակետային K⁺ և կրեատինին, կրկնություն 2–4 շաբաթ անց։']);
+  return g;
+}
+</script>
+<script>
+/* ══════════ decision chains + IF→THEN rules ══════════ */
+function p2Chains(R){
+  const ch=[], sbp=L.sbp2??B.sbp, dbp=L.dbp2??B.dbp;
+
+  if(L.ecg==='lvh') ch.push({i:'ԷՍԳ = ձախ փորոքի հիպերտրոֆիա',
+    c:'HMOD առկա է բուժում ստացող հիպերտոնիկի մոտ',
+    d:'SCORE2-ը անջատվում է → ուղղակի բարձր ռիսկ; ճնշման թիրախը դառնում է առաջնահերթ',
+    a:'Բժշկի քննարկման՝ ՌԱՍ-բլոկատոր (ԱՓՖ-ի արգելակիչ կամ ԱՌԲ) ավելացնել առկա թերապիային — ցուցված է ձախ փորոքի հիպերտրոֆիայի հետզարգացման համար',
+    f:'K⁺ + կրեատինին 2–4 շաբաթ անց · ճնշման վերանայում 4 շաբաթ · ԷխոԿԳ 4 շաբաթ',
+    s:'2024 ESC Guidelines on elevated BP and hypertension'});
+
+  if(sbp!=null&&(sbp>=140||dbp>=90)) ch.push({i:'Հաստատված ԱՃ '+sbp+'/'+dbp+' mmHg'+(['tx'].includes(B.htn)?' բուժման ֆոնին':''),
+    c:'≥140/90 · բուժման թիրախը 120–129 սիստոլիկ',
+    d:'Չկարգավորվող հիպերտենզիա',
+    a:['tx'].includes(B.htn)
+      ? 'ESC-ը նախընտրում է կոմբինացիա մոնոթերապիայի դոզայի բարձրացման փոխարեն — բժշկի քննարկման՝ երկրորդ դասի ավելացում'
+      : 'Ապրելակերպ + դեղորայքային թերապիայի սկիզբ — Class I, անկախ ռիսկից',
+    f:'Ճնշման վերանայում 4 շաբաթ · 7-օրյա HBPM',
+    s:'2024 ESC HTN · Class I'});
+
+  if(L.ldl!=null&&R.ldlTarget){
+    const need=Math.max(0,Math.round((1-R.ldlTarget[0]/L.ldl)*100));
+    ch.push({i:'LDL-C '+L.ldl+' մմոլ/լ',
+      c:R.cat?('Կատեգորիա՝ '+CATNAME[R.cat][0]+' → թիրախ <'+String(R.ldlTarget[0]).replace('.',',')+' մմոլ/լ ('+R.ldlTarget[1]+' մգ/դլ)'):'Կատեգորիան դեռ որոշված չէ',
+      d:'Թիրախից բարձր · պահանջվող նվազում ≈'+need+'%',
+      a:'Բժշկի քննարկման՝ լիպիդ իջեցնող թերապիա; վերագնահատում 4–6 շաբաթ; թիրախին չհասնելու դեպքում՝ կոմբինացիա',
+      f:'Լիպիդային պանել + ԱԼՏ 4–6 շաբաթ',
+      s:'2025 ESC/EAS Focused Update · Table 4'});
+  }
+
+  if(L.hba1c!=null&&L.hba1c>=6.5) ch.push({i:'HbA1c '+L.hba1c+'%',
+    c:R.dmKnown?'ՇԴ հայտնի է · ESC թիրախ <7,0% (Class I)':'≥6,5% — ՇԴ-ի ախտորոշիչ միջակայք, բայց հաստատում պահանջվող',
+    d:R.dmKnown?(L.hba1c>=7?'Չկարգավորվող գլիկեմիա':'Թիրախում'):'ՇԴ-ի կասկած — մեկ անալիզը ախտորոշում չէ',
+    a:R.dmKnown
+      ? 'Գլիկեմիկ օպտիմալացում; բարձր ՍԱ ռիսկի դեպքում բժշկի քննարկման՝ ապացուցված սրտա-երիկամային օգուտ ունեցող դասեր (ցուցումը բխում է ՍԱ ռիսկից, ոչ միայն HbA1c-ից)'
+      : 'Կրկնակի հաստատող անալիզ նախքան ախտորոշում գրանցելը',
+    f:'HbA1c 3 ամսից · աչքի հատակ տարեկան · ոտքերի զննում',
+    s:'2021 ESC Prevention §4.8'});
+
+  if(L.acr!=null&&L.acr>=3) ch.push({i:'Միզի ACR '+L.acr+' մգ/մմոլ',
+    c:'≥3 մգ/մմոլ — ալբումինուրիա',
+    d:'Երիկամային վնասման ցուցիչ; ՇԴ-ի դեպքում՝ թիրախ-օրգանի վնասում → կատեգորիան բարձրանում է ՇԱՏ ԲԱՐՁՐ',
+    a:'ՌԱՍ-բլոկատորի ցուցում ուժեղանում է; ՔԵՀ-ի դասակարգում eGFR-ի հետ միասին',
+    f:'eGFR + ACR կրկնություն առնվազն տարեկան',
+    s:'2024 ESC HTN · 2025 ESC/EAS Table 3'});
+
+  if(B.smoke==='cur'||B.smoke==='alt') ch.push({i:'Ընթացիկ ծխող'+(B.py!=null?' · '+B.py+' տուփ-տարի':''),
+    c:'Ակտիվ ծխում ցանկացած ռիսկային կատեգորիայում',
+    d:'Ամենամեծ մոդիֆիկացվող գործոնը',
+    a:'ASK → ADVISE → ACT; բժշկի քննարկման՝ ապացուցողական դեղորայքային աջակցություն',
+    f:'Շաբաթական check-in · quit-date',
+    s:'2021 ESC Prevention §4.5.1 · Table 9'});
+
+  return ch;
+}
+
+function p2Rules(R){
+  const r=[], sbp=L.sbp2??B.sbp, dbp=L.dbp2??B.dbp;
+  if(sbp>=180||dbp>=110) r.push(['ԱՃ ≥180/110','Բացառել հիպերտոնիկ շտապ վիճակը — <b>Class I</b>','r']);
+  if(L.ecg==='lvh') r.push(['ԷՍԳ-ով ձախ փորոքի հիպերտրոֆիա','ՌԱՍ-բլոկատոր + ԷխոԿԳ հաստատման համար','o']);
+  if(sbp>=140||dbp>=90) r.push(['Հաստատված ԱՃ ≥140/90',(['tx'].includes(B.htn)?'Կոմբինացված թերապիա — ESC-ը նախընտրում է կոմբինացիան մոնոթերապիայի ուժեղացմանը':'Ապրելակերպ + դեղորայք անհապաղ, անկախ ռիսկից'),'o']);
+  else if((sbp>=130||dbp>=80)&&['HIGH','VERY_HIGH'].includes(R.cat))
+    r.push(['Հաստատված ԱՃ ≥130/80 բարձր ռիսկի դեպքում','3 ամսվա ապրելակերպից հետո՝ դեղորայքային թերապիա — <b>Class I</b>','a']);
+  if(L.ldl!=null&&R.ldlTarget&&L.ldl>=R.ldlTarget[0])
+    r.push(['LDL-C թիրախից բարձր ('+L.ldl+' vs <'+String(R.ldlTarget[0]).replace('.',',')+')','Լիպիդ իջեցնող թերապիա; վերագնահատում 4–6 շաբաթ','o']);
+  if(L.ldl!=null&&L.ldl>=4.9) r.push(['LDL-C ≥4,9 մմոլ/լ','Ընտանեկան հիպերքոլեստերինեմիայի սկրինինգ (Dutch Lipid Clinic Network score)','o']);
+  if(L.hba1c!=null&&L.hba1c>=9) r.push(['HbA1c ≥9,0%','🔴 RF-11 · բժշկի կոնտակտ ≤7 օր','r']);
+  else if(L.hba1c!=null&&L.hba1c>=7&&R.dmKnown) r.push(['HbA1c ≥7,0% հայտնի ՇԴ-ի դեպքում','Թերապիայի ինտենսիվացում; բժիշկ ≤4 շաբաթ','a']);
+  if(R.dm&&['HIGH','VERY_HIGH'].includes(R.cat))
+    r.push(['ՇԴ + բարձր/շատ բարձր ՍԱ ռիսկ','Բժշկի քննարկման՝ ապացուցված սրտա-երիկամային օգուտ ունեցող դասեր','o']);
+  if(R.dm&&!R.dmKnown) r.push(['Նոր հայտնաբերված HbA1c ≥6,5%','Կրկնակի հաստատող անալիզ նախքան ախտորոշումը','a']);
+  if(L.egfr!=null&&L.egfr<60) r.push(['eGFR <60','ՔԵՀ-ի դասակարգում; կրեատինին + eGFR + ACR առնվազն տարեկան','o']);
+  if(L.acr!=null&&L.acr>=3) r.push(['ACR ≥3 մգ/մմոլ','Ալբումինուրիա — ՌԱՍ-բլոկատորի ցուցումը ուժեղանում է','o']);
+  if(L.k!=null&&L.k>5.0) r.push(['K⁺ >5,0 մմոլ/լ','⚠ ՌԱՍ-բլոկատոր սկսելուց առաջ շտկել; կալիումով հարուստ աղը հակացուցված է','r']);
+  if((B.cmb||[]).includes('CKD')||(L.egfr!=null&&L.egfr<60))
+    r.push(['ՔԵՀ առկա է','🔒 Կալիումով հարուստ աղի խորհուրդը անջատվում է','r']);
+  if(L.ecg==='af') r.push(['ԷՍԳ-ով նախասրտերի ֆիբրիլյացիա','Կարդիոլոգ; ինսուլտի ռիսկի գնահատում; ռիթմի/հաճախության ռազմավարություն','o']);
+  if(L.ecg==='isch') r.push(['ԷՍԳ-ով իշեմիկ փոփոխություններ','🔴 Շտապ կարդիոլոգիական գնահատում','r']);
+  if(B.smoke==='cur'||B.smoke==='alt') r.push(['Ընթացիկ ծխող','Ծխելը թողնելու ծրագիր — ամենամեծ ազդեցությունը','o']);
+  if(B.bmi!=null&&B.bmi>=30) r.push(['BMI ≥30','Քաշի կրճատում 5–10% · Միջերկրածովյան/DASH','a']);
+  if(L.ahi!=null&&L.ahi>=15) r.push(['AHI ≥15 (միջին/ծանր ապնոէ)','Սոմնոլոգ · PAP-ի քննարկում · քաշի կրճատում և ալկոհոլից հրաժարում որպես կոմպլեքսի մաս','org']);
+  else if(L.ahi!=null&&L.ahi>=5) r.push(['AHI 5–15 (թեթև ապնոէ)','Քնի հիգիենա · քաշի կրճատում · դիտարկում','amb']);
+  if(L.lpa!=='done') r.push(['Lp(a) երբեք չի չափվել','Կյանքում մեկ անգամ — 2025 ESC/EAS','a']);
+  return r;
+}
+
+function p2Flags(R){
+  const sbp=L.sbp2??B.sbp, dbp=L.dbp2??B.dbp, F={red:[],org:[],mon:[]};
+  if(sbp>=180||dbp>=110) F.red.push('ԱՃ ≥180/110 — բացառել հիպերտոնիկ շտապ վիճակը (Class I)');
+  if(L.ecg==='isch') F.red.push('ԷՍԳ-ով իշեմիկ փոփոխություններ — շտապ կարդիոլոգիական գնահատում');
+  if(L.k!=null&&(L.k>5.5||L.k<3.0)) F.red.push('Կալիումի կրիտիկական շեղում — անհապաղ շտկում');
+  if(L.egfr!=null&&L.egfr<30) F.red.push('eGFR <30 — նեֆրոլոգիական շտապ ուղղորդում');
+  F.red.push('Կրծքային ցավ >15 րոպե կամ հանգստի ժամանակ · սուր շնչարգելություն · նևրոլոգիական դեֆիցիտ — 1-03');
+  if(L.hba1c!=null&&L.hba1c>=9) F.org.push('HbA1c ≥9,0% — բժշկի կոնտակտ ≤7 օր');
+  if(L.ecg==='af') F.org.push('Նախասրտերի ֆիբրիլյացիա — կարդիոլոգ ≤48–72 ժ, ինսուլտի ռիսկի գնահատում');
+  if(L.ecg==='lvh') F.org.push('Ձախ փորոքի հիպերտրոֆիա — ԷխոԿԳ և թերապիայի կորեկցիա ≤4 շաբաթ');
+  if(sbp>=160||dbp>=100) F.org.push('ԱՃ ≥160/100 — բժիշկ ≤1 շաբաթ');
+  F.mon.push('ՌԱՍ-բլոկատոր սկսելիս՝ K⁺ և կրեատինին ելակետային, ապա 2–4 շաբաթ անց');
+  F.mon.push('Ստատին սկսելիս՝ ԱԼՏ և լիպիդային պանել 4–6 շաբաթ անց');
+  if(R.dm) F.mon.push('HbA1c 3 ամսը մեկ մինչև թիրախին հասնելը · աչքի հատակ և ոտքերի զննում տարեկան');
+  if(R.dm||sbp>=140) F.mon.push('eGFR + միզի ACR առնվազն տարեկան');
+  return F;
+}
+</script>
+<script>
+/* ══════════ Phase 2 form ══════════ */
+/* Baseline — editable directly here, so Phase 2 can be used standalone
+   with any patient. "Լրացնել Փուլ 1-ից" only pre-fills these fields. */
+const P2BN=[['age','Տարիք','տարի',18,110,'1'],['bmi','BMI','կգ/մ²',12,70,'0.1'],
+            ['sbp','Ընթացիկ SBP','mmHg',60,300,'1'],['dbp','Ընթացիկ DBP','mmHg',30,200,'1'],
+            ['py','Տուփ-տարի','(ըստ ցանկության)',0,200,'0.5']];
+const P2BS=[
+ ['sex','Սեռ',[['','— ընտրել —'],['male','Արական'],['female','Իգական']]],
+ ['smoke','Ծխելը',[['','— ընտրել —'],['cur','Ներկայումս ծխում է'],['former','Նախկինում'],
+   ['never','Երբեք'],['alt','Էլեկտրոնային / տաքացվող']]],
+ ['htn','Ճնշման բուժում',[['','— ընտրել —'],['tx','Այո, դեղ է ընդունում'],
+   ['notx','Ախտորոշված, առանց դեղի'],['no','Ոչ'],['idk','Չգիտի']]]];
+const P2CM=[['DM','ՇԴ'],['ASCVD','ԻՍՀ / ինֆարկտ'],['CVA','Ինսուլտ / ԱԻՆ'],['HF','Սրտի անբավ.'],
+            ['CKD','ՔԵՀ'],['FH','Ընտ. հիպերքոլ.'],['AF','ՆՖ'],['INFLAM','Բորբոքային'],
+            ['MENTAL','Հոգեկան'],['NAFLD','NAFLD'],['PREDM','Նախաշաքարախտ']];
+const P2F=[
+ ['Գլիկեմիա',[['hba1c','HbA1c','%',3,20,'0.1'],['dmdur','ՇԴ-ի տևողություն','տարի',0,70,'1']]],
+ ['Լիպիդային պանել',[['tc','Ընդհանուր խոլեստերին','մմոլ/լ',1,20,'0.1'],['hdl','HDL-C','մմոլ/լ',0.3,4,'0.1'],
+   ['ldl','LDL-C','մմոլ/լ',0.3,15,'0.1'],['tg','Տրիգլիցերիդներ','մմոլ/լ',0.3,20,'0.1']]],
+ ['Երիկամներ',[['egfr','eGFR (լաբորատորիայից)','մլ/րոպե',5,150,'1'],['acr','Միզի ACR','մգ/մմոլ',0,300,'0.1'],
+   ['k','Կալիում','մմոլ/լ',2,8,'0.1']]],
+ ['Քնի հետազոտություն',[['ahi','AHI (ապնոէ-հիպոպնոէ ինդեքս)','դեպք/ժամ',0,120,'0.1']]],
+ ['Հաստատված ճնշում (HBPM միջին)',[['sbp2','Սիստոլիկ','mmHg',60,300,'1'],['dbp2','Դիաստոլիկ','mmHg',30,200,'1']]]
+];
+const P2S=[
+ ['ecg','ԷՍԳ 12 արտածում',[['','— ընտրել —'],['normal','Նորմա'],['lvh','Ձախ փորոքի հիպերտրոֆիա (LVH)'],
+   ['af','Նախասրտերի ֆիբրիլյացիա'],['isch','Իշեմիկ փոփոխություններ'],['other','Այլ շեղում'],['nd','Չի կատարվել']]],
+ ['echo','ԷխոԿԳ',[['','— ընտրել —'],['done','Կատարվել է'],['nd','Չի կատարվել']]],
+ ['retino','Ռետինոպաթիա (աչքի հատակ)',[['','— ընտրել —'],['yes','Առկա է'],['no','Բացակայում է'],['nd','Չի կատարվել']]],
+ ['neuro','Նեյրոպաթիա',[['','— ընտրել —'],['yes','Առկա է'],['no','Բացակայում է'],['nd','Չի գնահատվել']]],
+ ['lpa','Lp(a)',[['','— ընտրել —'],['done','Չափվել է'],['nd','Երբեք չի չափվել']]],
+ ['plannedRAS','Պլանավորվո՞ւմ է ՌԱՍ-բլոկատոր',[['','— ընտրել —'],['yes','Այո'],['no','Ոչ / արդեն ընդունում է']]]
+];
+
+let p2ShowAll=false;
+function p2BuildForm(){
+  const f=$('#p2Form'); f.innerHTML='';
+  const req = (S.age!=null) ? requisitionFields() : new Set();
+  const reqActive = req.size>0 && !p2ShowAll;
+  const want = k => !reqActive || req.has(k);
+
+  // ── baseline ──────────────────────────────────────────────────────
+  const bg=el('div','fgrp'); bg.appendChild(el('div','fgh','Ելակետային տվյալներ'));
+  P2BN.forEach(([k,lab,u,min,max,step])=>{
+    const r=el('div','frow');
+    r.innerHTML=`<label for="b_${k}">${esc(lab)}<small>${esc(u)}</small></label>`;
+    const i=el('input'); i.type='number'; i.id='b_'+k; i.min=min; i.max=max; i.step=step;
+    if(B[k]!=null)i.value=B[k];
+    i.addEventListener('input',()=>{B[k]=i.value===''?null:+i.value; p2Render();});
+    r.appendChild(i); bg.appendChild(r);
+  });
+  P2BS.forEach(([k,lab,opts])=>{
+    const r=el('div','frow fwide');
+    r.innerHTML=`<label for="b_${k}" style="margin-bottom:4px">${esc(lab)}</label>`;
+    const sel=el('select'); sel.id='b_'+k;
+    opts.forEach(([v,t])=>{const o=el('option',null,esc(t)); o.value=v; if(B[k]===v)o.selected=true; sel.appendChild(o);});
+    sel.addEventListener('change',()=>{B[k]=sel.value||null; p2Render();});
+    r.appendChild(sel); bg.appendChild(r);
+  });
+  const cw=el('div'); cw.style.marginTop='10px';
+  cw.appendChild(el('div','fnote','Ուղեկցող հիվանդություններ — սեղմեք ընտրելու համար'));
+  const chips=el('div','cmbchips');
+  B.cmb=B.cmb||[];
+  P2CM.forEach(([code,lab])=>{
+    const b=el('button','cmbchip',esc(lab)); b.type='button';
+    b.setAttribute('aria-pressed',String(B.cmb.includes(code)));
+    b.addEventListener('click',()=>{
+      B.cmb = B.cmb.includes(code) ? B.cmb.filter(x=>x!==code) : B.cmb.concat(code);
+      p2BuildForm(); p2Render();
+    });
+    chips.appendChild(b);
+  });
+  cw.appendChild(chips); bg.appendChild(cw);
+  f.appendChild(bg);
+
+  P2F.forEach(([g,rows])=>{
+    const shown=rows.filter(r=>want(r[0]));
+    if(!shown.length) return;
+    const d=el('div','fgrp'); d.appendChild(el('div','fgh',esc(g)));
+    shown.forEach(([k,lab,u,min,max,step])=>{
+      const r=el('div','frow');
+      r.innerHTML=`<label for="p2_${k}">${esc(lab)}<small>${esc(u)}</small></label>`;
+      const i=el('input'); i.type='number'; i.id='p2_'+k; i.min=min; i.max=max; i.step=step;
+      if(L[k]!=null)i.value=L[k];
+      i.addEventListener('input',()=>{L[k]=i.value===''?null:+i.value; p2Render();});
+      r.appendChild(i); d.appendChild(r);
+    });
+    f.appendChild(d);
+  });
+  const dShown=P2S.filter(x=>want(x[0]));
+  const d=el('div','fgrp');
+  if(dShown.length) d.appendChild(el('div','fgh','Գործիքային և լրացուցիչ'));
+  dShown.forEach(([k,lab,opts])=>{
+    const r=el('div','frow fwide');
+    r.innerHTML=`<label for="p2_${k}" style="margin-bottom:4px">${esc(lab)}</label>`;
+    const s=el('select'); s.id='p2_'+k;
+    opts.forEach(([v,t])=>{const o=el('option',null,esc(t)); o.value=v; if(L[k]===v)o.selected=true; s.appendChild(o);});
+    s.addEventListener('change',()=>{L[k]=s.value||null; p2Render();});
+    r.appendChild(s); d.appendChild(r);
+  });
+  if(dShown.length) f.appendChild(d);
+  if(want('score2')){
+  const d2=el('div','fgrp'); d2.appendChild(el('div','fgh','SCORE2'));
+  const r2=el('div','frow');
+  r2.innerHTML='<label for="p2_score2">10-ամյա ռիսկ<small>ESC-ի հաշվիչից / աղյուսակից</small></label>';
+  const i2=el('input'); i2.type='number'; i2.id='p2_score2'; i2.min=0; i2.max=100; i2.step='0.1';
+  if(L.score2!=null)i2.value=L.score2;
+  i2.addEventListener('input',()=>{L.score2=i2.value===''?null:+i2.value; p2Render();});
+  r2.appendChild(i2); d2.appendChild(r2);
+  d2.appendChild(el('div','fnote','Noreon-ը SCORE2-ի մոդելը չի վերարտադրում։ Տոկոսը մուտքագրվում է ESC-ի հավաստագրված հաշվիչից կամ ռեգիոնի աղյուսակից (Հայաստանը՝ very-high-risk կալիբրացիա)։ Շարժիչը կատարում է միայն կատեգորիայի lookup-ը ըստ Table 5-ի։'));
+  f.appendChild(d2);
+  }
+
+  // show-all escape hatch
+  if(req.size>0){
+    const t=el('div','fgrp'); t.style.borderTop='1px solid var(--line)'; t.style.paddingTop='12px';
+    const btn=el('button','btn btn-g', p2ShowAll
+      ? '↑ Ցույց տալ միայն ուղեգրվածները'
+      : '↓ Ցույց տալ բոլոր դաշտերը');
+    btn.type='button'; btn.style.width='100%'; btn.style.fontSize='12.5px';
+    btn.addEventListener('click',()=>{p2ShowAll=!p2ShowAll; p2BuildForm(); p2Render();});
+    t.appendChild(btn);
+    t.appendChild(el('div','fnote', p2ShowAll
+      ? 'Ցուցադրվում են բոլոր դաշտերը, ներառյալ չուղեգրվածները։'
+      : 'Ցուցադրվում են միայն Փուլ 1-ի ուղեգրած հետազոտությունները։ Անսպասելի արդյունք մուտքագրելու համար բացեք բոլորը։'));
+    f.appendChild(t);
+  }
+}
+
+/* ══════════ baseline pull ══════════ */
+function p2Pull(){
+  if(S.age!=null)   B.age=S.age;
+  if(S.sex)         B.sex=S.sex;
+  if(S.smoke)       B.smoke=S.smoke;
+  if(S.htn)         B.htn=S.htn;
+  if(S.sbp!=null)   B.sbp=S.sbp;
+  if(S.dbp!=null)   B.dbp=S.dbp;
+  if((S.cmb||[]).length) B.cmb=S.cmb.filter(c=>c!=='none');
+  if(bmi()!=null)       B.bmi=bmi();
+  if(packYears()!=null) B.py=packYears();
+  if(S.hba1c!=null&&L.hba1c==null)L.hba1c=S.hba1c;
+  if(S.dmdur!=null&&L.dmdur==null)L.dmdur=S.dmdur;
+  p2BuildForm(); p2Render();
+}
+</script>
+<script>
+/* ══════════ Phase 2 report render ══════════ */
+let p2View='clin';
+function p2Render(){
+  const has=Object.keys(L).some(k=>L[k]!=null&&L[k]!=='');
+  const bl=(B.age!=null);
+
+  // ── mode strip: always states where the field list came from ──────
+  const linked = S.age!=null;
+  const rqAll  = linked ? buildRequisition() : [];
+  const nShown = $$('#p2Form input[id^=p2_], #p2Form select[id^=p2_]').length;
+  $('#p2Mode').className = 'p2mode' + (linked && !p2ShowAll ? ' linked' : '');
+  $('#p2Mode').innerHTML = linked
+    ? `<span class="dot" style="background:var(--accent)"></span>
+       <span class="txt">${p2ShowAll
+         ? `<b>Ցուցադրվում են բոլոր դաշտերը։</b> Փուլ 1-ը ուղեգրել է ${rqAll.length} հետազոտություն։`
+         : `<b>Կապված է Փուլ 1-ի հետ։</b> Ուղեգրված է ${rqAll.length} հետազոտություն — ցուցադրվում է ${nShown} դաշտ։`}</span>`
+    : `<span class="dot" style="background:var(--ink-3)"></span>
+       <span class="txt"><b>Փուլ 1-ը լրացված չէ։</b> Ցուցադրվում են բոլոր ${nShown} դաշտերը։
+       Փուլ 1-ն ավարտելիս տվյալները կփոխանցվեն ինքնաբերաբար, և այստեղ կմնան միայն ուղեգրված հետազոտությունները։</span>
+       <button class="btn btn-p go" type="button" id="p2GoPhase1">Անցնել Փուլ 1 →</button>`;
+  const g=$('#p2GoPhase1');
+  if(g) g.addEventListener('click',()=>$('.tab[data-view="sim"]').click());
+
+  $('#p2Base').textContent = bl
+    ? `Ելակետ՝ ${B.age} տ. ${B.sex==='male'?'♂':'♀'}${B.bmi?' · BMI '+B.bmi:''}${B.sbp?' · ԱՃ '+B.sbp+'/'+B.dbp:''}${B.smoke==='cur'?' · ծխող':''}`
+    : 'Ելակետ՝ դատարկ';
+  if(!has){
+    const rq=buildRequisition();
+    $('#p2Out').innerHTML = (rq.length && S.age!=null)
+      ? `<div class="repsec"><div class="repsec-h"><span class="n">📋</span><span class="t">Փուլ 1-ի ուղեգիրը</span></div>
+         <div class="repsec-b"><p style="font-size:13px;color:var(--ink-2);margin-bottom:12px">
+         Ձախ կողմում բացված են հենց այս հետազոտությունների դաշտերը։ Արդյունքը ստանալուն պես մուտքագրեք, և զեկույցը կլրացվի ինքնաբերաբար։</p>
+         <div class="labs">${rq.map((x,i)=>`<div class="lab">
+           <span class="n">${String(i+1).padStart(2,'0')}</span>
+           <span class="t">${esc(x.title)}<small>${esc(x.why)}</small></span>
+           <span class="w b-${x.tone}">${esc(x.when)}</span></div>`).join('')}</div></div></div>`
+      : '<div class="pnl"><div class="empty"><div class="ic">🧪</div>Լրացրեք ձախ կողմի ելակետային տվյալները և լաբորատոր արդյունքները։<br>Կամ ավարտեք Փուլ 1-ը — ուղեգիրը և տվյալները կփոխանցվեն ինքնաբերաբար։</div></div>';
+    return; }
+
+  const R=p2Risk(), gates=p2Gates(R), chains=p2Chains(R), rules=p2Rules(R), F=p2Flags(R);
+  const rows=[['hba1c',L.hba1c],['tc',L.tc],['hdl',L.hdl],['ldl',L.ldl],['tg',L.tg],
+              ['egfr',L.egfr],['acr',L.acr],['k',L.k],['sbp2',L.sbp2],['ahi',L.ahi]].filter(r=>r[1]!=null);
+  const nonHDL=(L.tc!=null&&L.hdl!=null)?Math.round((L.tc-L.hdl)*10)/10:null;
+
+  const sec=(n,t,inner,p0)=>`<div class="repsec"><div class="repsec-h"><span class="n">${n}</span><span class="t">${t}</span></div><div class="repsec-b${p0?' p0':''}">${inner}</div></div>`;
+
+  /* ---- 1. data synthesis ---- */
+  let t1='<div class="tblwrap" style="border:0;border-radius:0"><table style="min-width:520px"><thead><tr><th>Ցուցանիշ</th><th>Արդյունք</th><th>Հղումային միջակայք</th><th>Կարգավիճակ</th></tr></thead><tbody>';
+  rows.forEach(([k,v])=>{const st=statusOf(k,v), rf=REF[k];
+    t1+=`<tr><td class="k">${esc(rf[0])}</td><td><span class="mono">${k==='sbp2'?L.sbp2+'/'+L.dbp2:String(v).replace('.',',')} ${esc(rf[2])}</span></td>
+     <td style="font-size:11.5px">${esc(rf[1])}</td>
+     <td>${st?`<span class="stat b-${st.c}">${esc(st.t)}</span>`:'—'}</td></tr>`;});
+  if(L.ecg&&L.ecg!==''){const m={normal:['Նորմա','g'],lvh:['Ձախ փորոքի հիպերտրոֆիա — HMOD','r'],af:['Նախասրտերի ֆիբրիլյացիա','r'],isch:['Իշեմիկ փոփոխություններ','r'],other:['Այլ շեղում','a'],nd:['Չի կատարվել','a']}[L.ecg];
+    t1+=`<tr><td class="k">ԷՍԳ 12 արտածում</td><td><span class="mono">${esc(m[0])}</span></td><td style="font-size:11.5px">Առանց HMOD</td><td><span class="stat b-${m[1]}">${m[1]==='g'?'Նորմա':'Շեղում'}</span></td></tr>`;}
+  if(nonHDL!=null) t1+=`<tr><td class="k">non-HDL-C <small style="color:var(--ink-3)">(TC − HDL)</small></td><td><span class="mono">${String(nonHDL).replace('.',',')} մմոլ/լ</span></td><td style="font-size:11.5px">Երկրորդային թիրախ = LDL թիրախ + 0,8</td><td>—</td></tr>`;
+  t1+='</tbody></table></div>';
+
+  /* ---- 2. stratification ---- */
+  let t2='';
+  if(!R.applicable){
+    t2+=`<div class="warn" style="margin-bottom:12px"><b>⚠ SCORE2 ԿԻՐԱՌԵԼԻ ՉԷ</b>${R.excl.map(e=>'• '+esc(e)).join('<br>')}<br><br>
+      2024 ESC HTN․ SCORE2-ը կիրառվում է միայն նրանց համար, ովքեր <em>«not already considered at increased risk due to moderate or severe CKD, established CVD, HMOD, diabetes mellitus, or familial hypercholesterolaemia»</em>։ Տոկոս <b>չի ցուցադրվում</b> — կատեգորիան նշանակվում է ուղղակի։</div>`;
+  } else if(L.score2!=null){
+    t2+=`<div class="cite" style="margin-bottom:12px"><b>SCORE2 կիրառելի է</b>Մուտքագրված 10-ամյա ռիսկ՝ <b style="color:var(--ink)">${String(L.score2).replace('.',',')}%</b> (ESC-ի հաշվիչից)։ Կատեգորիան որոշվում է Table 5-ի lookup-ով։</div>`;
+  }
+  if(R.cat){
+    const cn=CATNAME[R.cat];
+    t2+=`<div class="tbanner b-${cn[1]}" style="margin-bottom:12px"><div class="lv">Ռիսկային կատեգորիա</div>
+      <div class="ms" style="font-size:19px">${cn[0]}</div><div class="rf" style="font-family:var(--f-body);font-size:12.5px;margin-top:6px">${esc(R.why)}</div></div>`;
+    if(L.ldl!=null){
+      const gap=Math.round((L.ldl-R.ldlTarget[0])*100)/100, need=Math.max(0,Math.round((1-R.ldlTarget[0]/L.ldl)*100));
+      t2+=`<div class="mrow" style="border:0"><span class="lbl">LDL-C թիրախ</span><span class="val">&lt;${String(R.ldlTarget[0]).replace('.',',')} մմոլ/լ (${R.ldlTarget[1]} մգ/դլ)</span></div>
+        <div class="mrow" style="border:0"><span class="lbl">Ընթացիկ / բաց</span><span class="val">${String(L.ldl).replace('.',',')} → ${gap>0?'−'+String(gap).replace('.',','):'թիրախում'} մմոլ/լ</span></div>
+        ${gap>0?`<div class="mrow" style="border:0"><span class="lbl">Պահանջվող նվազում</span><span class="val">≈${need}%</span></div>`:''}`;
+    }
+  } else {
+    t2+='<div class="gate"><b>Կատեգորիան չի հաշվարկվել</b>'+esc(R.why||'')+'</div>';
+  }
+  if(R.hmod.length) t2+=`<div class="warn" style="margin-top:12px"><b>HMOD առկա է</b>${R.hmod.map(x=>'• '+esc(x)).join('<br>')}</div>`;
+
+  /* ---- 3. chains ---- */
+  const t3 = chains.length ? chains.map(c=>`<div class="chain">
+    ${[['INPUT',c.i],['CONDITION',c.c],['DECISION',c.d],['ACTION',c.a],['FOLLOW-UP',c.f],['SOURCE',c.s]]
+      .map(([l,v])=>`<div class="chainrow"><span class="cl">${l}</span><span>${v}</span></div>`).join('')}
+    </div>`).join('') : '<div style="color:var(--ink-3);font-size:13px">Դեռ չկա բավարար տվյալ շղթա կառուցելու համար։</div>';
+
+  /* ---- 4. if→then ---- */
+  const t4 = rules.length ? rules.map(([c,a,t])=>`<div class="ifthen b-${t}">
+    <span class="cnd"><b>ԵԹԵ</b> ${c}</span><span class="arw">→</span><span class="act"><b>ԱՊԱ</b> ${a}</span></div>`).join('')
+    : '<div style="color:var(--ink-3);font-size:13px">Կանոն չի գործարկվել։</div>';
+
+  /* ---- 5. flags ---- */
+  const fl=(t,arr,cls)=>arr.length?`<div style="margin-bottom:11px"><div class="eyebrow" style="margin-bottom:6px">${t}</div>
+    ${arr.map(x=>`<div class="flagitem b-${cls}" style="margin-bottom:4px"><span>${esc(x)}</span></div>`).join('')}</div>`:'';
+  const t5 = fl('🔴 Emergency — անհապաղ',F.red,'red')+fl('🟠 Urgent — 24–48 ժ',F.org,'org')+fl('🟡 Monitoring — հսկողության պարամետրեր',F.mon,'amb');
+
+  /* ---- gates ---- */
+  const tg = gates.length ? gates.map(([h,b])=>`<div class="gate"><b>⚠ ${esc(h)}</b>${esc(b)}</div>`).join('')
+    : '<div class="flagitem b-grn"><span>Բոլոր անհրաժեշտ տվյալները առկա են։</span></div>';
+
+  /* ---- 6. next phase ---- */
+  const t6=`<div style="font-size:13.5px;color:var(--ink-2)">
+    <b style="color:var(--ink)">Փուլ 3 · 4–6 շաբաթվա վերագնահատում</b><br>
+    Կրկնվող չափումներ՝ լիպիդային պանել + ԱԼՏ · K⁺ + կրեատինին (եթե ՌԱՍ-բլոկատոր սկսվել է) · 7-օրյա HBPM միջին։<br><br>
+    <b style="color:var(--ink)">Փուլ 4 · 3-ամսյա գնահատում</b><br>
+    HbA1c-ի կրկնություն · ապրելակերպի ծրագրերի հավատարմություն · ԷխոԿԳ-ի արդյունք · ռիսկային կատեգորիայի վերահաշվարկ նոր տվյալներով։</div>`;
+
+  const clin = sec('1','Diagnostic data synthesis',t1,true)
+    + sec('2','Updated risk stratification',t2)
+    + sec('3','Decision logic chain (traceability)',t3)
+    + sec('4','Actionable management · IF → THEN',t4)
+    + sec('5','Safety assessment & red flags',t5)
+    + sec('⚠','Բացակայող տվյալների gate-եր',tg)
+    + sec('6','Simulation progression',t6);
+
+  $('#p2Out').innerHTML=`
+   <div class="ptoggle" style="margin-bottom:14px">
+     <button type="button" data-pv="clin" aria-pressed="${p2View==='clin'}">Բժշկի զեկույց</button>
+     <button type="button" data-pv="pat" aria-pressed="${p2View==='pat'}">Պացիենտի զեկույց</button>
+   </div>
+   <div class="rep">${p2View==='clin'?clin:sec('','Պացիենտին ուղղված բացատրություն',p2Patient(R,F))}</div>
+   <div class="warn" style="margin-top:14px"><b>⚠ Scope limit</b>Noreon-ը դեղորայք չի նշանակում։ Վերևի բոլոր առաջարկները ուղեցույցային <b>դասեր</b> են բժշկի քննարկման համար՝ հղումով։ Դեղի ընտրությունը, դոզան, տիտրումը և հակացուցումների ստուգումը բուժող բժշկի որոշումն են։</div>`;
+  $$('[data-pv]').forEach(b=>b.addEventListener('click',()=>{p2View=b.dataset.pv; p2Render();}));
+}
+</script>
+<script>
+/* ══════════ patient-facing report (deterministic templates) ══════════ */
+function p2Patient(R,F){
+  const it=[], acts=[];
+  const sbp=L.sbp2??B.sbp, dbp=L.dbp2??B.dbp;
+
+  if(L.hba1c!=null){
+    let m;
+    if(L.hba1c>=9) m='Բավականին բարձր է։ Արժե առաջիկա օրերին բժշկի հետ քննարկել բուժման փոփոխությունը։';
+    else if(L.hba1c>=7) m='Բարձր է։ Նպատակային մակարդակը 7%-ից ցածր է։'+(R.dmKnown?'':' Եթե Ձեզ դիաբետ նախկինում ախտորոշված չի եղել, բժիշկը կկրկնի այս անալիզը՝ հաստատելու համար։');
+    else if(L.hba1c>=6.5) m='Դիաբետի միջակայքում է, բայց մեկ անալիզը ախտորոշում չէ — բժիշկը կկրկնի այն։';
+    else if(L.hba1c>=5.7) m='Մի փոքր բարձր է նորմայից — սա նախաշաքարախտի միջակայքն է։ Ապրելակերպի փոփոխությունը այս փուլում շատ արդյունավետ է։';
+    else m='Նորմայի սահմաններում է։';
+    it.push(['Գլիկոլիզացված հեմոգլոբին (HbA1c) — '+String(L.hba1c).replace('.',',')+'%',
+      'Ցույց է տալիս Ձեր արյան շաքարի միջին մակարդակը վերջին 2–3 ամսում։ Մեկ չափումից տարբերվում է նրանով, որ ցույց է տալիս ընդհանուր պատկերը, ոչ թե մեկ պահը։', m]);
+  }
+  if(L.ecg&&L.ecg!==''&&L.ecg!=='nd'){
+    const m={normal:'Շեղում չի հայտնաբերվել։',
+      lvh:'Սրտի մկանը հաստացել է, որովհետև երկար ժամանակ ստիպված է եղել բարձր ճնշման դեմ աշխատել։ Կարևոր՝ սա սրտի կաթված չէ և վտանգ չի ներկայացնում այս պահին։ Ճնշումն ավելի լավ կարգավորելով՝ այս հաստացումը ժամանակի ընթացքում կարող է հետ գնալ։',
+      af:'Սրտի ռիթմը անկանոն է։ Սա պահանջում է կարդիոլոգի գնահատում առաջիկա օրերին։',
+      isch:'Հայտնաբերվել են փոփոխություններ, որոնք պահանջում են շտապ կարդիոլոգիական գնահատում։',
+      other:'Կան փոփոխություններ, որոնք բժիշկը պետք է մեկնաբանի Ձեր մյուս տվյալների հետ միասին։'}[L.ecg];
+    it.push(['Էլեկտրասրտագրություն (ԷՍԳ)','Սրտի էլեկտրական աշխատանքի գրանցում է։',m]);
+  }
+  if(L.ldl!=null&&R.ldlTarget){
+    const g=L.ldl-R.ldlTarget[0];
+    it.push(['«Վատ» խոլեստերին (LDL) — '+String(L.ldl).replace('.',',')+' մմոլ/լ',
+      'Խոլեստերինի այն տեսակն է, որը կուտակվում է անոթների պատերին։',
+      g>0?('Ձեր ռիսկային խմբի համար նպատակը '+String(R.ldlTarget[0]).replace('.',',')+'-ից ցածր է — այսինքն ներկայիս ցուցանիշը պետք է էականորեն իջնի։'):'Թիրախում է։ Կարևոր է պահպանել այս մակարդակը։']);
+  }
+  if(L.egfr!=null){
+    const m=L.egfr>=90?'Նորմայի սահմաններում է։':
+      L.egfr>=60?'Թեթևակի իջեցված է, բայց դեռ բավարար։':'Իջեցված է և պահանջում է կանոնավոր հսկողություն։';
+    it.push(['Երիկամների ֆունկցիա (eGFR) — '+L.egfr,'Ցույց է տալիս, թե երիկամներն ինչ արագությամբ են մաքրում արյունը։',
+      m+(L.acr==null?' Անհրաժեշտ է ևս մեկ պարզ անալիզ — մեզի սպիտակուցի ստուգում (ACR), առանց որի պատկերը լիարժեք չէ։':'')]);
+  }
+  if(L.acr!=null) it.push(['Մեզի սպիտակուց (ACR) — '+String(L.acr).replace('.',',')+' մգ/մմոլ',
+    'Ցույց է տալիս՝ արդյոք երիկամները սպիտակուց են արտազատում։',
+    L.acr>=3?'Բարձր է նորմայից։ Սա երիկամների վաղ վնասման նշան է և հենց այն ցուցանիշն է, որը որոշում է բուժման ընտրությունը։':'Նորմայի սահմաններում է։']);
+  if(sbp!=null) it.push(['Զարկերակային ճնշում — '+sbp+'/'+dbp,'Ձեր ճնշման հաստատված մակարդակը։',
+    (sbp>=140||dbp>=90)?'Բարձր է թիրախից։ Նպատակը 120–129 սիստոլիկ է, եթե լավ տանելի է։':'Թիրախի սահմաններում է։']);
+
+  // actions
+  if(sbp>=140||dbp>=90) acts.push(['Ճնշման դեղորայքի հարցը',
+    (B.htn==='tx'?'Ձեր ներկայիս դեղը միայնակ բավարար չէ։ Միջազգային ուղեցույցներով այս իրավիճակում սովորաբար ավելացվում է <b>երկրորդ դեղ</b>':'Ուղեցույցներով այս մակարդակի ճնշման դեպքում սկսվում է դեղորայքային բուժում')
+    +(L.ecg==='lvh'||L.acr>=3?'՝ մի դասից, որը հատկապես օգտակար է սրտի հաստացման և երիկամների պաշտպանության համար։':'։')
+    +' <b>Այս ամենը բժշկի որոշումն է</b> — կոնկրետ դեղն ու դոզան ընտրում է նա։ Ինքնուրույն ոչինչ մի սկսեք և ներկայիս դեղը մի դադարեցրեք։']);
+  if(L.ldl!=null&&R.ldlTarget&&L.ldl>R.ldlTarget[0]) acts.push(['Խոլեստերինի իջեցում',
+    'Բժիշկը կքննարկի խոլեստերին իջեցնող դեղի հարցը։ 4–6 շաբաթ անց անալիզը կկրկնվի՝ տեսնելու, թե որքան է իջել։']);
+  if(R.dm&&L.hba1c>=7) acts.push(['Շաքարի կարգավորում',
+    'Բժիշկը կքննարկի բուժման ուժեղացումը։ Կան դեղեր, որոնք միաժամանակ պաշտպանում են սիրտն ու երիկամները — դրանք ընտրվում են ոչ միայն շաքարի, այլև Ձեր սրտանոթային ռիսկի հիման վրա։']);
+  const life=[];
+  if(B.smoke==='cur'||B.smoke==='alt') life.push('<b>Ծխելը թողնել</b> — սա ամենամեծ ազդեցությունն ունեցող քայլն է, ավելի մեծ, քան ցանկացած դեղ։ 5 տարվա ընթացքում ռիսկը զգալիորեն նվազում է։');
+  if(sbp>=130||R.dm) life.push('<b>Աղը՝ օրական 5 գրամից քիչ</b> (մոտ 1 թեյի գդալ)։ Հիմնական աղը թաքնված է հացի, պանրի, երշիկի և պահածոների մեջ, ոչ թե աղամանի։');
+  if(B.bmi!=null&&B.bmi>=25) life.push('<b>Քաշը</b> — 5–10% նվազումն արդեն էականորեն իջեցնում է և՛ ճնշումը, և՛ շաքարը։');
+  life.push('<b>Քայլք</b> — շաբաթական 150 րոպե չափավոր տեմպով (օրական մոտ 30 րոպե, շաբաթը 5 օր)։ Չափավոր նշանակում է՝ շնչառությունդ արագանում է, բայց դեռ կարող ես ազատ խոսել։');
+
+  // follow-up table
+  const fu=[];
+  if(L.acr==null&&(R.dm||sbp>=140)) fu.push(['Առաջիկա 1–2 շաբաթում','Բժշկի այց · մեզի անալիզ (ACR) · կալիում և կրեատինին'+(L.tc==null?' · լրիվ լիպիդային պանել':'')]);
+  else fu.push(['Առաջիկա 1–2 շաբաթում','Բժշկի այց արդյունքները քննարկելու համար']);
+  if(L.ecg==='lvh') fu.push(['Մոտակա 4 շաբաթում','Սրտի ուլտրաձայն (ԷխոԿԳ) · ճնշման տնային չափումների օրագիր']);
+  if(L.ldl!=null&&R.ldlTarget&&L.ldl>R.ldlTarget[0]) fu.push(['4–6 շաբաթ անց','Խոլեստերինի կրկնակի ստուգում']);
+  if(R.dm) fu.push(['3 ամիս անց','HbA1c-ի կրկնություն']);
+  if(R.dm) fu.push(['Տարեկան','Աչքի հատակի հետազոտություն · ոտքերի զննում']);
+
+  const lead = (()=>{ const bad=[];
+    if(L.hba1c>=7)bad.push('արյան շաքարը');
+    if(L.ldl!=null&&R.ldlTarget&&L.ldl>R.ldlTarget[0])bad.push('խոլեստերինը');
+    if(sbp>=140)bad.push('ճնշումը');
+    const s1=bad.length?`Ձեր հետազոտությունները ցույց տվեցին մի քանի ցուցանիշ, որոնք պետք է շտկել՝ ${bad.join(', ')}։`:'Ձեր հետազոտությունների մեծ մասը նորմայի սահմաններում է։';
+    const s2=L.ecg==='lvh'?' Սրտագիրը ցույց տվեց, որ սրտի մկանը փոքր-ինչ հաստացել է — դա սովորաբար երկար ժամանակ բարձր ճնշման հետևանք է։':'';
+    const s3=bad.length?' Կարևորը սա է՝ <b>այս ամենը շտկելի է</b>, և ոչ մի ցուցանիշ վտանգավոր մակարդակի վրա չէ այս պահին։ Բայց դրանք միասին են ազդում, ուստի արժե սկսել առաջիկա շաբաթների ընթացքում, ոչ թե հետաձգել։':'';
+    return s1+s2+s3;})();
+
+  return `<div class="pv">
+    <h4>📌 Կարճ ամփոփում Ձեր առողջական վիճակի մասին</h4>
+    <div class="lead">${lead}</div>
+    <h4>📊 Ձեր հետազոտությունների արդյունքները</h4>
+    ${it.map(([t,w,m])=>`<div class="item"><b>${t}</b><em>Ինչ է սա. ${w}</em>${m}</div>`).join('')}
+    <h4>💡 Ի՞նչ է խորհուրդ տրվում անել հիմա</h4>
+    ${acts.map((a,i)=>`<p><b>${i+1}. ${a[0]}</b><br>${a[1]}</p>`).join('')}
+    <p><b>${acts.length+1}. Ապրելակերպ</b></p>
+    <ul>${life.map(x=>'<li>'+x+'</li>').join('')}</ul>
+    <p><b>${acts.length+2}. Հսկողություն</b></p>
+    <div class="tblwrap" style="margin-bottom:12px"><table style="min-width:0"><thead><tr><th>Երբ</th><th>Ինչ</th></tr></thead>
+      <tbody>${fu.map(([a,b])=>`<tr><td class="k">${esc(a)}</td><td>${esc(b)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="er"><b>🚨 Երբ դիմել անհապաղ — զանգահարեք 103</b>
+      <ul>
+        <li>Կրծքավանդակի ցավ կամ սեղմվածություն, որը տևում է 15 րոպեից ավելի կամ առաջանում է հանգստի ժամանակ</li>
+        <li>Հանկարծակի շնչարգելություն, ուժեղ գլխապտույտ կամ ուշագնացության զգացում</li>
+        <li>Խոսքի, դեմքի կամ ձեռքի հանկարծակի թուլություն կամ ասիմետրիա</li>
+        <li>Ճնշում 180/110-ից բարձր ուժեղ գլխացավի, տեսողության խանգարման կամ կրծքային ցավի հետ միասին</li>
+      </ul></div>
+  </div>`;
+}
+
+/* ══════════ wire up ══════════ */
+$('#p2Pull').addEventListener('click',p2Pull);
+$('#p2Clear').addEventListener('click',()=>{Object.keys(L).forEach(k=>delete L[k]);Object.keys(B).forEach(k=>delete B[k]);p2BuildForm();p2Render();});
+p2BuildForm(); p2Render();
+</script>
+</body>
+</html>

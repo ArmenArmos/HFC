@@ -1,0 +1,37 @@
+name: supabase-deploy-production
+
+on:
+  # Every push to main, not only schema changes: the Vercel production deploy of
+  # each commit waits for this run's "Schema ready on production" check
+  # (docs/operations/deploy-order.md). A commit with nothing to apply costs two
+  # short jobs. Queued runs wait for the one in progress (concurrency below), so
+  # an app-only commit merged right after a schema commit is held until that
+  # schema is applied, and is held too if it failed.
+  push:
+    branches: [main]
+  # Manual runs exist for re-trying a failed deploy, not for shipping a schema
+  # that has not merged. The reusable workflow rejects non-main production refs.
+  workflow_dispatch:
+
+# Two merges landing close together must not race onto the same database, and a
+# run that is mid-migration must never be cancelled — a half-applied push leaves
+# the schema in a state no migration file describes. GitHub keeps one waiting run
+# per group and cancels an older waiting one: that commit's app deploy then stays
+# held, and the newer commit (which contains it) is released instead.
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/supabase-deploy.yml
+    with:
+      target: production
+      pooler_host: aws-0-eu-central-1.pooler.supabase.com
+    secrets:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PRODUCTION_DB_PASSWORD }}

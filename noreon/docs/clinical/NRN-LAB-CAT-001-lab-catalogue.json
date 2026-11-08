@@ -1,0 +1,742 @@
+{
+  "$schema": "https://noreon.health/schema/lab-catalog-1.0.json",
+  "document": {
+    "code": "NRN-LAB-CAT-001",
+    "version": "1.1",
+    "title": "Լաբորատոր հետազոտությունների ցուցակ — ինչ կարող է անհրաժեշտ լինել պացիենտին Noreon-սկրինինգից հետո",
+    "titleEn": "Post-screening laboratory investigation catalogue",
+    "language": "hy",
+    "basis": "Noreon-ի 10-հարցանոց սկրինինգի ուղեգրման տրամաբանություն (NRN-CLIN-ALG-001)",
+    "comparedAgainst": "Noreon Health Preventive Health Program · Armenia Edition (Ecosense Laboratory)",
+    "status": "Նախագիծ — պահանջում է լաբորատորիայի և Clinical Board-ի հաստատում",
+    "method": "Հակառակ ուղղությամբ․ վերցված է ալգորիթմի ամեն ուղեգրող կանոն և հարցվել է՝ ո՞ր հետազոտությունն է այն պահանջում և կա՞ արդյոք այն Noreon-ի գործող փաթեթներում։",
+    "generated": "2026-09-05"
+  },
+  "packages": [
+    {
+      "ref": "01",
+      "name": "Essential",
+      "purpose": "Annual preventive health check"
+    },
+    {
+      "ref": "02",
+      "name": "Advanced",
+      "purpose": "In-depth assessment of detected abnormalities"
+    },
+    {
+      "ref": "03",
+      "name": "Premium Longevity",
+      "purpose": "Longevity, healthy aging, and cardiovascular risk"
+    },
+    {
+      "ref": "04",
+      "name": "Lifetime Genetics",
+      "purpose": "Genetic profile and hereditary risk assessment"
+    },
+    {
+      "ref": "05",
+      "name": "Metabolic & Weight Management",
+      "purpose": "Overweight, obesity, prediabetes, and insulin resistance"
+    },
+    {
+      "ref": "06",
+      "name": "Cancer Prevention & Early Detection",
+      "purpose": "Cancer risk assessment and early detection"
+    }
+  ],
+  "sections": {
+    "A": {
+      "code": "Ա",
+      "title": "Հիմնական ցուցակ — ինչ է պատվիրում սկրինինգը",
+      "note": "Յուրաքանչյուր տող՝ հետազոտություն, այն գործարկող սկրինինգային գտածո, և այն Noreon-ի փաթեթը, որտեղ այն արդեն առկա է։",
+      "groups": [
+        {
+          "code": "Ա.1",
+          "title": "Լիպիդային պրոֆիլ",
+          "tests": [
+            {
+              "test": "Ընդհանուր խոլեստերին",
+              "trigger": "Բոլորին — SCORE2-ի համար",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤1 շաբաթ",
+              "source": "EAS 2025"
+            },
+            {
+              "test": "HDL-C",
+              "trigger": "Բոլորին — non-HDL-C-ի հաշվարկի համար",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤1 շաբաթ",
+              "source": "EAS 2025"
+            },
+            {
+              "test": "LDL-C",
+              "trigger": "Բոլորին — թիրախի սահմանում",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤1 շաբաթ",
+              "source": "EAS 2025 Table 4"
+            },
+            {
+              "test": "Տրիգլիցերիդներ",
+              "trigger": "Բոլորին — լիպիդային պանելի մաս",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤1 շաբաթ",
+              "source": "EAS 2025"
+            },
+            {
+              "test": "non-HDL-C (հաշվարկ)",
+              "trigger": "TC − HDL-C · SCORE2-ի պարտադիր մուտք",
+              "packages": [
+                "Metabolic (հաշվարկ)"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤1 շաբաթ",
+              "source": "ESC Prev §3.2.3"
+            },
+            {
+              "test": "ApoB",
+              "trigger": "Դիսլիպիդեմիա · մետաբոլիկ համախտանիշ",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤1 շաբաթ",
+              "source": "EAS 2025"
+            },
+            {
+              "test": "Lp(a)",
+              "trigger": "Վաղաժամ ՍԱՀ ընտանիքում · կյանքում մեկ անգամ",
+              "packages": [
+                "Premium Longevity միայն"
+              ],
+              "packagesNote": null,
+              "turnaround": "Ցանկալի",
+              "source": "EAS 2025"
+            }
+          ]
+        },
+        {
+          "code": "Ա.2",
+          "title": "Ածխաջրատային փոխանակություն",
+          "tests": [
+            {
+              "test": "HbA1c",
+              "trigger": "BMI ≥25 · ՇԴ · նախաշաքարախտ · ԱՃ",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "ESC Prev §4.8"
+            },
+            {
+              "test": "Ծոմային գլյուկոզա",
+              "trigger": "Նույն ցուցումները",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "EXTERNAL (ADA)"
+            },
+            {
+              "test": "Ծոմային ինսուլին · HOMA-IR",
+              "trigger": "BMI ≥30 · մետաբոլիկ համախտանիշի կասկած",
+              "packages": [
+                "Advanced",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 05"
+            },
+            {
+              "test": "C-պեպտիդ",
+              "trigger": "Ինսուլինային ռեզիստենտության ճշգրտում",
+              "packages": [
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 05"
+            }
+          ]
+        },
+        {
+          "code": "Ա.3",
+          "title": "Երիկամներ",
+          "tests": [
+            {
+              "test": "Կրեատինին + eGFR",
+              "trigger": "ԱՃ ցանկացած շեղում · ՇԴ · HMOD-ի գնահատում",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7"
+            },
+            {
+              "test": "Միզի ACR",
+              "trigger": "ԱՃ ցանկացած շեղում · ՇԴ — HMOD-ի և նեֆրոպաթիայի հայտնաբերում",
+              "packages": [
+                "Միայն Metabolic"
+              ],
+              "packagesNote": "ԲԱՑ — սահմանափակ հասանելիություն",
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7 · EAS 2025"
+            },
+            {
+              "test": "Միզի ընդհանուր",
+              "trigger": "Բազային workup",
+              "packages": [
+                "Essential"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7"
+            },
+            {
+              "test": "Միզանյութ (Urea)",
+              "trigger": "Երիկամային ֆունկցիա",
+              "packages": [
+                "Essential"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7"
+            }
+          ]
+        },
+        {
+          "code": "Ա.4",
+          "title": "Լյարդ · արյուն · բորբոքում",
+          "tests": [
+            {
+              "test": "ԱԼՏ · ԱՍՏ · ԳԳՏ · ԱԼՖ · բիլիռուբին",
+              "trigger": "Բազային workup · ստատին սկսելուց առաջ · NAFLD",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7"
+            },
+            {
+              "test": "Արյան ընդհանուր + լեյկոֆորմուլա",
+              "trigger": "Բազային workup · անեմիա որպես ստենոկարդիայի պատճառ",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7"
+            },
+            {
+              "test": "Ֆերիտին",
+              "trigger": "Անեմիա · հոգնածություն · առիթմիա",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "ESC Prev"
+            },
+            {
+              "test": "ԷԳՆ (ESR) · hs-CRP",
+              "trigger": "Բորբոքային ֆոն · ռիսկի մոդիֆիկատոր",
+              "packages": [
+                "Essential"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "ESC Prev §3.4.6"
+            },
+            {
+              "test": "Ֆիբրինոգեն",
+              "trigger": "Բորբոքային ֆոն · մետաբոլիկ համախտանիշ",
+              "packages": [
+                "Premium",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 05"
+            },
+            {
+              "test": "Անտիթրոմբին (ակտիվություն)",
+              "trigger": "Թրոմբոզ · ընտանեկան անամնեզ · թրոմբոֆիլիայի կասկած",
+              "packages": [
+                "Essential"
+              ],
+              "packagesNote": "ըստ ցուցման",
+              "turnaround": "Ըստ ցուցման",
+              "source": "Ծրագրի լրացում"
+            },
+            {
+              "test": "PCR վիրուսային պանել՝ CMV DNA · HCV RNA · HSV-1/2 DNA · EBV DNA",
+              "trigger": "Ակտիվ վարակի կլինիկական կամ լաբորատոր կասկած · իմունաճնշում",
+              "packages": [
+                "Essential"
+              ],
+              "packagesNote": "ըստ ցուցման",
+              "turnaround": "Ըստ ցուցման",
+              "source": "Ծրագրի լրացում"
+            }
+          ]
+        },
+        {
+          "code": "Ա.5",
+          "title": "Վահանաձև գեղձ",
+          "tests": [
+            {
+              "test": "TSH",
+              "trigger": "Բազային workup · առիթմիա · դիսլիպիդեմիա",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤2 շաբաթ",
+              "source": "2024 HTN §7"
+            },
+            {
+              "test": "Ազատ T4",
+              "trigger": "TSH-ի շեղում · առիթմիա",
+              "packages": [
+                "Advanced",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 05"
+            },
+            {
+              "test": "Anti-TPO",
+              "trigger": "Վահանաձև գեղձի աուտոիմուն ֆոն",
+              "packages": [
+                "Advanced"
+              ],
+              "packagesNote": null,
+              "turnaround": "Ըստ ցուցման",
+              "source": "Ծրագրի կետ 02"
+            }
+          ]
+        },
+        {
+          "code": "Ա.6",
+          "title": "Մետաբոլիկ և միկրոէլեմենտներ",
+          "tests": [
+            {
+              "test": "Միզաթթու",
+              "trigger": "Մետաբոլիկ համախտանիշ · ԱՃ",
+              "packages": [
+                "Advanced",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 05"
+            },
+            {
+              "test": "Հոմոցիստեին",
+              "trigger": "Ռիսկի ճշգրտում · վաղաժամ ՍԱՀ",
+              "packages": [
+                "Premium",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "Ցանկալի",
+              "source": "Ծրագրի կետ 05"
+            },
+            {
+              "test": "Վիտամին D (25-OH)",
+              "trigger": "Բազային · մետաբոլիկ",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 01"
+            },
+            {
+              "test": "Վիտամին B12 · ֆոլատ",
+              "trigger": "Բազային · անեմիա",
+              "packages": [
+                "Essential",
+                "Advanced"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի կետ 01"
+            },
+            {
+              "test": "Ցինկ · մագնեզիում",
+              "trigger": "Բազային միկրոէլեմենտներ",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "Ցանկալի",
+              "source": "Ծրագրի կետ 01"
+            },
+            {
+              "test": "Պղինձ (Cuprum)",
+              "trigger": "Անեմիա · նեյտրոպենիա · միկրոէլեմենտային դեֆիցիտի կասկած",
+              "packages": [
+                "Essential",
+                "Metabolic"
+              ],
+              "packagesNote": null,
+              "turnaround": "≤4 շաբաթ",
+              "source": "Ծրագրի լրացում"
+            }
+          ]
+        }
+      ]
+    },
+    "B": {
+      "code": "Բ",
+      "title": "Բացերը — ինչ է պատվիրում ալգորիթմը, բայց փաթեթներում չկա",
+      "note": "Սա փաստաթղթի ամենակարևոր բաժինն է։ Առանց դրանց ալգորիթմը կանգնում է gate-երի վրա և վերջնական դասակարգում չի տալիս։",
+      "groups": [
+        {
+          "code": "Բ.1",
+          "title": "Կրիտիկական — առանց սրանց ալգորիթմը չի աշխատում",
+          "items": [
+            {
+              "name": "Կալիում (K⁺)",
+              "severity": "critical",
+              "rationale": [
+                "Պահանջվում է 2024 ESC HTN-ի basic workup-ով։",
+                "Անվտանգության gate՝ ՌԱՍ-բլոկատոր (ԱՓՖ-ի/ԱՌԲ) սկսելուց առաջ ելակետային արժեքը պարտադիր է, կրկնությունը՝ 2–4 շաբաթ անց։",
+                "Նաև որոշում է՝ թույլատրելի՞ է կալիումով հարուստ աղի խորհուրդը։"
+              ],
+              "source": "2024 HTN §7, §8.2.1"
+            },
+            {
+              "name": "Նատրիում (Na⁺)",
+              "severity": "high",
+              "rationale": [
+                "2024 ESC HTN basic workup-ի մաս։",
+                "Երկրորդային հիպերտենզիայի սկրինինգի տարր։"
+              ],
+              "source": "2024 HTN §7"
+            },
+            {
+              "name": "Միզի ACR Essential-ում",
+              "severity": "critical",
+              "rationale": [
+                "Ներկայում կա միայն Metabolic պանելում (կետ 05)։",
+                "Ալգորիթմը այն պատվիրում է ԱՄԵՆ հիպերտոնիկի և ԱՄԵՆ դիաբետիկի համար — HMOD-ի հայտնաբերման և ԲԱՐՁՐ/ՇԱՏ ԲԱՐՁՐ սահմանի համար։",
+                "Ամենահաճախ գործարկվող gate-ն է ամբողջ ալգորիթմում։"
+              ],
+              "source": "2024 HTN §7 · EAS 2025 Table 3"
+            }
+          ],
+          "note": {
+            "title": "Ինչու է ACR-ը այսքան կարևոր։",
+            "body": "Հենց այս մեկ ցուցանիշն է որոշում՝ ՇԴ ունեցող պացիենտը ԲԱՐՁՐ ռիսկի խմբում է, թե ՇԱՏ ԲԱՐՁՐ — և հետևաբար LDL-C-ի թիրախը 1,8 է, թե 1,4 մմոլ/լ։ Առանց դրա բուժման ինտենսիվությունը որոշել հնարավոր չէ։"
+          }
+        },
+        {
+          "code": "Բ.2",
+          "title": "Կարևոր — սահմանափակում են ալգորիթմի ծածկույթը",
+          "items": [
+            {
+              "name": "Lp(a)-ի հասանելիությունը",
+              "severity": "high",
+              "rationale": [
+                "Ներկայում միայն Premium Longevity-ում։",
+                "Ալգորիթմը այն պատվիրում է վաղաժամ ընտանեկան անամնեզի դեպքում՝ անկախ փաթեթից։",
+                "Առաջարկ՝ դարձնել առանձին պատվիրելի հետազոտություն։"
+              ],
+              "source": "EAS 2025"
+            },
+            {
+              "name": "NT-proBNP",
+              "severity": "high",
+              "rationale": [
+                "Q9-ի «օդի պակաս» ճյուղը, երբ սրտի անբավարարությունը ախտորոշված չէ։",
+                "Ոչ մի փաթեթում չկա։"
+              ],
+              "source": "ESC HF 2023"
+            },
+            {
+              "name": "Ծոմային լիպիդներ vs ոչ-ծոմային",
+              "severity": "info",
+              "rationale": [
+                "Փաթեթներում նշված չէ։",
+                "ESC-ը ծոմ չի պահանջում non-HDL-C-ի և HbA1c-ի համար — արժե բացահայտ գրել, քանի որ ազդում է պացիենտի հոսքի վրա։"
+              ],
+              "source": "EAS 2025 · ESC Prev §4.8"
+            }
+          ]
+        },
+        {
+          "code": "Բ.3",
+          "title": "Գործիքային հետազոտություններ — ամբողջ խումբը բացակայում է",
+          "note": "Ծրագրի «Recommended Imaging & Measurements» բաժինը պարունակում է որովայնի ուլտրաձայն, ֆիբրոսկան, ճնշում, BMI, գոտկատեղ և կազմվածքի անալիզ։ Սրտաբանական և քնի գործիքային հետազոտություններից ոչ մեկը ներկայացված չէ։",
+          "items": [
+            {
+              "name": "ԷՍԳ 12 արտածում",
+              "severity": "critical",
+              "rationale": [
+                "Ալգորիթմը այն պատվիրում է գրեթե ամեն պացիենտի — ծխող, ԱՃ, ընտանեկան անամնեզ, առիթմիա, կրծքային ցավ։",
+                "Ամենահաճախ պատվիրվող գործիքային հետազոտությունն է և ոչ մի փաթեթում չկա։"
+              ],
+              "source": "2024 HTN §7 · ACS 2023 §3.2"
+            },
+            {
+              "name": "ԷխոԿԳ",
+              "severity": "high",
+              "rationale": [
+                "ԷՍԳ-ով ձախ փորոքի հիպերտրոֆիայի հաստատում (ԷՍԳ-ի զգայունությունը սահմանափակ է)։",
+                "Ուշաթափություն · առիթմիա։"
+              ],
+              "source": "2024 HTN §7"
+            },
+            {
+              "name": "Հոլտեր 24–48 ժ",
+              "severity": "high",
+              "rationale": [
+                "Անկանոն ռիթմ · սրտխփոց · ուշաթափություն։"
+              ],
+              "source": "ESC Prev §3.4.2"
+            },
+            {
+              "name": "Պոլիսոմնոգրաֆիա / HSAT",
+              "severity": "high",
+              "rationale": [
+                "STOP-BANG 5–8 · AHI-ի չափում։",
+                "Առանց դրա քնի ապնոէը հաստատել հնարավոր չէ։"
+              ],
+              "source": "ESC Prev §3.4.9"
+            },
+            {
+              "name": "HBPM 7-օրյա արձանագրություն",
+              "severity": "high",
+              "rationale": [
+                "Ծրագրում «Blood Pressure» կա, բայց տնային 7-օրյա պրոտոկոլը՝ ոչ։",
+                "Հիպերտոնիայի ախտորոշման հաստատումը Class I պահանջ է։"
+              ],
+              "source": "2024 HTN §5.2.3, Class I"
+            },
+            {
+              "name": "Աչքի հատակի հետազոտություն",
+              "severity": "info",
+              "rationale": [
+                "ՇԴ ունեցող բոլորին՝ տարեկան։",
+                "ՇԴ-ի թիրախ-օրգանի վնասման բաղադրիչ։"
+              ],
+              "source": "EAS 2025 Table 3"
+            },
+            {
+              "name": "Ոտքերի զննում",
+              "severity": "info",
+              "rationale": [
+                "ՇԴ ունեցող բոլորին՝ տարեկան։",
+                "Նեյրոպաթիայի հայտնաբերում։"
+              ],
+              "source": "EAS 2025 Table 3"
+            }
+          ],
+          "recommendation": {
+            "title": "Առաջարկ։",
+            "body": "Ավելացնել «Կարդիոմետաբոլիկ գործիքային մոդուլ» որպես առանձին բաղադրիչ՝ ԷՍԳ · ԷխոԿԳ · Հոլտեր · HBPM · քնի թեստ։ Առանց դրա սկրինինգի ուղեգրերի զգալի մասը լաբորատորիայում կատարելի չէ։"
+          }
+        }
+      ]
+    },
+    "C": {
+      "code": "Գ",
+      "title": "Ինչ կա փաթեթներում, բայց սկրինինգը չի պատվիրում",
+      "note": "Սրանք սխալ չեն։ Դրանք ծրագրային կանխարգելիչ հետազոտություններ են, որոնք արդարացվում են այլ հիմքով, ոչ թե 9-հարցանի սկրինինգի արդյունքով։ Պացիենտին չպետք է ասվի, թե սկրինինգն է դրանք պահանջել։",
+      "items": [
+        {
+          "tests": "Տեստոստերոն · SHBG · FSH · LH · Էստրադիոլ · DHEA-S",
+          "packages": [
+            "Premium",
+            "Metabolic"
+          ],
+          "justification": "Հորմոնալ գնահատում — ՊՁՁՀ (PCOS) և հիպոգոնադիզմի ուղղություն։ Սկրինինգի ալգորիթմը այս ախտանիշները չի հարցնում։"
+        },
+        {
+          "tests": "IGF-1 · Կոենզիմ Q10 · Օմեգա-3 ինդեքս",
+          "packages": [
+            "Premium Longevity"
+          ],
+          "justification": "Longevity ուղղություն։ ESC-ի կանխարգելման ուղեցույցում ռիսկի գնահատման տարր չեն։"
+        },
+        {
+          "tests": "Սելեն · պղինձ · ֆոսֆոր · ПТГ",
+          "packages": [
+            "Advanced",
+            "Metabolic"
+          ],
+          "justification": "Միկրոէլեմենտային պրոֆիլ։ ՍԱՀ ռիսկի հաշվարկին չեն մասնակցում։"
+        },
+        {
+          "tests": "Շիճուկային երկաթ · տրանսֆերին · TIBC · հագեցվածություն",
+          "packages": [
+            "Advanced"
+          ],
+          "justification": "Երկաթի փոխանակության խորացում — ֆերիտինի շեղումից հետո։"
+        },
+        {
+          "tests": "HBsAg · Anti-HCV · H. pylori",
+          "packages": [
+            "Advanced",
+            "Cancer"
+          ],
+          "justification": "Վարակային սկրինինգ — ուռուցքային ռիսկի ուղղություն։"
+        },
+        {
+          "tests": "PSA · CA-125 · AFP",
+          "packages": [
+            "Premium",
+            "Cancer"
+          ],
+          "justification": "Ուռուցքային մարկերներ — տես ծանոթագրությունը։"
+        },
+        {
+          "tests": "Գենետիկական պանելներ (BRCA, Lynch, FH, ֆարմակոգենոմիկա)",
+          "packages": [
+            "Lifetime Genetics"
+          ],
+          "justification": "Առանձին որոշում՝ գենետիկական խորհրդատվությամբ։"
+        }
+      ],
+      "note2": {
+        "title": "Ուռուցքային մարկերների վերաբերյալ — դրական դիտարկում։",
+        "body": "Ձեր փաստաթուղթն արդեն ճիշտ է սահմանափակել դրանք․ CA-125-ը «women with risk factors only», AFP-ն՝ «chronic liver disease / hepatitis risk»։ Ասիմպտոմ միջին ռիսկի կանանց մոտ CA-125-ով ձվարանների քաղցկեղի սկրինինգը մահացությունը չի նվազեցնում և խորհուրդ չի տրվում։ Պահեք այս սահմանափակումները։"
+      },
+      "unwiredLink": {
+        "code": "Գ.1",
+        "title": "Մեկ ուղիղ կապ, որն արժե օգտագործել",
+        "condition": "Տուփ-տարի ≥20 ԵՎ տարիք 50–80 ԵՎ ծխում է կամ թողել է <15 տարի առաջ",
+        "action": "LDCT-ի թեկնածու — ուղղորդում Cancer Prevention փաթեթի համապատասխան բաղադրիչին։",
+        "source": "EXTERNAL (USPSTF) — ՉԿԱ ESC-ի հավաքածուում",
+        "status": "պահանջում է Clinical Board-ի հաստատում և ՀՀ-ում LDCT-ի իրական հասանելիության ստուգում"
+      }
+    },
+    "D": {
+      "code": "Դ",
+      "title": "Ուղղորդում — որ սկրինինգային արդյունքը որ փաթեթին",
+      "routes": [
+        {
+          "trigger": "Բոլոր ռիսկի գործոնները բացասական · triage ԿԱՆԱՉ",
+          "package": "Essential",
+          "packageRef": "Ծրագրի կետ 01",
+          "detail": [
+            "Տարեկան կանխարգելիչ ստուգում։"
+          ]
+        },
+        {
+          "trigger": "BMI ≥25 · գոտկատեղ բարձր · նախաշաքարախտ · ՇԴ · NAFLD-ի կասկած",
+          "package": "Metabolic & Weight Management",
+          "packageRef": "Ծրագրի կետ 05",
+          "detail": [
+            "Այս փաթեթը արդեն պարունակում է ալգորիթմի պահանջած գրեթե ամեն ինչ՝ ներառյալ միզի ACR-ը, HOMA-IR-ը և non-HDL-C-ն։"
+          ]
+        },
+        {
+          "trigger": "Essential-ում հայտնաբերված շեղում, որը ճշգրտում է պահանջում",
+          "package": "Advanced",
+          "packageRef": "Ծրագրի կետ 02",
+          "detail": [
+            "Երկաթ, վահանաձև գեղձ, ինսուլին, վարակներ, միկրոէլեմենտներ։"
+          ]
+        },
+        {
+          "trigger": "Վաղաժամ ՍԱՀ ընտանիքում · LDL-C ≥4,9 · ՇԱՏ ԲԱՐՁՐ ռիսկ",
+          "package": "Premium Longevity",
+          "packageRef": "Ծրագրի կետ 03",
+          "detail": [
+            "Lp(a), ApoB/ApoA1, հոմոցիստեին, ֆիբրինոգեն։",
+            "Կամ՝ Essential + առանձին Lp(a), եթե Premium-ը չափազանց լայն է։"
+          ]
+        },
+        {
+          "trigger": "Ընտանեկան հիպերքոլեստերինեմիայի կասկած (Dutch Lipid Clinic Network)",
+          "package": "Lifetime Genetics",
+          "packageRef": "Ծրագրի կետ 04",
+          "detail": [
+            "FH պանել (LDLR, APOB, PCSK9)։"
+          ]
+        },
+        {
+          "trigger": "Տուփ-տարի ≥20 · քրոնիկ վարակի ռիսկ · տարիքային ցուցումներ",
+          "package": "Cancer Prevention & Early Detection",
+          "packageRef": "Ծրագրի կետ 06",
+          "detail": []
+        }
+      ],
+      "note": {
+        "title": "Կետ 05-ը լավագույն համընկնումն ունի։",
+        "body": "Metabolic & Weight Management պանելը սկրինինգի ալգորիթմի պահանջներին ամենամոտն է — այն միակն է, որ պարունակում է միզի ACR, non-HDL-C, HOMA-IR և ֆիբրինոգեն միասին։ Եթե մեկ փաթեթ պետք է ընտրվի որպես «սկրինինգից հետո» լռելյայն, դա այս մեկն է։"
+      }
+    }
+  },
+  "openDecisions": [
+    {
+      "n": "1",
+      "question": "Ավելացնե՞լ Na⁺ և K⁺ Essential փաթեթին։ Առանց K⁺-ի ՌԱՍ-բլոկատորի անվտանգության gate-ը չի աշխատում։",
+      "owner": "Clinical Board + լաբորատորիա"
+    },
+    {
+      "n": "2",
+      "question": "Տեղափոխե՞լ միզի ACR-ը Essential փաթեթ, թե՞ դարձնել առանձին պատվիրելի։",
+      "owner": "Clinical Board + լաբորատորիա"
+    },
+    {
+      "n": "3",
+      "question": "Ինչպե՞ս դարձնել Lp(a)-ն հասանելի Premium-ից դուրս։",
+      "owner": "Ծրագրի ղեկավարություն"
+    },
+    {
+      "n": "4",
+      "question": "Ստեղծե՞լ առանձին կարդիոմետաբոլիկ գործիքային մոդուլ (ԷՍԳ · ԷխոԿԳ · Հոլտեր · HBPM · քնի թեստ)։",
+      "owner": "Ծրագրի ղեկավարություն"
+    },
+    {
+      "n": "5",
+      "question": "Ո՞վ է կատարում գործիքային հետազոտությունները — լաբորատորիա՞ն, թե՞ գործընկեր կլինիկա։",
+      "owner": "Ծրագրի ղեկավարություն"
+    },
+    {
+      "n": "6",
+      "question": "Հաստատե՞լ LDCT-ի ընդգրկման չափանիշները և ՀՀ-ում դրա հասանելիությունը։",
+      "owner": "Clinical Board"
+    },
+    {
+      "n": "7",
+      "question": "Ծոմի պահանջները բացահայտ գրե՞լ ամեն հետազոտության կողքին։",
+      "owner": "Լաբորատորիա"
+    }
+  ]
+}

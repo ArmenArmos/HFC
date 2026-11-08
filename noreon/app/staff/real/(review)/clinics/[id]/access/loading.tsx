@@ -1,0 +1,1 @@
+export default function ClinicAccessLoading(){return <p role="status" className="min-h-12 text-body2"><span lang="en">Loading clinic access…</span> / <span lang="hy">Կլինիկայի հասանելիությունը բեռնվում է…</span> / <span lang="ru">Загрузка доступа клиники…</span></p>;}

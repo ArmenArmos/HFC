@@ -1,0 +1,1 @@
+export default function TasksLoading(){return <div role="status" aria-live="polite" aria-busy="true" className="space-y-4"><p className="text-body2 text-muted-foreground">Loading your coordination tasks…</p><div className="h-12 rounded-lg bg-muted" aria-hidden="true"/><div className="h-28 rounded-lg bg-muted" aria-hidden="true"/></div>;}

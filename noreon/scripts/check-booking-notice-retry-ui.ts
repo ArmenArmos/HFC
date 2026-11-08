@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';import{createElement}from'react';import{create,act}from'react-test-renderer';
+import{NoticeRetry}from'@/components/real-booking/notice-retry';import{PilotStaffBooking}from'@/components/real-booking/pilot-staff';
+import type{Appointment,PilotActionState,PilotBookingData}from'@/lib/real-booking/appointment-schema';
+Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+const id='b3000000-0000-4000-8000-000000000001',command='b3000000-0000-4000-8000-000000000060';
+const proposed={offerId:id,offerVersion:'v1',clinicId:id,mode:'clinic' as const,startsAt:'2030-01-01T09:00:00+04:00',endsAt:'2030-01-01T10:00:00+04:00',timezone:'Asia/Yerevan' as const,location:'Synthetic clinic',preparation:'Synthetic only',preparationVersion:'v1',coveredTestIds:['synthetic'],followUps:[]};
+const appointment:Appointment={version:'email-pilot-v1',id,memberId:id,revision:0,status:'failed',program:[{id:'synthetic',title:'Synthetic',method:'lab',preparation:''}],current:null,proposed,noticeId:id,createdAt:'2026-10-16T00:00:00Z'};
+let resolve!:(state:PilotActionState)=>void,calls=0;let sent:FormData|undefined;
+const action=async(_state:PilotActionState,form:FormData)=>{calls++;sent=form;return new Promise<PilotActionState>(done=>{resolve=done;});};
+let view!:ReturnType<typeof create>;await act(async()=>{view=create(createElement(NoticeRetry,{appointment,commandId:command,locale:'en',action,refreshHref:'/staff/real/members/synthetic'}));});
+const submit=()=>view.root.findByType('form').props.onSubmit({preventDefault(){}});
+let sending!:Promise<void>;await act(async()=>{sending=submit();void submit();});assert.equal(calls,1,'Double submit is synchronously fenced');assert.ok(JSON.stringify(view.toJSON()).includes('Sending…'),'Send mode must name sending, not checking');assert.equal(view.root.findByType('button').props.disabled,true);
+assert.deepEqual(Object.fromEntries(sent!),{commandId:command,appointmentId:id,revision:'0',noticeId:id},'Only immutable server-supplied retry selection is submitted');
+await act(async()=>{resolve({ok:false,code:'unknown',outcomeUnknown:true,commandRecorded:true});await sending;});
+assert.ok(JSON.stringify(view.toJSON()).includes('Do not send again'));assert.equal(view.root.findByType('button').props.disabled,true);await act(async()=>submit());assert.equal(calls,1,'Unknown result cannot trigger another send');
+await act(async()=>view.unmount());
+const data:PilotBookingData={available:false,canRetryScheduling:true,unavailableReason:'source-unavailable',program:[],offers:[],appointments:[appointment]};
+const props={data,locale:'en' as const,commandIds:{},changeAction:action,retryAction:action,retryCommandIds:{[id]:command},refreshHref:'/staff/real/members/synthetic'};
+await act(async()=>{view=create(createElement(PilotStaffBooking,props));});assert.ok(JSON.stringify(view.toJSON()).includes('Retry scheduling email'),'Known failure with an existing held arrangement can retry even with no new offered capacity');
+await act(async()=>view.update(createElement(PilotStaffBooking,{...props,data:{...data,appointments:[{...appointment,status:'unknown'}]}})));assert.ok(!JSON.stringify(view.toJSON()).includes('Retry scheduling email'),'Unknown outcome has recovery only');
+await act(async()=>view.update(createElement(PilotStaffBooking,{...props,data:{...data,canRetryScheduling:false}})));assert.ok(!JSON.stringify(view.toJSON()).includes('Retry scheduling email'),'Disabled delivery exposes no retry');
+await act(async()=>view.update(createElement(PilotStaffBooking,{...props,recoveryAction:async():Promise<PilotActionState>=>({ok:false,code:'unknown',outcomeUnknown:true,commandRecorded:true}),recoveryCommandIds:{[id]:command},data:{...data,canRecoverScheduling:true,appointments:[{...appointment,status:'unknown'}]}})));
+assert.ok(JSON.stringify(view.toJSON()).includes('Check recorded email result'));assert.ok(!JSON.stringify(view.toJSON()).includes('Retry scheduling email'));
+const recoveryForm=view.root.findByType('form');await act(async()=>recoveryForm.props.onSubmit({preventDefault(){}}));assert.ok(JSON.stringify(view.toJSON()).includes('This check did not send email'));assert.equal(view.root.findByType('button').props.disabled,true,'Recovery unknown cannot become a resend');
+for(const locale of ['en','hy']as const){
+ await act(async()=>view.update(createElement(PilotStaffBooking,{...props,locale,startAction:async():Promise<PilotActionState>=>({ok:false,code:'arrangement-review',commandRecorded:true}),startCommandIds:{[id]:command},data:{...data,canRecoverScheduling:true,appointments:[{...appointment,status:'notification-pending',canStartScheduling:true}]}})));
+ assert.ok(JSON.stringify(view.toJSON()).includes(locale==='en'?'Send pending scheduling email':'Ուղարկել սպասող գրանցման նամակը'));
+ await act(async()=>view.root.findByType('form').props.onSubmit({preventDefault(){}}));assert.equal(view.root.findByType('button').props.disabled,true);assert.ok(!JSON.stringify(view.toJSON()).includes(locale==='en'?'This check did not send email':'Այս ստուգումը նամակ չի ուղարկել'),'Send result cannot claim no send occurred');
+ await act(async()=>view.update(createElement(PilotStaffBooking,{...props,locale,recoveryAction:async():Promise<PilotActionState>=>({ok:false,code:'arrangement-review',commandRecorded:true}),recoveryCommandIds:{[id]:command+'-receipt'},data:{...data,canRecoverScheduling:true,appointments:[{...appointment,status:'reconciliation',canStartScheduling:false}]}})));
+ await act(async()=>view.root.findByType('form').props.onSubmit({preventDefault(){}}));assert.ok(JSON.stringify(view.toJSON()).includes(locale==='en'?'receipt is saved':'անդորրագիրը պահպանված է'));const rendered=JSON.stringify(view.toJSON());assert.equal((rendered.match(new RegExp(locale==='en'?'Scheduling reference':'Գրանցման հղում','g'))??[]).length,1,'One reference per visit');assert.ok(!rendered.includes('contact Noreon'),'Staff copy should address the operator');
+}
+await act(async()=>view.unmount());console.log('Actual staff retry UI: duplicate submits fenced, immutable selection, unknown lock, held-capacity retry and disabled/unknown recovery-only states. Mocked action.');

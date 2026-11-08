@@ -1,0 +1,20 @@
+-- Fixed metadata-only query. Never add member rows, policy expressions or function bodies.
+begin read only;
+set local search_path = pg_catalog;
+set local statement_timeout = '5s';
+set local lock_timeout = '1s';
+select jsonb_build_object(
+ 'serverVersionNum',current_setting('server_version_num')::integer,
+ 'tablesWithoutRls',coalesce((select jsonb_agg(c.relname order by c.relname) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p') and not c.relrowsecurity),'[]'::jsonb),
+ 'browserUnsafeReadRelations',coalesce((select jsonb_agg(c.relname order by c.relname) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and (c.relkind='m' or (c.relkind='v' and not coalesce(c.reloptions @> array['security_invoker=true'],false))) and (has_table_privilege('anon',c.oid,'SELECT') or has_table_privilege('authenticated',c.oid,'SELECT'))),'[]'::jsonb),
+ 'browserWriteGrants',coalesce((select jsonb_agg(jsonb_build_object('role',r.name,'table',c.relname,'privilege',p.name) order by r.name,c.relname,p.name) from pg_class c join pg_namespace n on n.oid=c.relnamespace cross join (values('anon'),('authenticated')) r(name) cross join unnest(case when current_setting('server_version_num')::integer>=170000 then array['INSERT','UPDATE','DELETE','TRUNCATE','TRIGGER','REFERENCES','MAINTAIN'] else array['INSERT','UPDATE','DELETE','TRUNCATE','TRIGGER','REFERENCES'] end) p(name) where n.nspname='public' and c.relkind in ('r','p','v','m','f') and has_table_privilege(r.name,c.oid,p.name)),'[]'::jsonb),
+ 'unsafeDefaultGrants',coalesce((select jsonb_agg(jsonb_build_object('role',x.role,'owner',x.owner,'schema',x.schema,'privilege',x.privilege) order by x.role,x.schema,x.privilege) from (select distinct r.name as role,pg_get_userbyid(d.defaclrole) as owner,case when d.defaclnamespace=0 then 'all' else 'public' end as schema,a.privilege_type as privilege from pg_default_acl d cross join lateral aclexplode(d.defaclacl) a cross join (values('anon'),('authenticated')) r(name) where d.defaclobjtype='r' and d.defaclnamespace in (0,(select oid from pg_namespace where nspname='public')) and a.privilege_type in ('INSERT','UPDATE','DELETE','TRUNCATE','TRIGGER','REFERENCES','MAINTAIN') and case when a.grantee=0 then true else pg_has_role(r.name,a.grantee,'USAGE') end) x),'[]'::jsonb),
+ 'browserSchemaCreate',coalesce((select jsonb_agg(r.name order by r.name) from (values('anon'),('authenticated')) r(name) where has_schema_privilege(r.name,'public','CREATE')),'[]'::jsonb),
+ 'browserBypassRls',coalesce((select jsonb_agg(rolname order by rolname) from pg_roles where rolname in ('anon','authenticated') and (rolsuper or rolbypassrls)),'[]'::jsonb),
+ 'definersWithoutSearchPath',coalesce((select jsonb_agg(distinct p.proname order by p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prosecdef and not exists(select 1 from unnest(p.proconfig) setting where setting like 'search_path=%')),'[]'::jsonb),
+ 'definersWithNonEmptySearchPath',coalesce((select jsonb_agg(distinct p.proname order by p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prosecdef and exists(select 1 from unnest(p.proconfig) setting where setting like 'search_path=%' and setting not in ('search_path=','search_path=""'))),'[]'::jsonb),
+ 'requiredReads',jsonb_build_object('profile',coalesce(has_table_privilege('authenticated',to_regclass('public.profiles'),'SELECT'),false),'measurements',coalesce(has_table_privilege('authenticated',to_regclass('public.patient_measurements'),'SELECT'),false),'workspace',coalesce(has_table_privilege('service_role',to_regclass('public.workspace_cases'),'SELECT'),false)),
+ 'unbudgetedBeginCallable',has_function_privilege('service_role',to_regprocedure('public.begin_patient_message_submission(uuid)'),'EXECUTE'),
+ 'migrationVersions',coalesce((select jsonb_agg(version order by version) from supabase_migrations.schema_migrations),'[]'::jsonb)
+);
+rollback;

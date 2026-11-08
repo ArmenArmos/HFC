@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {schedulingEnvelopeHash,sendSchedulingEmail} from '@/lib/real-booking/scheduling-notice';
+const config={enabled:true,apiKey:'fictional-test-key-never-a-credential',sender:'noreon@example.invalid'};
+const content={senderEmail:config.sender,clinicEmail:'clinic@example.invalid',copyEmail:'copy@example.invalid',templateVersion:'synthetic-approved-fixture-v1',subject:'Synthetic schedule',textContent:'Synthetic details only. No real appointment.'};
+const envelope={...content,noticeId:'11111111-1111-4111-8111-111111111111',attemptId:'22222222-2222-4222-8222-222222222222',generation:1,envelopeHash:schedulingEnvelopeHash(content)};
+let calls=0;let request:RequestInit|undefined;
+const accepted:typeof fetch=async(url,options)=>{calls++;assert.equal(url,'https://api.brevo.com/v3/smtp/email');request=options;return new Response(JSON.stringify({messageId:'synthetic-receipt'}),{status:201});};
+assert.equal((await sendSchedulingEmail({...config,enabled:false},envelope,accepted)).outcome,'disabled');assert.equal(calls,0);
+const result=await sendSchedulingEmail(config,envelope,accepted);
+assert.equal(result.outcome,'accepted');assert.equal(calls,1);
+if(result.outcome==='accepted'){assert.deepEqual(result.acceptedRoles,{clinic:content.clinicEmail,copy:content.copyEmail});assert.equal(result.envelopeHash,envelope.envelopeHash);assert.equal(result.attemptId,envelope.attemptId);}
+const body=JSON.parse(String(request?.body));assert.deepEqual(body.to,[{email:content.clinicEmail}]);assert.deepEqual(body.cc,[{email:content.copyEmail}]);assert.equal(body.textContent,content.textContent);assert.equal(request?.redirect,'error');
+assert.equal(body.headers.IdempotencyKey,envelope.attemptId);
+await assert.rejects(()=>sendSchedulingEmail(config,{...envelope,textContent:'Changed after claim'},accepted),/envelope/i);assert.equal(calls,1);
+await assert.rejects(()=>sendSchedulingEmail(config,{...envelope,copyEmail:'bad\r\nBcc:forged@example.invalid'},accepted));assert.equal(calls,1);
+for(const status of [400,401,403,422,429])assert.equal((await sendSchedulingEmail(config,envelope,async()=>new Response('{}',{status}))).outcome,'failed');
+for(const status of [202,408,409,500,503])assert.equal((await sendSchedulingEmail(config,envelope,async()=>new Response('{}',{status}))).outcome,'unknown');
+assert.equal((await sendSchedulingEmail(config,envelope,async()=>new Response('{}',{status:201}))).outcome,'unknown');
+assert.equal((await sendSchedulingEmail(config,envelope,async()=>{throw Error('lost response');})).outcome,'unknown');
+let timeoutCalls=0;
+const timeout=await sendSchedulingEmail(config,envelope,async()=>{timeoutCalls++;return await new Promise<Response>(()=>{});},15);
+assert.equal(timeout.outcome,'unknown');assert.equal(timeoutCalls,1,'Timeout never automatically resends');
+console.log('Brevo scheduling HTTP adapter: exact clinic+copy envelope receipt, disabled guard, tamper rejection, definite failure/unknown/timeout without retries. Injected HTTP only.');

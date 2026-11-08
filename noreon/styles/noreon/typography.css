@@ -1,0 +1,33 @@
+:root{
+  --font-display:"Manrope",system-ui,sans-serif; /* headings, numbers, titles */
+  --font-body:"Inter","Manrope",system-ui,sans-serif; /* paragraphs, UI, labels */
+
+  --weight-light:300;
+  --weight-regular:400;
+  --weight-medium:500;
+  --weight-semibold:600;
+  --weight-bold:700;
+  --weight-extrabold:800;
+
+  /* In-product scale — Brand Book p.12 "Typography in App", size/line-height. */
+  --text-h1-size:28px;   --text-h1-line:36px;   --text-h1-weight:800;
+  --text-h2-size:22px;   --text-h2-line:28px;   --text-h2-weight:700;
+  --text-h3-size:18px;   --text-h3-line:24px;   --text-h3-weight:600;
+  --text-body1-size:16px;--text-body1-line:24px;--text-body1-weight:400;
+  --text-body2-size:14px;--text-body2-line:20px;--text-body2-weight:400;
+  --text-caption-size:12px;--text-caption-line:16px;--text-caption-weight:500;
+  --text-overline-size:11px;--text-overline-line:16px;--text-overline-weight:500;
+  --text-overline-tracking:0.10em;
+
+  /* Marketing / display scale — INTENTIONAL EXTENSION. The Brand Book ships an
+     app scale only; the website hero and brand statements on p.13/p.16 clearly
+     run larger. Sizes continue the app scale's ~1.27 ratio. */
+  --text-display1-size:56px;--text-display1-line:62px;
+  --text-display2-size:44px;--text-display2-line:52px;
+  --text-display3-size:34px;--text-display3-line:42px;
+
+  --tracking-tight:-0.02em;
+  --tracking-normal:0;
+  --tracking-wide:0.06em;
+  --tracking-widest:0.18em; /* the HEALTH descriptor inside the product lockup */
+}

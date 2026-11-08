@@ -1,0 +1,13 @@
+/* Calm motion. Things fade and settle; nothing bounces, nothing overshoots.
+   Presses shrink very slightly; progress fills sweep in over ~900ms. */
+:root{
+  --ease-standard:cubic-bezier(.2,.6,.2,1); /* @kind other */
+  --ease-out:cubic-bezier(0,.55,.45,1); /* @kind other */
+  --ease-in-out:cubic-bezier(.45,0,.55,1); /* @kind other */
+  --duration-instant:80ms; /* @kind other */
+  --duration-fast:140ms; /* @kind other */   /* hover, focus */
+  --duration-base:220ms; /* @kind other */   /* state change, reveal */
+  --duration-slow:360ms; /* @kind other */   /* sheet, screen transition */
+  --duration-reveal:900ms; /* @kind other */ /* progress fill reveal */
+  --press-scale:.985; /* @kind other */
+}

@@ -1,0 +1,15 @@
+import '../staff-voice/reply';
+import {ChatMemberIdentityProvider} from '@/components/staff/chat-member-identity';
+import React from 'react';
+import {installZoeFetch} from './zoe';
+installZoeFetch();
+import {AppRouterContext} from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import {createRoot} from 'react-dom/client';
+import {PatientChat} from '@/components/doctor-chat-v2/patient-chat';
+import {fixtureMembers,fixtureIdentity} from './data';
+import {DoctorChatPlan} from '@/components/doctor-chat-v2/plan';
+import {DoctorChatV2} from '@/components/doctor-chat-v2/doctor-chat';
+import type {StaffLocale} from '@/lib/staff/staff-locale-copy';
+const locale=(window as unknown as {fixture:{locale:StaffLocale}}).fixture.locale;
+const patient=new URL(window.location.href).searchParams.has('patient');
+createRoot(document.getElementById('root')!).render(<AppRouterContext.Provider value={{bfcacheId:'fixture',back(){throw Error('Navigation forbidden');},forward(){throw Error('Navigation forbidden');},push(){throw Error('Navigation forbidden');},replace(){throw Error('Navigation forbidden');},refresh(){throw Error('Lab refresh must stay in the block');},prefetch:async()=>{}}}><ChatMemberIdentityProvider>{new URL(window.location.href).searchParams.get('state')?.startsWith('plan-ready')?<DoctorChatPlan memberId={fixtureMembers[0].id} name="Mariam Example" doctorId="fictional-doctor" locale={locale} aiDraft onOpen={()=>{}} onSaved={()=>{}} onCheckAgain={()=>{}} onAction={()=>{}} onReviewLabs={()=>{}}/>:patient?<PatientChat voiceAvailable={new URL(location.href).searchParams.has('voice')} focusLabId={new URL(window.location.href).searchParams.get('lab')??undefined} focusAlertId={new URL(window.location.href).searchParams.get('alert')??undefined} locale={locale} doctorId="fictional-doctor" doctorName="Aram Example" member={fixtureIdentity(fixtureMembers[0].id)} owners={[]} risk="high" planVersion={2} resultsReport={false}/>:<DoctorChatV2 voiceAvailable={new URL(location.href).searchParams.has('voice')} locale={locale} doctorId="fictional-doctor" doctorName="Aram Example" resultsReport={new URL(window.location.href).searchParams.get('state')?.startsWith('results')??false}/>}</ChatMemberIdentityProvider></AppRouterContext.Provider>);

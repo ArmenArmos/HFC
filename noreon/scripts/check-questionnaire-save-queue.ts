@@ -1,0 +1,53 @@
+import assert from "node:assert/strict";
+import { AnswerSaveQueue } from "@/lib/patient/answer-save-queue";
+const calls: Array<{ revision: number; value: string; resolve: (result: { ok: true; revision: number } | null) => void }> = [];
+const queue = new AnswerSaveQueue(4, (revision, entries) => new Promise(resolve => calls.push({ revision, value: String(entries[0].value), resolve })), () => {});
+queue.enqueue([{fieldId:"q3.status", value:"never"}]);
+queue.enqueue([{fieldId:"q3.status", value:"former"}]);
+await Promise.resolve();
+assert.equal(calls.length, 1, "New answers remain local while only one save runs");
+const flushed = queue.flush();
+calls[0].resolve({ok:true, revision:5});
+await new Promise(resolve => setTimeout(resolve, 0));
+assert.equal(calls[1].revision, 5, "Ordered saves use the last acknowledged revision");
+assert.equal(calls[1].value, "former");
+calls[1].resolve(null);
+assert.equal(await flushed, false, "Completion cannot pass a failed save");
+assert.equal(queue.pending, true, "Failed answers stay queued");
+const retried = queue.retry();
+await Promise.resolve();
+assert.equal(calls[2].revision, 5);
+calls[2].resolve({ok:true, revision:6});
+assert.equal(await retried, true);
+assert.equal(queue.revision, 6);
+assert.equal(queue.pending, false);
+console.log("Questionnaire saves serialize revisions, retain failures and gate completion on flush.");
+
+const { mergeAnswers, fieldComplete, activeFields } = await import("@/lib/patient/questionnaire");
+const { UNKNOWN, NONE } = await import("@/lib/clinical/types");
+const { score2State } = await import("@/lib/clinical/rules/derived");
+for (const id of ["q6.conditions", "q7.relatives"]) {
+ const unknown = mergeAnswers({}, [{fieldId:id,value:UNKNOWN}]);
+ const none = mergeAnswers({}, [{fieldId:id,value:[NONE]}]);
+ assert.equal(unknown[id].value, UNKNOWN);
+ assert.deepEqual(none[id].value, [NONE]);
+ assert.equal(fieldComplete(activeFields(unknown).find(f=>f.id===id)!, unknown),true);
+}
+const history = mergeAnswers({}, [{fieldId:"q6.conditions",value:UNKNOWN}]);
+history["q1.age"] = {fieldId:"q1.age",value:46,source:"manual",answeredAt:new Date().toISOString()};
+assert.equal(score2State(history).code, "UNKNOWN", "Unknown existing conditions never imply healthy SCORE2 eligibility");
+
+let attempts = 0;
+const conflicted = new AnswerSaveQueue(9, async () => { attempts++; return {ok:false,reason:"conflict"}; });
+conflicted.enqueue([{fieldId:"q6.conditions",value:UNKNOWN}]);
+conflicted.enqueue([{fieldId:"q7.relatives",value:[NONE]}]);
+assert.equal(await conflicted.flush(), false);
+assert.equal(await conflicted.retry(), false, "A conflict cannot overwrite a newer session by retrying");
+assert.equal(attempts,1,"Later answers cannot overtake a conflicted batch");
+assert.equal(conflicted.pending,true);
+const diabetic = mergeAnswers({}, [{fieldId:"q6.conditions",value:["diabetes"]},{fieldId:"q6.diabetes_years",value:4},{fieldId:"q6.hba1c",value:6}]);
+const uncertain = mergeAnswers(diabetic,[{fieldId:"q6.conditions",value:UNKNOWN}]);
+assert.equal(uncertain["q6.diabetes_years"],undefined,"Editing a parent to unknown prunes inactive clarifiers");
+assert.equal(uncertain["q6.hba1c"],undefined);
+assert.equal(score2State({...history,...mergeAnswers({},[{fieldId:"q6.conditions",value:[NONE]}])}).code,"SCORE2","Known none keeps existing model selection");
+console.log("UNKNOWN survives validation, prunes obsolete branches, preserves clinical unavailable state; conflicts stop later saves.");

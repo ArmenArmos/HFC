@@ -1,0 +1,1864 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* The design system's own token files, vendored byte for byte under
+   styles/noreon/. They are the source of truth for every brand value; nothing
+   below redefines a brand value, it only maps them onto the names Tailwind and
+   the shadcn components already look for. The two exceptions are the font family
+   tokens, re-pointed below at next/font. See styles/noreon/README.md for what
+   was taken and what was left behind. */
+@import "../styles/noreon/colors.css";
+@import "../styles/noreon/typography.css";
+@import "../styles/noreon/spacing.css";
+@import "../styles/noreon/motion.css";
+@import "../styles/noreon/semantic.css";
+/* The Zoe chat kit (components/patient/zoe-kit), tokens only. */
+@import "../components/patient/zoe-kit/zoe-kit.css";
+
+/* The app is light-only. This keeps the `dark:` utilities that ship inside the
+   shadcn components inert: they key off a `.dark` ancestor that never exists,
+   rather than Tailwind's default prefers-color-scheme. The design system's
+   dark theme is vendored at styles/noreon/dark.css but deliberately not
+   imported; it keys off `data-theme="dark"`, which nothing sets. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-geist-mono);
+
+  /* Brand hues as utilities, for the cases the semantic tokens below do not
+     name. Prefer a semantic token where one fits: `bg-card` over
+     `bg-surface-card`, `text-muted-foreground` over `text-slate`. */
+  --color-brand-navy: var(--noreon-navy-700);
+  --color-brand-blue: var(--noreon-blue-600);
+  --color-brand-teal: var(--noreon-teal-600);
+  --color-brand-gold: var(--noreon-gold-600);
+  --color-brand-gold-light: var(--noreon-gold-400);
+  --color-brand-ivory: var(--noreon-ivory);
+  --color-brand-mint: var(--noreon-teal-300);
+  --color-brand-gold-deep: var(--noreon-gold-700);
+  --color-surface-inverse-deep: var(--surface-inverse-deep);
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-inverse: var(--surface-inverse);
+  /* The navy ground's two foregrounds. `--text-on-inverse` sits in the imported
+     token file, which is plain CSS: it declares a variable, not a utility, so
+     `text-on-inverse` needs this alias to exist at all. Without it the class
+     compiles to nothing and the text quietly keeps the inherited colour. */
+  --color-on-inverse: var(--text-on-inverse);
+  --color-on-inverse-muted: var(--text-on-inverse-muted);
+  --color-surface-subtle-teal: var(--surface-subtle-teal);
+  --color-surface-subtle-gold: var(--surface-subtle-gold);
+  --color-warm-100: var(--surface-tint);
+  --color-warm-200: var(--noreon-warm-200);
+  --color-warm-300: var(--noreon-warm-300);
+  --color-sand-100: var(--noreon-sand-100);
+  --color-sand-200: var(--noreon-sand-200);
+  --color-sand-300: var(--noreon-sand-300);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* The design system's type scale as utilities. `text-h1` carries the size,
+     line height and weight together, so a heading is one class rather than
+     three that can drift apart. */
+  --text-display1: var(--text-display1-size);
+  --text-display1--line-height: var(--text-display1-line);
+  --text-display2: var(--text-display2-size);
+  --text-display2--line-height: var(--text-display2-line);
+  --text-display3: var(--text-display3-size);
+  --text-display3--line-height: var(--text-display3-line);
+  --text-h1: var(--text-h1-size);
+  --text-h1--line-height: var(--text-h1-line);
+  --text-h1--font-weight: var(--text-h1-weight);
+  --text-h2: var(--text-h2-size);
+  --text-h2--line-height: var(--text-h2-line);
+  --text-h2--font-weight: var(--text-h2-weight);
+  --text-h3: var(--text-h3-size);
+  --text-h3--line-height: var(--text-h3-line);
+  --text-h3--font-weight: var(--text-h3-weight);
+  --text-body1: var(--text-body1-size);
+  --text-body1--line-height: var(--text-body1-line);
+  --text-body2: var(--text-body2-size);
+  --text-body2--line-height: var(--text-body2-line);
+  --text-caption: var(--text-caption-size);
+  --text-caption--line-height: var(--text-caption-line);
+  --text-caption--font-weight: var(--text-caption-weight);
+  --text-overline: var(--text-overline-size);
+  --text-overline--line-height: var(--text-overline-line);
+  --text-overline--font-weight: var(--text-overline-weight);
+  --text-overline--letter-spacing: var(--text-overline-tracking);
+
+  /* The marketing content column, p.12 of the brand book: `max-w-noreon`. */
+  --container-noreon: var(--container-max);
+
+  /* The design system names these xs/sm/md/lg/xl; Tailwind's `--radius-*`
+     namespace already owns those names and generates `rounded-sm` and friends
+     from them. Same ladder, shifted one name, so the physical sizes stay right
+     for the components that consume them. The mapping is tabulated in
+     styles/noreon/README.md. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-4xl: 40px;
+  --radius-pill: 999px;
+
+  /* Transcribed from styles/noreon/elevation.css for the same reason as the
+     radii: `--shadow-*` is a Tailwind namespace, so importing the file leaves
+     `shadow-md` on Tailwind's neutral-black default while `var(--shadow-md)`
+     quietly says something else. Declaring them here puts the utilities and the
+     variables on the same value. Noreon shadows are navy-tinted, never neutral
+     black. `node styles/noreon/check.mjs` fails if these drift from the
+     vendored file. */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgba(26, 34, 51, 0.05);
+  --shadow-sm:
+    0 1px 3px rgba(26, 34, 51, 0.06), 0 1px 2px rgba(26, 34, 51, 0.04);
+  --shadow-md:
+    0 4px 12px rgba(26, 34, 51, 0.07), 0 1px 3px rgba(26, 34, 51, 0.04);
+  --shadow-lg:
+    0 12px 32px rgba(26, 34, 51, 0.1), 0 2px 8px rgba(26, 34, 51, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(26, 150, 149, 0.22);
+  --shadow-focus-danger: 0 0 0 3px rgba(180, 35, 24, 0.2);
+}
+
+/* Every value here resolves to a design system token. Nothing in this block
+   introduces a colour; it exists so the vendored shadcn components, which look
+   for `--primary` and `--border`, land on the brand without being rewritten. */
+:root {
+  /* tokens/typography.css names the families literally, as `"Manrope"` and
+     `"Inter"`, which is what the design system's Google Fonts import registers.
+     next/font self-hosts the same two faces under generated family names, so
+     these two tokens are re-pointed at its variables. Same typefaces, no
+     third-party request, no shift while they load. */
+  /* Noto Sans Armenian sits last before the system fallback because neither
+     brand face carries Armenian glyphs, and the product demo is written in
+     Armenian. A font stack is resolved per character, so Latin text still lands
+     on Manrope and Inter; only the characters they lack fall through. */
+  --font-display:
+    var(--font-manrope), var(--font-armenian), system-ui, sans-serif;
+  --font-body:
+    var(--font-inter), var(--font-manrope), var(--font-armenian), system-ui,
+    sans-serif;
+
+  --background: var(--surface-page);
+  --foreground: var(--text-body);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-body);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-body);
+
+  --primary: var(--action-primary-bg);
+  --primary-foreground: var(--action-primary-fg);
+  --secondary: var(--action-secondary-bg);
+  --secondary-foreground: var(--action-secondary-fg);
+
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--text-muted);
+
+  /* shadcn's `--accent` is the hover and focus surface, not a brand accent: it
+     backs every dropdown row under the cursor. It takes the warm neutral, so it
+     reads as a tint of the ivory ground rather than a cool patch on it. The
+     brand's accents are teal and gold, applied deliberately. */
+  --accent: var(--surface-tint);
+  --accent-foreground: var(--text-strong);
+
+  --destructive: var(--status-danger-fg);
+
+  /* Two hairlines, because there are two grounds: `--border` is a card edge
+     against the ivory page, `--input` is a control outline, which has to carry
+     more. Both are warm, because cool grey reads blue on this ground. */
+  --border: var(--border-subtle);
+  --input: var(--border-default);
+  --ring: var(--border-focus);
+
+  /* The design system specifies a primary and a secondary series colour
+     (--chart-primary, --chart-secondary) and stops there, because its own
+     charts are sparklines and progress arcs. A categorical set for multi-series
+     charts had to be derived. Slots 1 to 3 are real ramp steps: teal-500,
+     blue-400, gold-700. Slots 4 and 5 have no brand equivalent, and the status
+     hues are not available to borrow because the system reserves red, amber and
+     green for biomarker verdicts. The set is checked, not eyeballed:
+     `node styles/noreon/check.mjs`. */
+  --chart-1: #22adab;
+  --chart-2: #1d6fbe;
+  --chart-3: #bd8210;
+  --chart-4: #b03e78;
+  --chart-5: #00642b;
+
+  --radius: 12px;
+  --inset-hairline: inset 0 0 0 1px var(--noreon-gray-200);
+
+  --sidebar: var(--surface-card);
+  --sidebar-foreground: var(--text-body);
+  --sidebar-primary: var(--action-primary-bg);
+  --sidebar-primary-foreground: var(--action-primary-fg);
+  --sidebar-accent: var(--surface-tint);
+  --sidebar-accent-foreground: var(--text-strong);
+  --sidebar-border: var(--border-subtle);
+  --sidebar-ring: var(--border-focus);
+}
+
+/* Adapted from the design system's tokens/base.css. Only the rules Tailwind's
+   preflight does not already cover are kept, and each one is written against
+   the same token the original used. */
+/* ── The management dashboard's chart palette ────────────────────────────────
+
+   A deliberate exception to the rule above, scoped to one screen and kept here
+   so it is one grep rather than a scatter of literals in a component.
+
+   The brand specifies two chart colours, a teal primary and a blue secondary,
+   because its own charts are sparklines and progress arcs. Screen 27 is a
+   programme dashboard: six charts, two of them stacked over ordered tiers. Every
+   attempt to serve that from the brand ramps either ran out of steps or reached
+   into the derived categorical slots, whose gold, magenta and forest green the
+   design system never chose for data and which read as arbitrary next to each
+   other. This is the stand-in until the design team specifies a data palette;
+   when they do, it is a file replacement, which is why it lives behind role
+   names and a single attribute rather than in the components.
+
+   The values are the validated default data-viz palette, not a taste. Blue leads,
+   orange is the only second hue and it means "act on this", and the ordered tiers
+   are one blue ramp rather than three identities, because risk tier and follow-up
+   state are ordered and a categorical set throws that order away. Checked with
+   the palette validator against the white card these charts actually sit in:
+   the categorical pair clears every gate, and the ramp is monotone in lightness
+   with its light end above the surface. */
+[data-viz="dashboard"] {
+  /* A count of things. The default for any single-series chart, and the ramp's
+     second step rather than a value of its own, so the two never read as rival
+     blues. */
+  --viz-series: #2b7fff;
+  /* The second series, and the one stage or clinic that needs attention. */
+  --viz-attention: #eb6834;
+  /* The ordered ramp, light to dark. One rule covers every ordered set on the
+     screen: darker is further along the scale, whether that scale is severity
+     (low to high risk, on time to overdue) or progress (ordered to active).
+
+     Five steps, and five is the ceiling rather than a round number. A single
+     hue only holds so many steps a person can actually tell apart, and the
+     validator measures it: six steps of this blue fail the adjacent-lightness
+     gate no matter how they are spaced, which is why the six-stage execution
+     funnel stays one colour and lets its bar lengths do the ordering.
+
+     The hue is the blue shadcn ships as its own chart default, which is
+     Tailwind's. The steps are not: shadcn's five sit 300/500/600/700/800, and
+     that selection fails two gates — 600 and 700 are barely a step apart, and
+     300 is only 1.81:1 against a white card, so the lightest band all but
+     disappears. These are 400/500/700/900/950 of the same ramp, which keeps the
+     colour and spreads the steps until every gap clears. */
+  --viz-ramp-1: #51a2ff;
+  --viz-ramp-2: #2b7fff;
+  --viz-ramp-3: #1447e6;
+  --viz-ramp-4: #1c398e;
+  --viz-ramp-5: #162456;
+  /* Not a fourth step: no denominator to place the member on the ramp at all. */
+  --viz-empty: #deded4;
+  --viz-grid: #e1e0d9;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--text-body1-size);
+    line-height: var(--text-body1-line);
+    text-wrap: pretty;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: light;
+  }
+  /* A pressable thing gets the hand.
+
+     Browsers give `<button>` the arrow, not the pointer, and Tailwind's
+     preflight leaves that alone. So every button in the product read as inert
+     while every link read as clickable, purely because one is an `<a href>` and
+     the other is not. This is a base rule rather than a class on the button
+     component because half the pressable surfaces here are raw `<button>`
+     elements: the answer cards, the 1-to-10 scale, the adherence week.
+
+     Disabled is excluded so a button that cannot be pressed does not claim it
+     can, which matters on the screens that disable the primary action until a
+     doctor has acted. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  /* Headings are navy, not black, and they are Manrope. Sizes come from the
+     in-product scale; a marketing heading overrides with `text-display1` and
+     friends. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    color: var(--text-strong);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: var(--text-h1-size);
+    line-height: var(--text-h1-line);
+    font-weight: var(--weight-extrabold);
+  }
+  h2 {
+    font-size: var(--text-h2-size);
+    line-height: var(--text-h2-line);
+    font-weight: var(--weight-bold);
+  }
+  h3 {
+    font-size: var(--text-h3-size);
+    line-height: var(--text-h3-line);
+    font-weight: var(--weight-semibold);
+  }
+  /* A heading takes the colour of the ground it is standing on.
+
+     The rules above are element rules, so they outrank the `text-on-inverse`
+     utility a navy panel sets on its wrapper: the landing hero painted its own
+     headline navy on navy and lost it entirely. Nothing else caught it because
+     every other navy panel had carefully avoided using a heading at all.
+
+     `:where()` keeps this at the same weight as the element rule it follows, so
+     a colour class on the heading itself still wins, and a white card nested
+     back inside a navy panel restores dark text by setting its own foreground.
+     Headings inherit; they no longer overrule. */
+  :where(.text-on-inverse, .text-on-inverse-muted) :is(h1, h2, h3, h4, h5, h6) {
+    color: inherit;
+  }
+  a {
+    color: var(--text-link);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  a:hover {
+    color: var(--text-link-hover);
+  }
+  ::selection {
+    background: var(--noreon-teal-200);
+    color: var(--noreon-navy-900);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Brand atmosphere
+
+   The design system ships a signature graphic: a matrix of dots that fans out
+   of a point and resolves into a wave. It is the product's own claim drawn as a
+   mark, which is why it earns a place in the product and not just on the
+   website: scattered measurements becoming one legible signal.
+
+   `public/brand/wave/` holds it as six flat PNGs, which are page crops at fixed
+   sizes in fixed colours. `components/brand/dot-field.tsx` redraws the same
+   figure from these tokens instead, so it scales, takes the palette, and can be
+   animated. Nothing below introduces a colour; every value is an alias.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ── The page ground ──────────────────────────────────────────────────────
+     The ONE colour in this app that does not come from the design system.
+
+     `styles/noreon/semantic.css` points --surface-page at Soft Ivory (#FBF7EC),
+     on the brand book's instruction to "use Light Gold & Ivory for backgrounds
+     to create warmth and calm". This overrides it with a near neutral stone at
+     the client's request. The vendored file is untouched, so re-taking the token
+     package is still a file copy; this line is what would have to be revisited
+     after one, and it is deliberately the only thing to look for.
+
+     It is worth raising upstream rather than leaving as a local divergence: the
+     warm ground is load-bearing for the rest of the system. Every border, track
+     and grid line in `semantic.css` uses the warm neutral ramp specifically
+     because "Cool Gray reads as a blue line against Soft Ivory", and that
+     reasoning weakens as the ground moves toward neutral. */
+  --noreon-stone: #fcfcfc;
+  --surface-page: var(--noreon-stone);
+  --surface-page-warm: var(--noreon-stone);
+
+  /* The neutrals that follow the ground.
+
+     `semantic.css` routes every border, track and grid line through the WARM
+     neutral ramp, and says why: "The brand book assigns Cool Gray #E6E9F0 to
+     borders; against Soft Ivory that reads as a blue line, so the warm ramp
+     carries the same job at the same lightness."
+
+     That reasoning is conditional on the ground, and the ground has changed. On
+     stone the warm ramp is the visible outlier instead: a sand hairline around a
+     white card reads as tan rather than as a hairline. So these go back to the
+     ramp the brand book assigned them in the first place, at the same lightness
+     steps. Re-pointed here, never in the vendored file.
+
+     To return to the ivory ground, revert --surface-page above and this block
+     together. They are one decision. */
+  --border-subtle: var(--noreon-gray-200);
+  --border-divider: var(--noreon-gray-200);
+  --border-default: var(--noreon-gray-300);
+  --chart-track: var(--noreon-gray-200);
+  --chart-grid: var(--noreon-gray-200);
+  --surface-sunken: var(--noreon-gray-100);
+
+  /* The tint a row takes under the cursor, and the ground for a quiet inline
+     block. Nineteen call sites reached for --noreon-warm-100 directly because
+     there was no semantic name for this; now there is one, and it moves with
+     the ground. */
+  --surface-tint: var(--noreon-gray-100);
+
+  /* The wave runs dark to light along its length, which is the same ramp the
+     design system already specifies for the progress ring. Three pairings,
+     because the ground decides which one holds: teal on ivory, mint on navy,
+     gold wherever the moment is an achievement rather than a measurement. */
+  --wave-teal-from: var(--chart-ring-from);
+  --wave-teal-to: var(--chart-ring-to);
+  --wave-mint-from: var(--noreon-teal-400);
+  --wave-mint-to: var(--noreon-teal-200);
+  --wave-gold-from: var(--noreon-gold-700);
+  --wave-gold-to: var(--noreon-gold-400);
+
+  /* The navy ground, as a ground rather than a fill. Flat navy over a whole
+     panel goes dead; the deep step in one corner gives it a light source. */
+  --panel-inverse: radial-gradient(
+    120% 140% at 8% 0%,
+    var(--noreon-navy-600) 0%,
+    var(--noreon-navy-700) 42%,
+    var(--noreon-navy-900) 100%
+  );
+
+  /* The light source inside a navy panel. Slow, soft and very low contrast; it
+     is what stops the panel reading as a printed rectangle. */
+  --panel-glow: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--noreon-teal-500) 30%, transparent) 0%,
+    transparent 100%
+  );
+  --panel-glow-gold: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--noreon-gold-500) 26%, transparent) 0%,
+    transparent 100%
+  );
+
+  /* The warm counterpart, for the moments that are an achievement rather than a
+     measurement. Ivory with the gold end of the ramp gathered into one corner. */
+  --panel-warm: linear-gradient(
+    152deg,
+    var(--noreon-gold-50) 0%,
+    var(--noreon-ivory) 48%,
+    var(--noreon-sand-100) 100%
+  );
+
+  /* A hairline that reads on the navy ground, where --border-subtle vanishes. */
+  --hairline-inverse: inset 0 0 0 1px var(--border-inverse);
+
+  /* The ground is flat.
+
+     It used to carry two radial washes (gold entering top left, teal top right)
+     and a 32px graph-paper grid, on the argument that the product is about
+     measurement and an ivory ground reads as an empty div. On stone neither
+     survives contact with the screens that sit on it: the washes tint the top
+     of every page a different colour from the bottom, and the grid competes
+     with the cards, tracks and charts that are the actual measurement. So the
+     page is one colour, and the surfaces on it do the separating. */
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Motion
+
+   One orchestrated arrival per screen rather than a scattering of small
+   flourishes. Everything here uses the design system's own duration and easing
+   tokens, which are deliberately calm: things settle, nothing overshoots.
+
+   Every animation is opacity or transform, so none of them trigger layout, and
+   the whole layer is switched off under `prefers-reduced-motion`.
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes noreon-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes noreon-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The wave draws itself in from the point it fans out of, which is the one
+   moment the graphic gets to explain what it is. */
+@keyframes noreon-sweep {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* A measurement scale filling to where the value sits. */
+@keyframes noreon-extend {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A stroked path drawing itself. The element sets its own dash length. */
+@keyframes noreon-draw {
+  from {
+    stroke-dashoffset: var(--draw-length, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The only thing in the system that never stops. It is a compositor-only
+   transform on a soft radial glow, which is what keeps a navy panel from
+   reading as a printed rectangle. */
+@keyframes noreon-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(2%, -3%, 0) scale(1.12);
+    opacity: 0.8;
+  }
+}
+
+@layer utilities {
+  /* The screen's arrival. Put `rise-group` on a stack and its direct children
+     come in one after another. The delays are hand written rather than derived,
+     because `sibling-index()` is not yet safe to rely on. */
+  .rise-group > * {
+    animation: noreon-rise var(--duration-slow) var(--ease-standard) backwards;
+    animation-delay: 460ms;
+  }
+  .rise-group > *:nth-child(1) {
+    animation-delay: 40ms;
+  }
+  .rise-group > *:nth-child(2) {
+    animation-delay: 100ms;
+  }
+  .rise-group > *:nth-child(3) {
+    animation-delay: 160ms;
+  }
+  .rise-group > *:nth-child(4) {
+    animation-delay: 220ms;
+  }
+  .rise-group > *:nth-child(5) {
+    animation-delay: 280ms;
+  }
+  .rise-group > *:nth-child(6) {
+    animation-delay: 340ms;
+  }
+  .rise-group > *:nth-child(7) {
+    animation-delay: 400ms;
+  }
+
+  /* A grid whose cards want to arrive one at a time rather than as a block.
+     The container steps out of the sequence and its children carry `rise` with
+     their own index, so the two animations never compound. */
+  .rise-group > .rise-none {
+    animation: none;
+  }
+
+  /* One element, placed in the same sequence by hand. `--rise` is its position
+     in the order, so a grid of cards can continue a stack's count. */
+  .rise {
+    animation: noreon-rise var(--duration-slow) var(--ease-standard) backwards;
+    animation-delay: calc(40ms + var(--rise, 0) * 60ms);
+  }
+
+  .fade-in-slow {
+    animation: noreon-fade var(--duration-reveal) var(--ease-out) backwards;
+    animation-delay: calc(120ms + var(--rise, 0) * 60ms);
+  }
+
+  /* A scale filling from its own left edge to the value it is reporting. */
+  .extend {
+    transform-origin: left center;
+    animation: noreon-extend var(--duration-reveal) var(--ease-out) backwards;
+    animation-delay: calc(200ms + var(--rise, 0) * 60ms);
+  }
+
+  .draw {
+    stroke-dasharray: var(--draw-length, 1000);
+    animation: noreon-draw var(--duration-reveal) var(--ease-out) backwards;
+    animation-delay: calc(240ms + var(--rise, 0) * 60ms);
+  }
+
+  .sweep {
+    animation: noreon-sweep 1400ms var(--ease-out) backwards;
+    animation-delay: var(--sweep-delay, 160ms);
+  }
+
+  .breathe {
+    animation: noreon-breathe 18s var(--ease-in-out) infinite;
+  }
+
+  /* Presses shrink very slightly and nothing overshoots, which is the design
+     system's whole instruction on interaction feedback. */
+  .press {
+    transition:
+      transform var(--duration-instant) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard),
+      box-shadow var(--duration-fast) var(--ease-standard);
+  }
+  .press:active {
+    transform: scale(var(--press-scale));
+  }
+
+  /* A card that lifts a little under the cursor. The shadow does the work; the
+     translate is one pixel, which is felt more than seen. */
+  .lift {
+    transition:
+      transform var(--duration-base) var(--ease-standard),
+      box-shadow var(--duration-base) var(--ease-standard),
+      border-color var(--duration-base) var(--ease-standard);
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Motion in this product is decorative in every case: the arrival sequence
+   carries no information the static screen does not already carry. So the whole
+   layer is removed rather than shortened. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Two marks that repeat
+
+   The wave is made of dots, so the smallest piece of it is one dot. A section
+   heading gets exactly that: a single teal point with a halo, set like a value
+   on a chart rather than like a bullet. It costs one class and it is the reason
+   two consecutive screens look like one product.
+   ────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .section-head::before {
+    content: "";
+    flex: none;
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--radius-pill);
+    background: var(--noreon-teal-600);
+    box-shadow: 0 0 0 4px var(--noreon-teal-100);
+  }
+
+  /* The same point, on the navy ground, where teal-100 disappears. */
+  .section-head-inverse::before {
+    background: var(--noreon-teal-300);
+    box-shadow: 0 0 0 4px
+      color-mix(in oklab, var(--noreon-teal-300) 22%, transparent);
+  }
+
+  /* A ruled edge for a panel that is reporting a measurement: the four brand
+     stops of the progress ramp, drawn as a hairline down the left side. */
+  .brand-edge {
+    border-left-style: solid;
+    border-left-width: 3px;
+    border-image: linear-gradient(
+        to bottom,
+        var(--noreon-teal-600),
+        var(--noreon-teal-300)
+      )
+      1;
+  }
+}
+
+/* Member journey v6: scoped so clinician and operations surfaces retain their scale. */
+.member-journey {
+  background: var(--noreon-gray-100);
+  --journey-radius: calc((var(--radius-xl) + var(--radius-2xl)) / 2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.member-journey h1,
+.member-journey .text-h1 {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+.member-journey h2,
+.member-journey .text-h2 {
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.member-journey h3,
+.member-journey .text-h3 {
+  font-size: 16px;
+  line-height: 1.35;
+}
+.member-journey .care-plan-heading {
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-line);
+  font-weight: var(--text-h2-weight);
+}
+@media (max-width: 360px) {
+  .member-journey .report-intake-heading,
+  .member-journey .booking-page-heading {
+    font-size: var(--text-h2-size);
+    line-height: var(--text-h2-line);
+  }
+}
+.member-journey .text-body1 {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.member-journey .text-body2 {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.journey-main {
+  max-width: 760px;
+  width: 100%;
+  margin-inline: auto;
+}
+.journey-main > div:is(.space-y-7, .space-y-6) {
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.journey-main > div:is(.space-y-7, .space-y-6) > * {
+  margin-block: 0;
+}
+.member-journey .journey-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--journey-radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  box-shadow: none;
+}
+.member-journey .journey-card > * {
+  margin-block: 0;
+}
+.member-journey .journey-card header p {
+  margin-top: 4px;
+}
+.journey-soon {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  border-radius: var(--radius-pill);
+  background: var(--noreon-navy-50);
+  color: var(--noreon-navy-600);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+}
+.journey-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--noreon-gray-100);
+  color: var(--noreon-slate-600);
+  cursor: not-allowed;
+  font-size: 14px;
+  font-weight: 600;
+}
+.journey-orb {
+  display: inline-block;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(
+    circle at 32% 25%,
+    var(--noreon-white),
+    var(--noreon-teal-200) 23%,
+    var(--noreon-teal-600) 55%,
+    var(--noreon-navy-700)
+  );
+  box-shadow: inset -3px -4px 8px var(--noreon-teal-800);
+}
+.journey-zoe {
+  background: var(--noreon-teal-50);
+}
+.journey-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  padding: 8px 12px;
+  min-height: 40px;
+  color: var(--noreon-navy-700);
+  font-size: 13px;
+  font-weight: 700;
+}
+.journey-nav-link {
+  display: flex;
+  min-height: 64px;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--noreon-slate-600);
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.2;
+}
+.journey-nav-link.is-active {
+  color: var(--noreon-navy-700);
+  font-weight: 800;
+}
+.journey-nav-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.journey-nav-zoe .journey-orb {
+  margin-top: -20px;
+  border: 3px solid var(--surface-card);
+  width: 52px;
+  height: 52px;
+}
+.journey-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.journey-metric {
+  background: var(--noreon-gray-100);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.journey-metric svg {
+  flex: none;
+}
+.journey-metric strong {
+  font-size: 13px;
+}
+.journey-metric p {
+  font-size: 11px;
+  color: var(--noreon-slate-600);
+  line-height: 1.4;
+  margin-top: 3px;
+}
+.journey-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.journey-values > div {
+  padding: 12px 8px;
+  border-radius: var(--radius-lg);
+  background: var(--noreon-gray-100);
+  text-align: center;
+}
+.journey-values strong {
+  display: block;
+  font: 800 19px var(--font-display);
+}
+.journey-values small {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--noreon-slate-600);
+}
+@media (min-width: 1024px) {
+  .journey-nav-link {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    font-size: 14px;
+    gap: 12px;
+    padding: 8px 12px;
+    min-height: 54px;
+    border-radius: var(--radius-lg);
+  }
+  .journey-nav-link.is-active {
+    background: var(--surface-card);
+  }
+  .journey-nav-zoe .journey-orb {
+    margin: 0;
+    width: 32px;
+    height: 32px;
+    border: 0;
+  }
+  /* Zoe is the prominent middle item in the sidebar too (founder feedback 17 Oct). */
+  .journey-nav-zoe {
+    background: var(--surface-subtle-teal);
+    color: var(--noreon-navy-700);
+    font-weight: 700;
+  }
+}
+
+/* The look of prototype v8.1, which wins over DESIGN.md where the two disagree (Khikar, 30 Oct:
+   LEAD_DECISIONS_FOR_REVIEW.md). These are not Noreon brand tokens, so they live here and not in the
+   vendored styles/noreon/ files. Text pairs keep 4.5:1 (scripts/check-status-contrast.mjs): action on white
+   5.1, action ink on white 6.1 and on tint 5.3, LDL on white 5.8 and on its wash 4.8. `--zoe-ghost` is for icons only (3.3:1 on white), never for text. */
+:root {
+  --zoe-canvas: #f4f4f6;
+  --zoe-ink: #111114;
+  --zoe-action: #2669d9;
+  --zoe-action-hover: #1f5fd0;
+  --zoe-action-ink: #2a5fb8;
+  --zoe-tint: #e3f0ff;
+  --zoe-tint-2: #c9e0ff;
+  --zoe-ldl: #5b5fa8;
+  --zoe-ldl-wash: #e8e9fb;
+  --zoe-ghost: #8a8d94;
+  --zoe-card-radius: 22px;
+  --zoe-pill-radius: 30px;
+  --zoe-orb:
+    radial-gradient(circle at 32% 26%, rgb(255 255 255 / 1) 0%, rgb(255 255 255 / 0.75) 14%, rgb(255 255 255 / 0) 42%),
+    radial-gradient(circle at 22% 72%, #8fb8ff 0%, rgb(143 184 255 / 0) 58%),
+    radial-gradient(circle at 78% 28%, #9fe8e0 0%, rgb(159 232 224 / 0) 56%),
+    radial-gradient(circle at 72% 78%, #bfc4f7 0%, rgb(191 196 247 / 0) 58%),
+    radial-gradient(circle at 50% 50%, #f7faff 0%, #eef3fb 100%);
+  --zoe-orb-shadow:
+    inset 0 0 0 1.5px rgb(255 255 255 / 1),
+    inset 0 -2px 6px rgb(120 140 200 / 0.16),
+    0 2px 6px rgb(60 90 160 / 0.16);
+}
+.journey-orb {
+  background: var(--zoe-orb);
+  box-shadow: var(--zoe-orb-shadow);
+}
+.journey-metric {
+  flex-direction: column;
+  text-align: center;
+  gap: 6px;
+}
+.member-journey #next-step-title {
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 800;
+}
+.member-journey section:has(> div > #next-step-title) {
+  border-radius: var(--journey-radius);
+}
+.member-journey .journey-help {
+  border-color: var(--destructive);
+  color: var(--destructive);
+  white-space: nowrap;
+}
+
+/* Every "Call 103" action. Solid danger red, never navy: red always wins, and an
+   emergency button must not look like the routine primary action beside it.
+
+   White on --destructive is 3.97:1. That passes WCAG AA only as large text
+   (at least 18.66px bold), so the label's size and weight live here rather
+   than at each call site, and this rule is unlayered so a utility at the call
+   site cannot shrink it. No darker red exists in styles/noreon to hover to, so
+   the hover darkens with a filter instead of inventing a colour. Layout (at
+   least 48px tall, full width on the urgent screens) stays with the call site.
+   `pnpm check:tokens` asserts the contrast and the size. */
+/* Held send: shown only when the wait is long enough to notice, and without scripts. */
+.composer-waiting {
+  margin-bottom: 0.25rem;
+  font-size: var(--text-caption-size);
+  color: var(--muted-foreground);
+  animation: composer-waiting-show 0s linear 1.2s both;
+}
+@keyframes composer-waiting-show {
+  from { visibility: hidden; }
+  to { visibility: visible; }
+}
+
+.emergency-call,
+.member-journey .emergency-call {
+  border-color: var(--destructive);
+  background-color: var(--destructive);
+  color: var(--text-on-inverse);
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-line);
+  font-weight: var(--weight-bold);
+  text-align: center;
+  text-decoration: none;
+}
+.emergency-call:hover {
+  border-color: var(--status-danger-strong);
+  background-color: var(--status-danger-strong);
+}
+.emergency-call:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+.member-journey > header img {
+  width: 90px;
+  height: auto;
+}
+
+/* Keep the member Home service stages compact without changing staff views. */
+.member-journey .service-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+.member-journey .service-progress > * {
+  margin-block: 0;
+}
+.member-journey .service-progress-steps {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.member-journey .service-progress-steps > li {
+  min-width: 0;
+  padding-top: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+/* Long translated tab names stay within their own navigation cell. */
+.member-journey .journey-nav-link > span:last-child {
+  max-width: 100%;
+  overflow-wrap: normal;
+}
+/* Keep translated member navigation readable on narrow screens. */
+@media (max-width: 479px) {
+  .member-journey[lang="hy"] > nav > div {
+    gap: 0;
+    padding-inline: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .member-journey[lang="hy"] .journey-nav-link {
+    font-size: 11px;
+  }
+  .member-journey[lang="hy"] .journey-nav-link > span:last-child {
+    overflow-wrap: normal;
+    white-space: normal;
+    line-height: 1.25;
+  }
+}
+
+/* PWA core: five destinations with Zoe in the middle (17 Oct); Help and team remain labelled rows. */
+.member-journey .journey-core-navigation .journey-nav-link { position: relative; }
+.member-journey .journey-core-navigation .journey-nav-link.is-active::before {
+  content: ""; position: absolute; top: 0; width: 2rem; height: .2rem;
+  border-radius: var(--radius-pill); background: var(--noreon-teal-700);
+}
+.member-journey .journey-core-navigation .journey-nav-link.is-active { color: var(--noreon-teal-800); }
+.member-journey > header .journey-help { min-height: 44px; white-space: normal; }
+@media (max-width: 359px) {
+  /* Five items stay one row on the smallest phones (Fable F1, 17 Oct). */
+  .member-journey[lang] > nav > .journey-core-navigation { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 0; padding-inline: 0; }
+  .member-journey .journey-core-navigation .journey-nav-link { min-height: 56px; gap: 2px; font-size: .6875rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .member-journey .journey-core-navigation * { transition-duration: 0s; }
+}
+
+/* Bottom tab bar (Khikar, 17 Oct): pinned to the bottom of the screen on phones and
+   in the installed app, and never scrolls away. It pads itself for the home
+   indicator and for landscape notches (the member layout sets viewport-fit=cover,
+   which is what makes the insets non-zero). Content keeps clear of it. Desktop
+   keeps the sidebar. */
+.member-journey .journey-tabbar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 20;
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Own compositing layer: iOS keeps it put while the page rubber-bands. */
+  transform: translateZ(0);
+}
+.member-journey [data-tabbar] > .journey-main {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+/* Installed app on iOS (Gohar QA 60/106): after the page scrolls, standalone WebKit can place
+   fixed and sticky layers against a stale viewport, so the bar floats mid-screen. #386 made the
+   bar sticky, which still follows the document's scroll. Here the document never scrolls: the
+   member shell fills the screen and is the scroll container, and the bar sticks to the bottom
+   of the shell, not of the viewport. Every member page with the tab bar uses this shell. */
+@media (display-mode: standalone) and (max-width: 1023px) {
+  html:has(.member-journey [data-tabbar]),
+  body:has(.member-journey [data-tabbar]) {
+    height: 100%;
+    overflow: hidden;
+  }
+  .member-journey:has([data-tabbar]) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .member-journey > [data-tabbar] {
+    flex: 1 0 auto;
+    width: 100%;
+  }
+  .member-journey .journey-tabbar {
+    flex-shrink: 0;
+    position: sticky;
+    transform: none;
+  }
+  /* The bar is in the flow below the content, so no room needs to be kept for it. */
+  .member-journey [data-tabbar] > .journey-main {
+    padding-bottom: 1.5rem;
+  }
+}
+/* viewport-fit=cover also uncovers the landscape notch: keep content and the
+   demo banner clear of it (Opus review L1). */
+.member-journey .journey-main {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+@media (min-width: 640px) {
+  .member-journey .journey-main {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+/* Member pages outside the shell (Telegram link, demo staff views). The insets are
+   zero wherever viewport-fit=cover is not set, so other surfaces are unchanged. */
+body:not(:has(.member-journey)) {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.member-journey > aside[role="note"] {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+.member-journey .journey-header > div {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+.member-journey:not(:has([data-tabbar])) .journey-main {
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 640px) {
+  .member-journey .journey-header > div {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+}
+@media (max-width: 359px) {
+  .member-journey [data-tabbar] > .journey-main {
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 1024px) {
+  .member-journey [data-tabbar] > .journey-main {
+    padding-bottom: 3rem;
+  }
+}
+
+/* Member text size (prototype D8). The type scale is fixed px in the design system, so the
+   content area is zoomed as the prototype does (.phone.large .scroll{zoom:1.12}); the header
+   and the bottom navigation keep their size so they always fit. */
+[data-member-text-size="normal"] {
+  --member-text-zoom: 1;
+}
+[data-member-text-size="large"] {
+  --member-text-zoom: 1.12;
+}
+[data-member-text-size="xlarge"] {
+  --member-text-zoom: 1.25;
+}
+/* Through a custom property, so the nearest setting wins when one sits inside another (Astra #407 F1). */
+.journey-main {
+  zoom: var(--member-text-zoom, 1);
+}
+
+/* Member Home, middle path (Khikar, 17 Oct): journey strip, care team, unwell card. */
+.member-journey .journey-strip ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.member-journey .journey-strip li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+/* The line joining each stage to the next. */
+.member-journey .journey-strip li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: calc(50% + 14px);
+  right: calc(-50% + 14px);
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--noreon-gray-200);
+}
+.member-journey .journey-strip li[data-state="done"]:not(:last-child)::after {
+  background: var(--noreon-teal-600);
+}
+.member-journey .journey-strip-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--noreon-gray-300);
+  background: var(--surface-card);
+  color: var(--text-on-inverse);
+}
+.member-journey .journey-strip li[data-state="done"] .journey-strip-dot {
+  border-color: var(--noreon-teal-600);
+  background: var(--noreon-teal-600);
+}
+.member-journey .journey-strip li[data-state="current"] {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.member-journey .journey-strip li[data-state="current"] .journey-strip-dot {
+  border-color: var(--noreon-teal-600);
+  box-shadow: inset 0 0 0 4px var(--surface-card), inset 0 0 0 12px var(--noreon-teal-600);
+}
+@media (max-width: 359px) {
+  .member-journey .journey-strip {
+    padding-inline: 8px;
+  }
+  .member-journey .journey-strip li {
+    font-size: 11px;
+  }
+}
+/* Labels break only between words, never inside one (lead, 18 Oct). */
+.member-journey .journey-strip-label {
+  max-width: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+.member-journey .journey-avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  background: var(--noreon-teal-700);
+  color: var(--text-on-inverse);
+  font: 700 14px var(--font-display);
+}
+
+/* Member component pass from the reviewed prototype (report A2, 17 Oct), scoped to the
+   member app so staff and clinic screens keep their scale. Existing tokens only. */
+.member-journey {
+  /* Cool hairlines on the cool member ground; the warm ones read as beige lines here. */
+  --border: var(--noreon-gray-200);
+  --input: var(--noreon-gray-300);
+  --journey-control-radius: calc((var(--radius-lg) + var(--radius-xl)) / 2);
+}
+.member-journey .journey-button {
+  min-height: 48px;
+  border-radius: var(--journey-control-radius);
+}
+/* Choice rows (visit place, offered times, visit choice): larger, rounder, teal when chosen. */
+.member-journey label.border:has(> input[type="radio"]) {
+  min-height: 56px;
+  border-radius: var(--journey-control-radius);
+  border-width: 1.5px;
+  background: var(--surface-card);
+}
+.member-journey label.border:has(> input[type="radio"]:checked) {
+  border-color: var(--noreon-teal-600);
+  background: var(--surface-subtle-teal);
+}
+.member-journey label.border:has(> input[type="radio"]:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.member-journey input[type="radio"],
+.member-journey input[type="checkbox"] {
+  accent-color: var(--noreon-teal-700);
+}
+
+/* Emergency 103 on everyday screens (Khikar, 18 Oct): a small outlined pill, red text
+   and border on white, one tap to call. Only urgent screens keep the big filled
+   .emergency-call button. Danger on white is 6.6:1. */
+.emergency-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--destructive);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface-card);
+  color: var(--destructive);
+  font-size: 14px;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.emergency-pill:hover {
+  background-color: var(--status-danger-bg);
+}
+.emergency-pill:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.member-journey .journey-help-neutral {
+  border-color: var(--border-default);
+  color: var(--noreon-navy-700);
+}
+/* Help is open (Gohar QA 104): the header button reads as the current page, filled brand blue. */
+.member-journey .journey-help.is-active {
+  border-color: var(--noreon-blue-600);
+  background: var(--noreon-blue-600);
+  color: var(--text-on-inverse);
+}
+.member-journey .journey-unwell-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--journey-radius);
+  background: var(--surface-card);
+}
+/* Armenian "Emergency 103" is long: keep the phone header within 320 to 399px. */
+@media (max-width: 399px) {
+  .member-journey > header .emergency-pill {
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+  .member-journey > header .journey-help {
+    padding-inline: 10px;
+  }
+}
+/* "Always visible" (Khikar, 18 Oct): the member header, with Emergency 103, stays on
+   screen while scrolling. Other sticky bars sit below it instead of under it. */
+.member-journey > header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: env(safe-area-inset-top);
+}
+.member-journey {
+  --journey-sticky-top: calc(3.875rem + env(safe-area-inset-top));
+}
+.member-journey .journey-main .sticky,
+.member-journey [data-tabbar] > aside nav.sticky {
+  top: var(--journey-sticky-top);
+}
+.member-journey > header .journey-help {
+  min-width: 44px;
+  justify-content: center;
+}
+/* At 320 to 359px the Armenian header wraps to two rows; sticky bars sit below it. */
+@media (max-width: 359px) {
+  .member-journey[lang="hy"] {
+    --journey-sticky-top: calc(7.25rem + env(safe-area-inset-top));
+  }
+}
+
+/* Progress, prototype pairs 11 and 20 (round 2, 18 Oct). Existing tokens only. */
+.member-journey .progress-week-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 7rem;
+  justify-content: center;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--journey-control-radius);
+  font-size: 14px;
+  transition: background-color 0.15s;
+}
+.member-journey .progress-week-tile:hover {
+  background: var(--muted);
+}
+.member-journey .progress-week-tile:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* Day by day: a filled dot is a day with readings (the number inside), a hollow one a day
+   without. Empty days stay visibly empty; nothing here is a target. */
+.member-journey .progress-week-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.member-journey .progress-week-days li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.2;
+}
+.member-journey .progress-week-day-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 2px dashed var(--noreon-slate-600);
+  font: 700 11px var(--font-display);
+}
+.member-journey .progress-week-days li[data-measured] .progress-week-day-dot {
+  border: 0;
+  background: var(--noreon-navy-700);
+  color: var(--text-on-inverse);
+}
+/* Five-stage journey strip on Progress (the Home strip has four). */
+.member-journey .journey-strip-5 {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.member-journey .journey-strip-5 li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+.member-journey .journey-strip-5 li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: calc(50% + 14px);
+  right: calc(-50% + 14px);
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--noreon-gray-200);
+}
+.member-journey .journey-strip-5 li[data-state="done"]:not(:last-child)::after {
+  background: var(--noreon-teal-600);
+}
+.member-journey .journey-strip-5 li[data-state="done"] .journey-strip-dot {
+  border-color: var(--noreon-teal-600);
+  background: var(--noreon-teal-600);
+}
+.member-journey .journey-strip-5 li[data-state="current"] {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.member-journey .journey-strip-5 li[data-state="current"] .journey-strip-dot {
+  border-color: var(--noreon-teal-600);
+  box-shadow: inset 0 0 0 4px var(--surface-card), inset 0 0 0 12px var(--noreon-teal-600);
+}
+/* Labels never break inside a word (lead, 18 Oct). Five Armenian labels do not fit side by
+   side under 360px, so there the stages stack: one row each, dot then label (#253 F3). */
+.member-journey .journey-strip-5 .journey-strip-label {
+  max-width: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+@media (max-width: 359px) {
+  .member-journey .journey-strip-5 {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+  .member-journey .journey-strip-5 li {
+    flex-direction: row;
+    gap: 10px;
+    text-align: left;
+    font-size: 14px;
+  }
+  .member-journey .journey-strip-5 li:not(:last-child)::after {
+    top: 26px;
+    bottom: -8px;
+    left: 11px;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+}
+.member-journey .journey-now {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--journey-control-radius);
+  background: var(--surface-subtle-teal);
+}
+/* Who does each step: the prototype's actor chips. */
+.member-journey .journey-actor {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 2px 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  background: var(--noreon-navy-50);
+  color: var(--noreon-navy-700);
+}
+.member-journey .journey-actor[data-actor="nurse"] {
+  background: var(--noreon-gold-100);
+  color: var(--noreon-navy-700);
+}
+.member-journey .journey-actor[data-actor="doctor"] {
+  background: var(--noreon-navy-700);
+  color: var(--text-on-inverse);
+}
+.member-journey .journey-actor[data-actor="zoe"] {
+  background: var(--noreon-teal-50);
+  color: var(--noreon-teal-800);
+}
+.member-journey .journey-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+.member-journey .journey-roles > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+.member-journey .journey-roles dd {
+  margin: 0;
+}
+@media (max-width: 359px) {
+  .member-journey .journey-roles > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+/* Timeline inside each group: the prototype's line with dots. */
+.member-journey .journey-tl {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 0 0 0 34px;
+  list-style: none;
+}
+.member-journey .journey-tl::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--noreon-gray-200);
+}
+.member-journey .journey-tl > li {
+  position: relative;
+}
+.member-journey .journey-tl-dot {
+  position: absolute;
+  left: -34px;
+  top: 0;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--noreon-gray-300);
+  background: var(--surface-card);
+  color: var(--text-on-inverse);
+}
+.member-journey .journey-tl-dot[data-state="done"] {
+  border-color: var(--noreon-teal-600);
+  background: var(--noreon-teal-600);
+}
+.member-journey .journey-tl-dot[data-state="now"] {
+  border-color: var(--noreon-teal-600);
+  box-shadow: 0 0 0 4px var(--surface-subtle-teal), inset 0 0 0 4px var(--surface-card), inset 0 0 0 12px var(--noreon-teal-600);
+}
+.member-journey .journey-callout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--journey-radius);
+}
+.member-journey .journey-callout[data-tone="danger"] {
+  background: var(--noreon-danger-50);
+  color: var(--noreon-danger-800);
+}
+/* Segmented control (prototype .seg): range and time-of-day choices on Pressure. */
+.member-journey .journey-seg {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--journey-control-radius);
+  background: var(--surface-card);
+}
+.member-journey .journey-seg button {
+  min-height: 48px;
+  padding: 0 8px;
+  border-radius: calc(var(--journey-control-radius) - 3px);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.member-journey .journey-seg button[aria-pressed="true"] {
+  background: var(--noreon-navy-700);
+  color: var(--text-on-inverse);
+}
+.member-journey .journey-seg button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Pressure tiles: 3-digit readings such as 182/104 fit three tiles at 320px (#253 F2). */
+@media (max-width: 399px) {
+  .member-journey .journey-values strong {
+    font-size: clamp(14px, 4.4vw, 19px);
+    letter-spacing: -0.01em;
+  }
+  .member-journey .journey-values > div {
+    padding-inline: 4px;
+  }
+}
+
+/* Onboarding and questionnaire intro, prototype pairs 03 and 05 (round 2, 18 Oct). Existing tokens only.
+   .journey-callout and its danger tone come from the Progress block above (#253). */
+.member-journey .journey-callout:has(> svg:first-child) {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.member-journey .journey-callout[data-tone="teal"] {
+  background: var(--noreon-teal-50);
+  color: var(--noreon-teal-800);
+}
+.member-journey .meet-zoe {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.member-journey .meet-zoe-orb {
+  width: 96px;
+  height: 96px;
+  box-shadow: 0 0 0 10px var(--surface-subtle-teal);
+}
+.member-journey .meet-zoe-avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  font: 800 13px var(--font-display);
+}
+.member-journey .meet-zoe-avatar[data-role="nurse"] {
+  background: var(--noreon-gold-100);
+  color: var(--noreon-navy-700);
+}
+.member-journey .meet-zoe-avatar[data-role="doctor"] {
+  background: var(--noreon-navy-700);
+  color: var(--text-on-inverse);
+}
+.member-journey .meet-zoe-safety {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--journey-control-radius);
+  background: var(--noreon-teal-50);
+  color: var(--noreon-teal-800);
+  font-size: 14px;
+}
+.member-journey .questionnaire-intro-bubble {
+  min-width: 0;
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--journey-radius) / 5) var(--journey-radius) var(--journey-radius) var(--journey-radius);
+  background: var(--surface-card);
+}
+.member-journey .questionnaire-intro-table {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.member-journey .questionnaire-intro-table > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  font-size: 15px;
+}
+.member-journey .questionnaire-intro-table > div:first-child {
+  border-top: 0;
+}
+.member-journey .questionnaire-intro-table dt {
+  color: var(--text-muted);
+}
+.member-journey .questionnaire-intro-table dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Booking, prototype pairs 08 and 09 (round 2, 18 Oct): one card per test with its saved state.
+   Existing tokens only; text pairs are guarded in check:tokens. */
+.member-journey .booking-test-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--journey-control-radius);
+  background: var(--surface-subtle-teal);
+  color: var(--noreon-navy-700);
+}
+.member-journey .booking-test-state {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--noreon-gray-100);
+  color: var(--noreon-slate-600);
+}
+.member-journey .booking-test[data-test-state="to-book"] .booking-test-state {
+  background: var(--noreon-gold-100);
+  color: var(--noreon-navy-700);
+}
+.member-journey .booking-test[data-test-state="booked"] .booking-test-state {
+  background: var(--noreon-teal-50);
+  color: var(--noreon-teal-800);
+}
+.member-journey .booking-test[data-test-state="done"] .booking-test-state {
+  background: var(--noreon-teal-50);
+  color: var(--noreon-teal-800);
+}
+.member-journey .booking-test[data-test-state="requested"] .booking-test-state {
+  background: var(--noreon-navy-50);
+  color: var(--noreon-navy-700);
+}
+
+/* Below 16px iOS zooms the page on focus, and the zoom stays after signing in. */
+@media (max-width: 63.999rem) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), textarea, select { font-size: max(16px, 1em) !important; }
+}
+
+/* Entity colours for the shared trend renderer. Labels always use foreground ink. */
+:root {
+  --trend-bp: var(--zoe-action);
+  --trend-ldl: var(--zoe-ldl);
+  --trend-adherence: var(--noreon-teal-800);
+}
+.dark, [data-theme="dark"] {
+  --trend-bp: var(--noreon-blue-100);
+  --trend-ldl: var(--zoe-ldl-wash);
+  --trend-adherence: var(--noreon-teal-300);
+}
+
+.dark [data-trend], [data-theme="dark"] [data-trend] {
+  --card: var(--noreon-navy-800);
+  --foreground: var(--noreon-white);
+  --muted-foreground: var(--noreon-navy-200);
+  --border: var(--noreon-navy-500);
+}

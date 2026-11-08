@@ -1,0 +1,2654 @@
+{
+  "$schema": "https://noreon.health/schema/questionnaire-1.0.json",
+  "document": {
+    "code": "NRN-CLIN-ALG-001",
+    "version": "1.1",
+    "title": "Noreon Digital Health Platform — Առաջնային սկրինինգային հարցաշար",
+    "titleEn": "Noreon primary cardiometabolic screening questionnaire",
+    "language": "hy",
+    "status": "draft — pending clinical review",
+    "audience": [
+      "developers",
+      "UI/UX designers",
+      "clinical team"
+    ],
+    "generated": "2026-09-05",
+    "source": "Noreon-Harcashar.docx v1.1 / Noreon-Algoritmi-Car v1.1 §2.4 — transcribed in this repository, not supplied by the clinical team. Pending their regenerated copy.",
+    "scopeLimits": [
+      "Սկրինինգային գործիք է, ոչ ախտորոշիչ սարք",
+      "Չի նշանակում դեղորայք",
+      "Չի հաստատում ախտորոշում",
+      "Չի փոխարինում բժշկի հետ խորհրդակցությանը"
+    ]
+  },
+  "guidelines": [
+    {
+      "key": "ESC Prevention 2021",
+      "title": "2021 ESC Guidelines on cardiovascular disease prevention in clinical practice",
+      "citation": "Eur Heart J 2021;42(34):3227–3337",
+      "doi": "10.1093/eurheartj/ehab484"
+    },
+    {
+      "key": "2024 ESC HTN",
+      "title": "2024 ESC Guidelines for the management of elevated blood pressure and hypertension",
+      "citation": "Eur Heart J 2024;45(38):3912–4018",
+      "doi": "10.1093/eurheartj/ehae178"
+    },
+    {
+      "key": "2023 ESC ACS",
+      "title": "2023 ESC Guidelines for the management of acute coronary syndromes",
+      "citation": "Eur Heart J 2023;44(38):3720–3826",
+      "doi": "10.1093/eurheartj/ehad191"
+    },
+    {
+      "key": "2025 ESC/EAS",
+      "title": "2025 Focused Update of the 2019 ESC/EAS Guidelines for the management of dyslipidaemias",
+      "citation": "Eur Heart J 2025;46:4359–4378",
+      "doi": "10.1093/eurheartj/ehaf190"
+    },
+    {
+      "key": "2023 ESC HF",
+      "title": "2023 Focused Update of the 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure",
+      "citation": "Eur Heart J 2023;44(37):3627–3639",
+      "doi": "10.1093/eurheartj/ehad195"
+    },
+    {
+      "key": "WHO AUDIT 2001",
+      "title": "AUDIT: The Alcohol Use Disorders Identification Test — Guidelines for Use in Primary Care, 2nd ed.",
+      "citation": "World Health Organization, 2001. WHO/MSD/MSB/01.6a",
+      "external": true
+    }
+  ],
+  "triageLevels": [
+    {
+      "code": "RED",
+      "label": "ԿԱՐՄԻՐ",
+      "action": "Շտապ։ Հավելվածը սառչում է, բացվում է 1-03-ի էկրանը։",
+      "timeframe": "անմիջապես"
+    },
+    {
+      "code": "ORANGE",
+      "label": "ՆԱՐՆՋԱԳՈՒՅՆ",
+      "action": "Բժիշկ 24 ժամից 7 օրվա ընթացքում։",
+      "timeframe": "24 ժ – 7 օր"
+    },
+    {
+      "code": "YELLOW",
+      "label": "ԴԵՂԻՆ",
+      "action": "Բժիշկ 2–4 շաբաթում + լաբորատոր հետազոտություններ։",
+      "timeframe": "2–4 շաբաթ"
+    },
+    {
+      "code": "GREEN",
+      "label": "ԿԱՆԱՉ",
+      "action": "Ամեն ինչ կարգին է։ Վերագնահատում մեկ տարուց։",
+      "timeframe": "12 ամիս"
+    }
+  ],
+  "globalRules": [
+    {
+      "id": "GR-1",
+      "name": "Կարմիրը միշտ հաղթում է",
+      "statement": "Եթե մեկ պատասխան կարմիր է, իսկ մյուս ութը՝ կանաչ, արդյունքը կարմիր է։",
+      "implementation": "max(severity) — ոչ միջին, ոչ գումար, ոչ «վերջինը հաղթում է»"
+    },
+    {
+      "id": "GR-2",
+      "name": "«Այս պահին» հարցը միշտ առաջինն է",
+      "statement": "Կրծքավանդակի ցավի կամ սրտխփոցի դեպքում առաջին հարցը «հիմա՞ ունեք» է։",
+      "implementation": "Q8.2 և Q9.2 gate-երը նախորդում են բնութագրող հարցերին"
+    },
+    {
+      "id": "GR-3",
+      "name": "Բացակայող պատասխանը զրո չէ",
+      "statement": "Չիմացած ճնշումը «նորմալ ճնշում» չի նշանակում։",
+      "implementation": "null ≠ 0; գրանցվում է «անհայտ» և գործարկվում է չափման ուղեգիր"
+    }
+  ],
+  "derivedValues": [
+    {
+      "key": "bmi",
+      "formula": "weight_kg / (height_m ^ 2)",
+      "unit": "կգ/մ²",
+      "thresholds": [
+        {
+          "cut": "<18.5",
+          "label": "թերքաշ"
+        },
+        {
+          "cut": "18.5–24.9",
+          "label": "նորմա"
+        },
+        {
+          "cut": "25.0–29.9",
+          "label": "ավելորդ քաշ"
+        },
+        {
+          "cut": "≥30",
+          "label": "ճարպակալում"
+        }
+      ],
+      "source": "2024 ESC HTN Class I Level A",
+      "note": "2021 ESC Prevention-ը BMI-ի կատեգորիաները տանում է Supplementary Table 6 — թվային շեմերի հիմնական աղբյուրը 2024 ESC HTN-ն է"
+    },
+    {
+      "key": "waistCategory",
+      "formula": "sex-specific cut-offs",
+      "thresholds": [
+        {
+          "cut": "♂ ≥94 / ♀ ≥80 սմ",
+          "label": "այլևս քաշ չհավաքել"
+        },
+        {
+          "cut": "♂ ≥102 / ♀ ≥88 սմ",
+          "label": "քաշը իջեցնել"
+        }
+      ],
+      "source": "ESC Prevention 2021 §3.3.10"
+    },
+    {
+      "key": "packYears",
+      "formula": "(cigarettes_per_day / 20) * years_smoked",
+      "unit": "տուփ-տարի",
+      "thresholds": [
+        {
+          "cut": "≥20",
+          "label": "ծանր ծխող · բժշկին նշում · LDCT-ի դրոշ"
+        }
+      ],
+      "source": "ESC Prevention 2021 §4.5.1"
+    },
+    {
+      "key": "dietScore",
+      "formula": "count of checked items in Q2.4",
+      "unit": "0–8",
+      "thresholds": [
+        {
+          "cut": "7–8",
+          "label": "պահպանել"
+        },
+        {
+          "cut": "4–6",
+          "label": "2–3 փոփոխություն"
+        },
+        {
+          "cut": "0–3",
+          "label": "ամբողջական ծրագիր"
+        }
+      ],
+      "source": "ESC Prevention 2021 Table 8"
+    },
+    {
+      "key": "auditC",
+      "formula": "Q4.1 (0–4) + Q4.2 (0–4) + Q4.3 (0–4)",
+      "unit": "0–12",
+      "thresholds": [
+        {
+          "cut": "0",
+          "label": "ներկայում չի օգտագործում"
+        },
+        {
+          "cut": "♂ 1–3 / ♀ 1–2",
+          "label": "որքան քիչ, այնքան լավ"
+        },
+        {
+          "cut": "♂ ≥4 / ♀ ≥3",
+          "label": "դրական սկրինինգ · ամբողջական AUDIT"
+        },
+        {
+          "cut": "6+ բաժին շաբաթական կամ ավելի հաճախ",
+          "label": "առաջնահերթ գնահատում"
+        }
+      ],
+      "source": "WHO AUDIT 2001",
+      "note": "EXTERNAL. AUDIT-C-ը ESC-ի հինգ ուղեցույցերի մեջ չէ և առանձին վալիդացիայի կարիք ունի։ Սկրինինգային գործիք է, ոչ ախտորոշում"
+    },
+    {
+      "key": "alcoholGramsPerWeek",
+      "formula": "occasions_per_week × grams_per_occasion, where grams_per_occasion = volume_ml × abv × 0.789 when the drink and the volume are known, otherwise standard_drinks × 10 g",
+      "unit": "գ/շաբաթ",
+      "thresholds": [
+        {
+          "cut": "0",
+          "label": "չի օգտագործում"
+        },
+        {
+          "cut": "≤100",
+          "label": "չավելացնել"
+        },
+        {
+          "cut": ">100",
+          "label": "նվազեցման ծրագիր"
+        }
+      ],
+      "state": "Բաց է մնում, քանի դեռ քանակը կամ ծավալը հայտնի չէ. բացակայող պատասխանը զրո չէ",
+      "source": "ESC Prevention 2021 §4.3.2.4.5 · 2024 ESC HTN §8.2.4",
+      "note": "Վերին սահմանը նույնն է կանանց և տղամարդկանց համար։ Ստանդարտ չափաբաժինը երկրից կախված 8–14 գ է, ուստի հաշվարկը գրամով է"
+    },
+    {
+      "key": "stopBang",
+      "formula": "S+T+O+P + B+A+N+G (7 components collected by Noreon, neck circumference optional)",
+      "unit": "0–8",
+      "thresholds": [
+        {
+          "cut": "0–2",
+          "label": "ցածր"
+        },
+        {
+          "cut": "3–4",
+          "label": "միջին"
+        },
+        {
+          "cut": "5–8",
+          "label": "բարձր → PSG/HSAT"
+        }
+      ],
+      "source": "ESC Prevention 2021 §3.4.9"
+    },
+    {
+      "key": "nonHdlC",
+      "formula": "total_cholesterol − HDL_C",
+      "unit": "մմոլ/լ",
+      "source": "ESC Prevention 2021 §3.2.3",
+      "note": "SCORE2-ի պարտադիր մուտք — լաբորատոր արժեք, սկրինինգից չի ստացվում"
+    },
+    {
+      "key": "score2",
+      "formula": "SCORE2 (40–69) / SCORE2-OP (≥70), very-high-risk country coefficients (Armenia)",
+      "unit": "% 10-ամյա",
+      "inputs": [
+        "age",
+        "sex",
+        "smoking status",
+        "SBP",
+        "non-HDL-C"
+      ],
+      "state": "SCORE2_PENDING մինչև non-HDL-C-ի ստացումը",
+      "disabledBy": [
+        "established ASCVD",
+        "diabetes mellitus",
+        "HMOD",
+        "CKD",
+        "familial hypercholesterolaemia",
+        "pregnancy"
+      ],
+      "thresholds": [
+        {
+          "ageBand": "<50",
+          "low": "<2.5%",
+          "high": "2.5 – <7.5%",
+          "veryHigh": "≥7.5%"
+        },
+        {
+          "ageBand": "50–69",
+          "low": "<5%",
+          "high": "5 – <10%",
+          "veryHigh": "≥10%"
+        },
+        {
+          "ageBand": "≥70",
+          "low": "<7.5%",
+          "high": "7.5 – <15%",
+          "veryHigh": "≥15%"
+        }
+      ],
+      "source": "ESC Prevention 2021 Table 5 · §3.2.3.2",
+      "productRule": "Մոտավոր տոկոս ԵՐԲԵՔ չի ցուցադրվում — SCORE2_PENDING վիճակը ցուցադրվում է բացահայտ"
+    }
+  ],
+  "modifierLayer": {
+    "statement": "Ընտանեկան անամնեզը և հոգեսոցիալական սթրեսը SCORE2-ի մուտքեր ՉԵՆ և ԵՐԲԵՔ չեն բազմապատկում տոկոսը։",
+    "behaviour": "Up-classify միայն որակապես և միայն 5% – <10% սահմանային գոտում։ Ցուցադրվող տոկոսը ծանոթագրվում է, ոչ թե փոփոխվում։",
+    "inputs": [
+      "Q6.2 վաղաժամ ընտանեկան անամնեզ",
+      "Q7.5 հոգեսոցիալական սթրես"
+    ],
+    "sources": [
+      "ESC Prevention 2021 §3.3.5",
+      "ESC Prevention 2021 §3.3.1",
+      "2024 ESC HTN Risk modifiers"
+    ]
+  },
+  "redFlags": [
+    {
+      "id": "RF-01",
+      "label": "Կրծքավանդակի ցավ/ճնշվածություն ԱՅՍ ՊԱՀԻՆ",
+      "trigger": "Q8.2 == TRUE",
+      "level": "RED",
+      "source": "2023 ESC ACS §3.1.1, §4.1.1"
+    },
+    {
+      "id": "RF-02",
+      "label": "Սրտխփոց + գլխապտույտ/պրեսինկոպ/օդի պակաս ԱՅՍ ՊԱՀԻՆ",
+      "trigger": "Q9.2 == TRUE",
+      "level": "RED",
+      "source": "2023 ESC ACS §4.1.1 · ESC Prevention 2021 §3.4.2"
+    },
+    {
+      "id": "RF-03",
+      "label": "BP ≥180/110 ԵՎ ≥1 emergency ախտանիշ",
+      "trigger": "(sbp>=180 || dbp>=110) && bpsx ունի ոչ-«none» տարր",
+      "level": "RED",
+      "source": "2024 ESC HTN §10.1.1 (Class I)"
+    },
+    {
+      "id": "RF-04",
+      "label": "Նևրոլոգիական դեֆիցիտ ԱՅՍ ՊԱՀԻՆ",
+      "trigger": "bpsx ներառում է 'neuro'",
+      "level": "RED",
+      "source": "2024 ESC HTN §10.1.1"
+    },
+    {
+      "id": "RF-05",
+      "label": "Ցնցումներ / գիտակցության պղտորում",
+      "trigger": "bpsx ներառում է 'seiz'",
+      "level": "RED",
+      "source": "2024 ESC HTN §10.1.1"
+    },
+    {
+      "id": "RF-06",
+      "label": "BP ≥180/110 առանց ախտանիշների",
+      "trigger": "(sbp>=180 || dbp>=110) && bpsx == [\"none\"]",
+      "level": "ORANGE",
+      "source": "2024 ESC HTN §7.1 — հաստատում ≤1 շաբաթ"
+    },
+    {
+      "id": "RF-07",
+      "label": "Crescendo անգինա",
+      "trigger": "cresc=='yes' || cprest=='yes' || cpdur=='gt15' || cpfreq in ['multi','daily']",
+      "level": "ORANGE",
+      "source": "2023 ESC ACS §4.1.1"
+    },
+    {
+      "id": "RF-08",
+      "label": "Սինկոպ ֆիզիկական ծանրաբեռնվածության ժամանակ",
+      "trigger": "syn=='exert'",
+      "level": "ORANGE",
+      "source": "NOREON + ESC Prevention (SCD ռիսկ)"
+    },
+    {
+      "id": "RF-09",
+      "label": "Սինկոպ առանց նախանշանների",
+      "trigger": "syn=='rest'",
+      "level": "ORANGE",
+      "source": "NOREON"
+    },
+    {
+      "id": "RF-10",
+      "label": "Առիթմիկ նոպաներ >30 րոպե",
+      "trigger": "ardur=='gt30'",
+      "level": "ORANGE",
+      "source": "NOREON"
+    },
+    {
+      "id": "RF-11",
+      "label": "HbA1c ≥9.0%",
+      "trigger": "hba1c >= 9.0",
+      "level": "ORANGE",
+      "source": "NOREON (ESC թիրախ <7.0% Class I)"
+    },
+    {
+      "id": "RF-12",
+      "label": "Հանկարծամահություն ընտանիքում <50 տ. ԵՎ ցանկացած Q9 դրական",
+      "trigger": "fhx ներառում է 'SCD' && ar in ['yes','palponly']",
+      "level": "ORANGE",
+      "source": "NOREON"
+    }
+  ],
+  "emergencyProtocol": {
+    "redScreen": "1-03",
+    "behaviour": [
+      "Հավելվածը սառչում է — հետագա հարցեր չեն տրվում",
+      "Ցուցադրվում է շտապօգնության կանչի կոճակը",
+      "ESC ACS §4.1.1 — կանչել շտապօգնություն, ՈՉ ինքնուրույն ներկայանալ ընդունարան",
+      "ԷՍԳ ≤10 րոպե առաջին բժշկական շփումից (ESC ACS §3.2)"
+    ],
+    "orangeBehaviour": [
+      "Հարցաշարը շարունակվում է մինչև ավարտ",
+      "Ավարտին՝ persistent orange banner",
+      "Ավտոմատ առաջարկվող այցի ամսաթիվ ըստ RF-ի (24 ժ / 48 ժ / 7 օր)",
+      "Push reminder +24 ժ և +72 ժ, եթե այցը չի ամրագրվել"
+    ]
+  },
+  "questions": [
+    {
+      "id": "Q1.1",
+      "order": 1,
+      "section": "Q1",
+      "sectionTitle": "Տարիք և սեռ",
+      "text": "Քանի՞ տարեկան եք։",
+      "help": "Տարիքը սրտանոթային ռիսկի ամենաուժեղ գործոններից է։",
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "age",
+          "label": "Տարիք",
+          "unit": "տարի",
+          "min": 18,
+          "max": 110,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "showWhen": null,
+      "purpose": "Որոշում է ռիսկային մոդելը ամբողջ սեսիայի համար",
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.2.3.3",
+        "ESC Prevention 2021 Table 5",
+        "2024 ESC HTN Class IIa"
+      ],
+      "branches": [
+        {
+          "when": "age < 18",
+          "outcome": "Հարցաշարը չի բացվում",
+          "reason": "Հաշվարկները վավերացված չեն մանկական տարիքի համար",
+          "tone": "stop",
+          "source": "NOREON scope"
+        },
+        {
+          "when": "age 18–39",
+          "outcome": "lifetime-risk ռեժիմ · 10-ամյա տոկոսը թաքցվում է",
+          "reason": "Երիտասարդի ցածր 10-ամյա տոկոսը ապակողմնորոշիչ է",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §3.2.3.3"
+        },
+        {
+          "when": "age 40–69",
+          "outcome": "SCORE2 (10-ամյա)",
+          "tone": "info",
+          "source": "ESC Prevention 2021 Table 5"
+        },
+        {
+          "when": "age >= 70",
+          "outcome": "SCORE2-OP (10-ամյա, տարեցների շեմերով)",
+          "tone": "info",
+          "source": "ESC Prevention 2021 Table 5"
+        },
+        {
+          "when": "age >= 40",
+          "outcome": "Միանում է ճնշման տարեկան ստուգման հիշեցումը",
+          "tone": "action",
+          "source": "2024 ESC HTN Class IIa"
+        },
+        {
+          "when": "age < 40",
+          "outcome": "Ճնշման ստուգում առնվազն 3 տարին մեկ",
+          "tone": "action",
+          "source": "2024 ESC HTN Class IIa"
+        }
+      ]
+    },
+    {
+      "id": "Q1.2",
+      "order": 2,
+      "section": "Q1",
+      "sectionTitle": "Տարիք և սեռ",
+      "text": "Ձեր կենսաբանական սեռը",
+      "help": "Հարցնում ենք, քանի որ սրտանոթային ռիսկի հաշվարկը տարբերվում է տղամարդկանց և կանանց մոտ։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "sex",
+      "required": false,
+      "options": [
+        {
+          "value": "male",
+          "label": "Արական"
+        },
+        {
+          "value": "female",
+          "label": "Իգական"
+        }
+      ],
+      "showWhen": null,
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.2.3"
+      ],
+      "branches": [
+        {
+          "when": "sex = male|female",
+          "outcome": "Ընտրվում է սեռ-սպեցիֆիկ SCORE2 գործակիցների հավաքածուն · գոտկատեղի շեմերը",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §3.3.10"
+        }
+      ]
+    },
+    {
+      "id": "Q2.1",
+      "order": 3,
+      "section": "Q2",
+      "sectionTitle": "Քաշ, շարժում, սնունդ և ալկոհոլ",
+      "text": "Ինչպե՞ս կգնահատեք Ձեր քաշը։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "wperc",
+      "required": false,
+      "options": [
+        {
+          "value": "ok",
+          "label": "Կարծում եմ՝ նորմալ է"
+        },
+        {
+          "value": "over",
+          "label": "Կարծում եմ՝ ավելորդ քաշ ունեմ"
+        },
+        {
+          "value": "idk",
+          "label": "Չգիտեմ"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "Ապրելակերպի ամբողջ ծրագիրը",
+      "guidelineSources": [
+        "NOREON"
+      ],
+      "branches": [
+        {
+          "when": "ցանկացած պատասխան",
+          "outcome": "Անցում Q2.2 — չափումը պարտադիր է բոլորի համար",
+          "reason": "Ինքնագնահատականը կլինիկական որոշում չի կայացնում",
+          "tone": "info",
+          "source": "NOREON"
+        }
+      ]
+    },
+    {
+      "id": "Q2.2",
+      "order": 4,
+      "section": "Q2",
+      "sectionTitle": "Քաշ, շարժում, սնունդ և ալկոհոլ",
+      "text": "Նշեք Ձեր հասակը և քաշը։",
+      "help": "Գոտկատեղի շրջագիծը ըստ ցանկության — ESC-ը դրա համար տալիս է առանձին շեմեր։",
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "h",
+          "label": "Հասակ",
+          "unit": "սմ",
+          "min": 120,
+          "max": 230,
+          "step": 1,
+          "optional": false
+        },
+        {
+          "key": "w",
+          "label": "Քաշ",
+          "unit": "կգ",
+          "min": 30,
+          "max": 300,
+          "step": 1,
+          "optional": false
+        },
+        {
+          "key": "waist",
+          "label": "Գոտկատեղ",
+          "unit": "սմ",
+          "min": 40,
+          "max": 200,
+          "step": 1,
+          "optional": true
+        }
+      ],
+      "showWhen": null,
+      "derives": [
+        "bmi",
+        "waistCategory"
+      ],
+      "guidelineSources": [
+        "2024 ESC HTN Class I Level A",
+        "ESC Prevention 2021 §3.3.10"
+      ],
+      "branches": [
+        {
+          "when": "BMI < 18.5",
+          "outcome": "Նիհարեցնող խորհուրդ չի տրվում · ուղեգիր սննդաբանի",
+          "tone": "warn",
+          "source": "NOREON safety rule"
+        },
+        {
+          "when": "BMI 18.5–24.9",
+          "outcome": "Նորմա",
+          "tone": "green",
+          "source": "2024 ESC HTN Class I Level A (նպատակային 20–25)"
+        },
+        {
+          "when": "BMI 25.0–29.9",
+          "outcome": "«Այլևս քաշ չհավաքել» — կանխարգելիչ ուղերձ",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Class I Level A"
+        },
+        {
+          "when": "BMI >= 30",
+          "outcome": "«Քաշը իջեցնել» + 4-շաբաթյա սննդակարգի ծրագիր + քաշի շաբաթական գրանցում",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Class I Level A"
+        },
+        {
+          "when": "waist >= 102 (male) կամ >= 88 (female)",
+          "outcome": "«Քաշը իջեցնել» — անկախ BMI-ից",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.3.10"
+        },
+        {
+          "when": "waist >= 94 (male) կամ >= 80 (female)",
+          "outcome": "«Այլևս քաշ չհավաքել»",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.3.10"
+        }
+      ]
+    },
+    {
+      "id": "Q2.3",
+      "order": 5,
+      "section": "Q2",
+      "sectionTitle": "Քաշ, շարժում, սնունդ և ալկոհոլ",
+      "text": "Ինչպե՞ս կնկարագրեք Ձեր ֆիզիկական ակտիվությունը վերջին 3 ամսվա ընթացքում։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "pa",
+      "required": false,
+      "options": [
+        {
+          "value": "A",
+          "label": "Ակտիվ եմ՝ շաբաթը 3 կամ ավելի անգամ մարզվում եմ"
+        },
+        {
+          "value": "B",
+          "label": "Երբեմն եմ մարզվում, անկանոն"
+        },
+        {
+          "value": "C",
+          "label": "Նստակյաց եմ՝ գրասենյակային աշխատանք, հազվադեպ եմ շարժվում"
+        },
+        {
+          "value": "D",
+          "label": "Առողջական պատճառով չեմ կարող մարզվել"
+        }
+      ],
+      "showWhen": null,
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.3.1.2"
+      ],
+      "branches": [
+        {
+          "when": "pa = A|B",
+          "outcome": "Անցում Q2.3a — րոպեների և ինտենսիվության ճշտում",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §4.3.1.2"
+        },
+        {
+          "when": "pa = C (նստակյաց)",
+          "outcome": "Աստիճանական ծրագիր՝ 10-րոպեանոց բլոկներ, շաբաթական +10%",
+          "tone": "action",
+          "source": "ESC Prevention 2021 §4.3.1.2 («even <10 min» bouts)"
+        },
+        {
+          "when": "pa = D (առողջական սահմանափակում)",
+          "outcome": "Թվային նպատակ ցույց չի տրվում · ուղեգիր ֆիզիոթերապևտի",
+          "tone": "warn",
+          "source": "NOREON safety rule"
+        }
+      ]
+    },
+    {
+      "id": "Q2.3a",
+      "order": 6,
+      "section": "Q2",
+      "sectionTitle": "Քաշ, շարժում, սնունդ և ալկոհոլ",
+      "text": "Շաբաթվա ընթացքում ընդհանուր որքա՞ն ժամանակ եք մարզվում։",
+      "help": "Չափավոր՝ շնչառությունս արագանում է, բայց կարող եմ ազատ խոսել։ Ինտենսիվ՝ շնչում եմ շատ արագ, դժվարանում եմ խոսել։",
+      "inputType": "numradio",
+      "inputTypeNote": "group: numeric field + single-select",
+      "answerKey": "paint",
+      "required": true,
+      "fields": [
+        {
+          "key": "pamin",
+          "label": "Րոպե/շաբաթ",
+          "unit": "ր",
+          "min": 0,
+          "max": 1200,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "options": [
+        {
+          "value": "mod",
+          "label": "Չափավոր ինտենսիվություն"
+        },
+        {
+          "value": "vig",
+          "label": "Ինտենսիվ"
+        }
+      ],
+      "showWhen": {
+        "expression": "s.pa==='A'||s.pa==='B'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "paMinutesMET"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.3.1.2"
+      ],
+      "branches": [
+        {
+          "when": "չափավոր >= 150 ր/շաբ կամ ինտենսիվ >= 75 ր/շաբ",
+          "outcome": "Նորմ է · պահպանել",
+          "tone": "green",
+          "source": "ESC Prevention 2021 §4.3.1.2"
+        },
+        {
+          "when": "չափավոր 75–149 ր/շաբ",
+          "outcome": "«Կես ճանապարհին եք» · շաբաթը 3 հիշեցում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §4.3.1.2"
+        },
+        {
+          "when": "չափավոր < 75 ր/շաբ",
+          "outcome": "Աստիճանական ծրագիր · ամենօրյա հիշեցում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §4.3.1.2"
+        },
+        {
+          "when": "ցանկացած",
+          "outcome": "Առաջարկվում է ուժային մարզում՝ շաբաթը ≥2 օր, 8–10 վարժություն, 1–3 սեթ × 8–12 կրկնություն, 60–80% 1RM",
+          "tone": "action",
+          "source": "ESC Prevention 2021 §4.3.1.3"
+        }
+      ]
+    },
+    {
+      "id": "Q2.4",
+      "order": 7,
+      "section": "Q2",
+      "sectionTitle": "Քաշ, շարժում, սնունդ և ալկոհոլ",
+      "text": "Ինչպե՞ս եք սնվում։ Նշեք այն ամենը, ինչը ճիշտ է Ձեր դեպքում։",
+      "help": "ESC-ի Table 8 «Healthy diet characteristics»-ի ութ բաղադրիչը։ Ալկոհոլը հարցվում է առանձին՝ Q4-ում։",
+      "inputType": "check",
+      "inputTypeNote": "open-choice (multi-select)",
+      "answerKey": "diet",
+      "required": false,
+      "options": [
+        {
+          "value": "veg",
+          "label": "Օրական ≥200 գ բանջարեղեն (2–3 բաժին)"
+        },
+        {
+          "value": "fruit",
+          "label": "Օրական ≥200 գ միրգ (2–3 բաժին)"
+        },
+        {
+          "value": "fish",
+          "label": "Շաբաթը 1–2 անգամ ձուկ, հատկապես ճարպոտ"
+        },
+        {
+          "value": "nuts",
+          "label": "Ամեն օր 30 գ չաղած ընկույզ"
+        },
+        {
+          "value": "meat",
+          "label": "Կարմիր միս շաբաթը 350–500 գ-ից քիչ"
+        },
+        {
+          "value": "grain",
+          "label": "Ամբողջական հացահատիկ (թեփով հաց, ձավարեղեն)"
+        },
+        {
+          "value": "salt",
+          "label": "Աղը՝ օրական 5 գ-ից (1 թեյի գդալ) քիչ"
+        },
+        {
+          "value": "ssb",
+          "label": "Չեմ խմում շաքարով ըմպելիքներ"
+        }
+      ],
+      "showWhen": null,
+      "derives": [
+        "dietScore"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 Table 8",
+        "2024 ESC HTN §8.2.1"
+      ],
+      "branches": [
+        {
+          "when": "7–8 նշված",
+          "outcome": "«Շարունակեք նույն ձևով»",
+          "tone": "green",
+          "source": "ESC Prevention 2021 Table 8"
+        },
+        {
+          "when": "4–6 նշված",
+          "outcome": "2–3 կոնկրետ փոփոխության առաջարկ",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 Table 8"
+        },
+        {
+          "when": "0–3 նշված",
+          "outcome": "Ամբողջական սննդակարգի ծրագիր (Mediterranean / DASH)",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Class I Level A"
+        },
+        {
+          "when": "ցանկացած",
+          "outcome": "Ցուցադրվում են միայն ՉՆՇՎԱԾ կետերի խորհուրդները",
+          "reason": "Ամբողջ ցանկը ցուցադրելը հանգեցնում է հրաժարման",
+          "tone": "info",
+          "source": "NOREON UX rule"
+        }
+      ]
+    },
+    {
+      "id": "Q3.1",
+      "order": 8,
+      "section": "Q3",
+      "sectionTitle": "Ծխելը",
+      "text": "Ծխո՞ւմ եք։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "smoke",
+      "required": false,
+      "options": [
+        {
+          "value": "cur",
+          "label": "Այո, ներկայումս ծխում եմ"
+        },
+        {
+          "value": "former",
+          "label": "Նախկինում ծխել եմ, հիմա՝ ոչ"
+        },
+        {
+          "value": "never",
+          "label": "Երբեք չեմ ծխել"
+        },
+        {
+          "value": "alt",
+          "label": "Օգտագործում եմ էլեկտրոնային / տաքացվող ծխախոտ"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "SCORE2-ի պարտադիր մուտք + առանձին ինտերվենցիա",
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.5.1",
+        "ESC Prevention 2021 Table 9"
+      ],
+      "branches": [
+        {
+          "when": "smoke = never",
+          "outcome": "Ուղիղ անցում Q4",
+          "tone": "green",
+          "source": "—"
+        },
+        {
+          "when": "smoke = cur",
+          "outcome": "Q3.2 + Q3.3 → տուփ-տարի · միանում է ծխելը թողնելու ծրագիրը (ASK–ADVISE–ACT)",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 Table 9"
+        },
+        {
+          "when": "smoke = former",
+          "outcome": "Q3.2 + Q3.3 + Q3.4 → SCORE2-ում գրանցվում է որպես ոչ-ծխող, բայց տուփ-տարին պահվում է",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §4.5.1"
+        },
+        {
+          "when": "smoke = alt (էլ./տաքացվող)",
+          "outcome": "SCORE2-ում ծխողի կարգավիճակ չի տրվում · բժշկին առանձին նշում",
+          "reason": "ESC-ը այս արտադրանքի համար ռիսկային գործակից չի սահմանում",
+          "tone": "warn",
+          "source": "NOREON — ESC-ում գործակից չկա"
+        }
+      ]
+    },
+    {
+      "id": "Q3.2",
+      "order": 9,
+      "section": "Q3",
+      "sectionTitle": "Ծխելը",
+      "text": "Ընդհանուր քանի՞ տարի եք ծխել (կամ ծխում)։",
+      "help": null,
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "smyr",
+          "label": "Տարի",
+          "unit": "տ.",
+          "min": 0,
+          "max": 80,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "showWhen": {
+        "expression": "s.smoke==='cur'||s.smoke==='former'||s.smoke==='alt'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "packYears"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.5.1"
+      ],
+      "branches": []
+    },
+    {
+      "id": "Q3.3",
+      "order": 10,
+      "section": "Q3",
+      "sectionTitle": "Ծխելը",
+      "text": "Օրական միջինում քանի՞ հատ ծխախոտ եք ծխում։",
+      "help": "1 տուփ = 20 հատ։",
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "cpd",
+          "label": "Հատ/օր",
+          "unit": "հատ",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "showWhen": {
+        "expression": "s.smoke==='cur'||s.smoke==='former'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "packYears"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.5.1"
+      ],
+      "branches": [
+        {
+          "when": "տուփ-տարի >= 20",
+          "outcome": "Բժշկին առանձին նշում · LDCT-ի թեկնածության դրոշ (տարիք 50–80)",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §4.5.1 · EXTERNAL (USPSTF) — պահանջում է Clinical Board-ի հաստատում"
+        },
+        {
+          "when": ">= 20 ծխախոտ/օր",
+          "outcome": "«Ծանր ծխող» — դադարեցումից 5 տարում ռիսկը նվազում է",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §4.5.1"
+        }
+      ]
+    },
+    {
+      "id": "Q3.4",
+      "order": 11,
+      "section": "Q3",
+      "sectionTitle": "Ծխելը",
+      "text": "Քանի՞ տարի առաջ եք թողել ծխելը։",
+      "help": null,
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "quit",
+          "label": "Տարի առաջ",
+          "unit": "տ.",
+          "min": 0,
+          "max": 70,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "showWhen": {
+        "expression": "s.smoke==='former'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.5.1"
+      ],
+      "branches": [
+        {
+          "when": "թողել է < 15 տարի առաջ ԵՎ տուփ-տարի >= 20 ԵՎ տարիք 50–80",
+          "outcome": "LDCT-ի թեկնածու",
+          "tone": "info",
+          "source": "EXTERNAL (USPSTF) — ESC-ի հավաքածուում չկա"
+        }
+      ]
+    },
+    {
+      "id": "Q4.1",
+      "order": 12,
+      "section": "Q4",
+      "sectionTitle": "Ալկոհոլի օգտագործումը",
+      "text": "Վերջին 12 ամսում որքա՞ն հաճախ եք օգտագործել ալկոհոլ պարունակող խմիչք։",
+      "help": "AUDIT-C-ի առաջին հարցը։ Ալկոհոլը սննդի ցանկից առանձնացված է, որովհետև հաճախականությունն ու մեկ ընդունման քանակը առանձին գնահատման կարիք ունեն։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single select)",
+      "answerKey": "alcfreq",
+      "required": true,
+      "options": [
+        {
+          "value": "never",
+          "label": "Երբեք"
+        },
+        {
+          "value": "m1",
+          "label": "Ամսական մեկ անգամ կամ պակաս"
+        },
+        {
+          "value": "m24",
+          "label": "Ամսական 2–4 անգամ"
+        },
+        {
+          "value": "w23",
+          "label": "Շաբաթական 2–3 անգամ"
+        },
+        {
+          "value": "w4",
+          "label": "Շաբաթական 4 կամ ավելի անգամ"
+        }
+      ],
+      "showWhen": null,
+      "derives": [
+        "auditC",
+        "alcoholGramsPerWeek"
+      ],
+      "guidelineSources": [
+        "WHO AUDIT 2001",
+        "2024 ESC HTN §8.2.4"
+      ],
+      "branches": [
+        {
+          "when": "Երբեք",
+          "outcome": "Ուղիղ հաջորդ հարցին։ Ալկոհոլ սկսել խորհուրդ չենք տալիս",
+          "tone": "green",
+          "source": "2024 ESC HTN §8.2.4"
+        },
+        {
+          "when": "Ամսական մեկ անգամ կամ ավելի",
+          "outcome": "Բացվում են AUDIT-C-ի ևս երկու հարցերը և գրամի ճշտող հարցերը",
+          "tone": "info",
+          "source": "WHO AUDIT 2001"
+        }
+      ]
+    },
+    {
+      "id": "Q4.2",
+      "order": 13,
+      "section": "Q4",
+      "sectionTitle": "Ալկոհոլի օգտագործումը",
+      "text": "Սովորաբար մեկ օրում քանի՞ ստանդարտ բաժին եք օգտագործում։",
+      "help": "Ստանդարտ բաժինը մոտ 10 գ մաքուր ալկոհոլ է՝ մոտ 250 մլ 5% գարեջուր, 100 մլ 12% գինի կամ 30 մլ 40% թունդ խմիչք։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single select)",
+      "answerKey": "alcqty",
+      "required": true,
+      "options": [
+        {
+          "value": "d12",
+          "label": "1–2 բաժին"
+        },
+        {
+          "value": "d34",
+          "label": "3–4 բաժին"
+        },
+        {
+          "value": "d56",
+          "label": "5–6 բաժին"
+        },
+        {
+          "value": "d79",
+          "label": "7–9 բաժին"
+        },
+        {
+          "value": "d10",
+          "label": "10 և ավելի բաժին"
+        },
+        {
+          "value": "idk",
+          "label": "Չեմ հիշում"
+        }
+      ],
+      "showWhen": {
+        "expression": "s.alcfreq==='m1'||s.alcfreq==='m24'||s.alcfreq==='w23'||s.alcfreq==='w4'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "auditC",
+        "alcoholGramsPerWeek"
+      ],
+      "guidelineSources": [
+        "WHO AUDIT 2001",
+        "NOREON"
+      ],
+      "branches": [
+        {
+          "when": "Քանակը չեմ հիշում",
+          "outcome": "Հարցնում ենք խմիչքի տեսակը և ծավալը։ Մինչև հաշվարկը գնահատումը մնում է բաց",
+          "tone": "action",
+          "source": "NOREON"
+        }
+      ]
+    },
+    {
+      "id": "Q4.3",
+      "order": 14,
+      "section": "Q4",
+      "sectionTitle": "Ալկոհոլի օգտագործումը",
+      "text": "Որքա՞ն հաճախ եք մեկ առիթով օգտագործում 6 կամ ավելի ստանդարտ բաժին։",
+      "help": "AUDIT-C-ի երրորդ հարցը։ Այս պատասխանով ամբողջանում է 0–12 միավորը։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single select)",
+      "answerKey": "alcbinge",
+      "required": true,
+      "options": [
+        {
+          "value": "never",
+          "label": "Երբեք"
+        },
+        {
+          "value": "ltm",
+          "label": "Ամսականից պակաս"
+        },
+        {
+          "value": "mon",
+          "label": "Ամսական"
+        },
+        {
+          "value": "wk",
+          "label": "Շաբաթական"
+        },
+        {
+          "value": "day",
+          "label": "Ամեն օր կամ գրեթե ամեն օր"
+        },
+        {
+          "value": "idk",
+          "label": "Չեմ հիշում"
+        }
+      ],
+      "showWhen": {
+        "expression": "s.alcfreq==='m1'||s.alcfreq==='m24'||s.alcfreq==='w23'||s.alcfreq==='w4'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "auditC"
+      ],
+      "guidelineSources": [
+        "WHO AUDIT 2001"
+      ],
+      "branches": [
+        {
+          "when": "0 միավոր",
+          "outcome": "Ալկոհոլ ներկայում չի օգտագործում։ Անցնում ենք հաջորդ հարցին",
+          "tone": "green",
+          "source": "WHO AUDIT 2001"
+        },
+        {
+          "when": "Տղամարդ՝ 1–3 / կին՝ 1–2",
+          "outcome": "Կարճ, չդատող ուղերձ՝ «Առողջության համար որքան քիչ, այնքան լավ»",
+          "reason": "«Պաշտպանիչ» կամ «անվտանգ չափաբաժին» ձևակերպումներ չենք օգտագործում",
+          "tone": "green",
+          "source": "ESC Prevention 2021 §4.3.2.4.5"
+        },
+        {
+          "when": "Տղամարդ՝ 4 և ավելի / կին՝ 3 և ավելի",
+          "outcome": "Դրական սկրինինգ է, ոչ ախտորոշում։ Առաջարկվում է ամբողջական AUDIT և քննարկում բժշկի հետ",
+          "tone": "yellow",
+          "source": "WHO AUDIT 2001"
+        },
+        {
+          "when": "6 և ավելի բաժին՝ շաբաթական կամ ավելի հաճախ",
+          "outcome": "Առաջնահերթ գնահատում՝ վնասակար օգտագործման, կախվածության և անվտանգության ռիսկերի համար",
+          "tone": "orange",
+          "source": "WHO AUDIT 2001"
+        }
+      ]
+    },
+    {
+      "id": "Q4.4",
+      "order": 15,
+      "section": "Q4",
+      "sectionTitle": "Ալկոհոլի օգտագործումը",
+      "text": "Ո՞ր խմիչքն եք ամենից հաճախ օգտագործում։",
+      "help": "Ստանդարտ չափաբաժինը երկրից կախված պարունակում է 8–14 գ ալկոհոլ, ուստի հաշվարկը կատարվում է մաքուր ալկոհոլի գրամով։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single select)",
+      "answerKey": "alctype",
+      "required": false,
+      "options": [
+        {
+          "value": "beer",
+          "label": "Գարեջուր, մոտ 5%"
+        },
+        {
+          "value": "wine",
+          "label": "Գինի, մոտ 12%"
+        },
+        {
+          "value": "spir",
+          "label": "Թունդ խմիչք, մոտ 40%"
+        },
+        {
+          "value": "mix",
+          "label": "Տարբեր խմիչքներ"
+        },
+        {
+          "value": "idk",
+          "label": "Չեմ հիշում"
+        }
+      ],
+      "showWhen": {
+        "expression": "s.alcfreq==='m1'||s.alcfreq==='m24'||s.alcfreq==='w23'||s.alcfreq==='w4'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "alcoholGramsPerWeek"
+      ],
+      "guidelineSources": [
+        "NOREON",
+        "ESC Prevention 2021 §4.3.2.4.5"
+      ],
+      "branches": []
+    },
+    {
+      "id": "Q4.5",
+      "order": 16,
+      "section": "Q4",
+      "sectionTitle": "Ալկոհոլի օգտագործումը",
+      "text": "Մեկ ընդունման ժամանակ սովորաբար ի՞նչ ծավալ եք խմում։",
+      "help": "Մոտավոր ծավալը բավական է։ Այն ճշտում է գրամը, երբ բաժակը ստանդարտ չափի չէ։",
+      "inputType": "numskip",
+      "inputTypeNote": "decimal with explicit «unknown» escape",
+      "answerKey": null,
+      "required": false,
+      "fields": [
+        {
+          "key": "alcvol",
+          "label": "Ծավալ",
+          "unit": "մլ",
+          "min": 0,
+          "max": 3000,
+          "step": 1,
+          "optional": true
+        }
+      ],
+      "unknownEscape": "Չեմ հիշում",
+      "showWhen": {
+        "expression": "s.alcfreq==='m1'||s.alcfreq==='m24'||s.alcfreq==='w23'||s.alcfreq==='w4'",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "alcoholGramsPerWeek"
+      ],
+      "guidelineSources": [
+        "NOREON",
+        "ESC Prevention 2021 §4.3.2.4.5",
+        "2024 ESC HTN §8.2.4"
+      ],
+      "branches": [
+        {
+          "when": "≤100 գ/շաբաթ",
+          "outcome": "Չավելացնել օգտագործումը։ Ցուցադրվում է, որ առողջության համար ամենաանվտանգ տարբերակը չօգտագործելն է",
+          "tone": "green",
+          "source": "ESC Prevention 2021 §4.3.2.4.5 · 2024 ESC HTN §8.2.4"
+        },
+        {
+          "when": ">100 գ/շաբաթ",
+          "outcome": "Նվազեցման ծրագիր + բժշկի հետ քննարկում։ Բարձր ԱՃ-ի դեպքում՝ առաջնահերթ ուղերձ",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §4.3.2.4.5 · 2024 ESC HTN §8.2.4"
+        }
+      ]
+    },
+    {
+      "id": "Q5.1",
+      "order": 17,
+      "section": "Q5",
+      "sectionTitle": "Զարկերակային ճնշում",
+      "text": "Ձեզ մոտ երբևէ հայտնաբերվե՞լ է բարձր զարկերակային ճնշում։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "htn",
+      "required": false,
+      "options": [
+        {
+          "value": "tx",
+          "label": "Այո, և ընդունում եմ ճնշման դեղեր"
+        },
+        {
+          "value": "notx",
+          "label": "Այո, բայց դեղ չեմ ընդունում"
+        },
+        {
+          "value": "no",
+          "label": "Ոչ"
+        },
+        {
+          "value": "idk",
+          "label": "Չգիտեմ / երբեք չեմ չափել"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "Ամենախիտ ուղեցույցային բեռ ունեցող հարցը",
+      "guidelineSources": [
+        "2024 ESC HTN Figure 10",
+        "2024 ESC HTN §5.2.3"
+      ],
+      "branches": [
+        {
+          "when": "htn = tx (ախտորոշված, դեղորայքով)",
+          "outcome": "Q4.2 · վերահսկողության գնահատում",
+          "tone": "info",
+          "source": "2024 ESC HTN §7"
+        },
+        {
+          "when": "htn = notx",
+          "outcome": "Q4.2 · չբուժվող հիպերտոնիա — ուղեգիր",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Class I"
+        },
+        {
+          "when": "htn = no",
+          "outcome": "Q4.2 · վերջին չափման արժեքը",
+          "tone": "info",
+          "source": "—"
+        },
+        {
+          "when": "htn = idk",
+          "outcome": "Չափում է պարտադիր — «անհայտ» ≠ «նորմալ»",
+          "tone": "warn",
+          "source": "NOREON missing-data rule"
+        }
+      ]
+    },
+    {
+      "id": "Q5.2",
+      "order": 18,
+      "section": "Q5",
+      "sectionTitle": "Զարկերակային ճնշում",
+      "text": "Նշեք Ձեր ճնշման վերջին չափման արդյունքը։",
+      "help": "Եթե հիմա չափեք՝ ավելի ճշգրիտ կլինի։ Փորձեք 185/115՝ hypertensive emergency-ի ուղին տեսնելու համար։",
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "sbp",
+          "label": "Վերին (SBP)",
+          "unit": "mmHg",
+          "min": 60,
+          "max": 300,
+          "step": 1,
+          "optional": false
+        },
+        {
+          "key": "dbp",
+          "label": "Ստորին (DBP)",
+          "unit": "mmHg",
+          "min": 30,
+          "max": 200,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "showWhen": null,
+      "derives": [
+        "bpCategory"
+      ],
+      "guidelineSources": [
+        "2024 ESC HTN Figure 10",
+        "2024 ESC HTN §7.1",
+        "2024 ESC HTN §10.1.1",
+        "2024 ESC HTN Class I"
+      ],
+      "branches": [
+        {
+          "when": "BP < 120/70",
+          "outcome": "Ոչ բարձրացած · վերագնահատում ըստ տարիքի (3 տ. / 1 տ.)",
+          "tone": "green",
+          "source": "2024 ESC HTN Figure 10"
+        },
+        {
+          "when": "SBP 120–139 կամ DBP 70–89",
+          "outcome": "«Elevated BP» · ապրելակերպ · ռիսկ ≥10% → արտագրասենյակային չափում (ABPM/HBPM)",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Figure 10 · Class I"
+        },
+        {
+          "when": "BP 140–179/90–109",
+          "outcome": "Հիպերտոնիա · HBPM 7-օրյա արձանագրություն · բժիշկ 2–4 շաբաթում · basic workup",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Figure 10 · §7"
+        },
+        {
+          "when": "BP >= 180/110",
+          "outcome": "Անցում Q4.3 — hypertensive emergency-ի բացառում (Class I)",
+          "tone": "red",
+          "source": "2024 ESC HTN Class I · §10.1.1"
+        }
+      ]
+    },
+    {
+      "id": "Q5.3",
+      "order": 19,
+      "section": "Q5",
+      "sectionTitle": "Զարկերակային ճնշում",
+      "text": "Ձեր ճնշումը շատ բարձր է։ ԱՅՍ ՊԱՀԻՆ ունե՞ք հետևյալ ախտանիշներից որևէ մեկը։",
+      "help": null,
+      "inputType": "check",
+      "inputTypeNote": "open-choice (multi-select)",
+      "answerKey": "bpsx",
+      "required": false,
+      "options": [
+        {
+          "value": "head",
+          "label": "Ուժեղ գլխացավ"
+        },
+        {
+          "value": "vis",
+          "label": "Տեսողության խանգարում (մշուշ, կրկնատեսություն)"
+        },
+        {
+          "value": "chest",
+          "label": "Կրծքավանդակի ցավ"
+        },
+        {
+          "value": "dysp",
+          "label": "Օդի պակասի զգացում / շնչահեղձություն"
+        },
+        {
+          "value": "dizz",
+          "label": "Գլխապտույտ կամ թուլություն"
+        },
+        {
+          "value": "neuro",
+          "label": "Խոսքի կամ շարժման խանգարում, դեմքի ասիմետրիա"
+        },
+        {
+          "value": "seiz",
+          "label": "Ցնցումներ կամ գիտակցության պղտորում"
+        },
+        {
+          "value": "none",
+          "label": "Ոչ, վերոնշյալներից ոչ մեկը"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.sbp>=180||s.dbp>=110)",
+        "variables": "s = answer state object"
+      },
+      "emergencyScreen": true,
+      "gate": true,
+      "guidelineSources": [
+        "2024 ESC HTN §10.1.1",
+        "2024 ESC HTN §7.1"
+      ],
+      "branches": [
+        {
+          "when": "ցանկացած ախտանիշ նշված է",
+          "outcome": "RF-03 ԿԱՐՄԻՐ — շտապօգնություն, հավելվածը սառչում է",
+          "tone": "red",
+          "source": "2024 ESC HTN §10.1.1 (Class I)"
+        },
+        {
+          "when": "neuro նշված է",
+          "outcome": "RF-04 ԿԱՐՄԻՐ",
+          "tone": "red",
+          "source": "2024 ESC HTN §10.1.1"
+        },
+        {
+          "when": "seiz նշված է",
+          "outcome": "RF-05 ԿԱՐՄԻՐ",
+          "tone": "red",
+          "source": "2024 ESC HTN §10.1.1"
+        },
+        {
+          "when": "«Ոչ մեկը»",
+          "outcome": "RF-06 ՆԱՐՆՋԱԳՈՒՅՆ — հաստատում ≤1 շաբաթում",
+          "tone": "orange",
+          "source": "2024 ESC HTN §7.1"
+        }
+      ]
+    },
+    {
+      "id": "Q6.1",
+      "order": 20,
+      "section": "Q6",
+      "sectionTitle": "Ուղեկցող հիվանդություններ",
+      "text": "Ունե՞ք բժշկի կողմից ախտորոշված որևէ քրոնիկ հիվանդություն։",
+      "help": null,
+      "inputType": "check",
+      "inputTypeNote": "open-choice (multi-select)",
+      "answerKey": "cmb",
+      "required": false,
+      "options": [
+        {
+          "value": "DM",
+          "label": "Շաքարային դիաբետ"
+        },
+        {
+          "value": "PREDM",
+          "label": "Նախաշաքարախտ"
+        },
+        {
+          "value": "ASCVD",
+          "label": "Սրտի իշեմիկ հիվանդություն / ինֆարկտ / ստենտ"
+        },
+        {
+          "value": "CVA",
+          "label": "Ինսուլտ կամ անցողիկ իշեմիկ նոպա"
+        },
+        {
+          "value": "HF",
+          "label": "Սրտի անբավարարություն"
+        },
+        {
+          "value": "AF",
+          "label": "Առիթմիա / նախասրտերի ֆիբրիլյացիա"
+        },
+        {
+          "value": "CKD",
+          "label": "Երիկամային քրոնիկ հիվանդություն"
+        },
+        {
+          "value": "DLP",
+          "label": "Բարձր խոլեստերին / դիսլիպիդեմիա"
+        },
+        {
+          "value": "FH",
+          "label": "Ընտանեկան հիպերքոլեստերինեմիա"
+        },
+        {
+          "value": "INFLAM",
+          "label": "Բորբոքային հիվանդություն (ռևմատոիդ արթրիտ, պսորիազ)"
+        },
+        {
+          "value": "OSA_DX",
+          "label": "Քնային ապնոէ (արդեն ախտորոշված)"
+        },
+        {
+          "value": "NAFLD",
+          "label": "Ճարպակալված լյարդ (NAFLD/MASLD)"
+        },
+        {
+          "value": "MENTAL",
+          "label": "Հոգեկան առողջության խնդիր"
+        },
+        {
+          "value": "none",
+          "label": "Ոչ մեկը"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "SCORE2-ի կիրառելիության gate",
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.2.3.2",
+        "2025 ESC/EAS Table 3"
+      ],
+      "branches": [
+        {
+          "when": "ASCVD | CVA նշված է",
+          "outcome": "SCORE2 անջատվում է · ՇԱՏ ԲԱՐՁՐ ռիսկ · LDL-C թիրախ <1.4 մմոլ/լ",
+          "tone": "red",
+          "source": "ESC Prevention 2021 §3.2.3.2 · 2025 ESC/EAS Table 4"
+        },
+        {
+          "when": "DM նշված է",
+          "outcome": "SCORE2 անջատվում է · անցում Q5.2b և Q5.2e · SCORE2-Diabetes-ի դիտարկում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.2.3.2 · 2024 ESC HTN SCORE2-Diabetes"
+        },
+        {
+          "when": "CKD նշված է",
+          "outcome": "SCORE2 անջատվում է · eGFR-ով դասակարգում (<30 ՇԱՏ ԲԱՐՁՐ, 30–59 ԲԱՐՁՐ)",
+          "tone": "yellow",
+          "source": "2025 ESC/EAS Table 3"
+        },
+        {
+          "when": "FH նշված է",
+          "outcome": "SCORE2 անջատվում է · ԲԱՐՁՐ ռիսկ · գենետիկական խորհրդատվություն",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.2.3.2"
+        },
+        {
+          "when": "HF նշված է",
+          "outcome": "NT-proBNP · ԷխոԿԳ · ուղեգիր",
+          "tone": "yellow",
+          "source": "2023 ESC HF"
+        },
+        {
+          "when": "AF նշված է",
+          "outcome": "ԷՍԳ · Հոլտեր · ինսուլտի ռիսկի գնահատում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.2"
+        },
+        {
+          "when": "INFLAM նշված է",
+          "outcome": "Ռիսկի մոդիֆիկատոր (ՌԱ ~+50%, ԱԲՀ ~+20%)",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §3.4.6"
+        },
+        {
+          "when": "OSA_DX նշված է",
+          "outcome": "Q7-ի STOP-BANG ուղին շրջանցվում է · ուղղակի կառավարման ուղի",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §3.4.9"
+        },
+        {
+          "when": "«Ոչ մեկը»",
+          "outcome": "SCORE2-ը մնում է կիրառելի",
+          "tone": "green",
+          "source": "—"
+        }
+      ]
+    },
+    {
+      "id": "Q6.2b",
+      "order": 21,
+      "section": "Q6",
+      "sectionTitle": "Ուղեկցող հիվանդություններ",
+      "text": "Քանի՞ տարի առաջ է Ձեզ ախտորոշվել շաքարային դիաբետ։",
+      "help": "Այս թիվը որոշիչ է ռիսկի դասակարգման համար՝ 2025 ESC/EAS Table 3, <10 vs ≥10 տարի սահման։",
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "dmdur",
+          "label": "Տարի",
+          "unit": "տ.",
+          "min": 0,
+          "max": 70,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.cmb||[]).includes('DM')",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "2025 ESC/EAS Table 3"
+      ],
+      "branches": [
+        {
+          "when": "ՇԴ ԵՎ տևողություն >= 10 տ.",
+          "outcome": "ՇԱՏ ԲԱՐՁՐ ռիսկ · LDL-C <1.4",
+          "tone": "red",
+          "source": "2025 ESC/EAS Table 3 · Table 4"
+        },
+        {
+          "when": "ՇԴ ԵՎ տարիք < 50 ԵՎ տևողություն < 10 տ. ԵՎ լրացուցիչ ռիսկի գործոն չկա",
+          "outcome": "ՄԻՋԻՆ ռիսկ · LDL-C <2.6",
+          "tone": "yellow",
+          "source": "2025 ESC/EAS Table 3"
+        },
+        {
+          "when": "մնացած բոլոր ՇԴ դեպքեր",
+          "outcome": "ԲԱՐՁՐ ռիսկ · LDL-C <1.8",
+          "tone": "yellow",
+          "source": "2025 ESC/EAS Table 3 · Table 4"
+        },
+        {
+          "when": "տևողությունը անհայտ է",
+          "outcome": "Դասակարգումը չի իջեցվում — լռելյայն ԲԱՐՁՐ",
+          "reason": "Բացակայող պատասխանը զրո չէ",
+          "tone": "warn",
+          "source": "NOREON missing-data rule"
+        }
+      ]
+    },
+    {
+      "id": "Q6.2e",
+      "order": 22,
+      "section": "Q6",
+      "sectionTitle": "Ուղեկցող հիվանդություններ",
+      "text": "Գիտե՞ք Ձեր վերջին գլիկոզիլացված հեմոգլոբինի (HbA1c) ցուցանիշը։",
+      "help": null,
+      "inputType": "numskip",
+      "inputTypeNote": "decimal with explicit «unknown» escape",
+      "answerKey": null,
+      "required": false,
+      "fields": [
+        {
+          "key": "hba1c",
+          "label": "HbA1c",
+          "unit": "%",
+          "min": 3,
+          "max": 20,
+          "step": 0.1,
+          "optional": false
+        }
+      ],
+      "unknownEscape": "Չգիտեմ / չեմ հանձնել",
+      "showWhen": {
+        "expression": "(s.cmb||[]).includes('DM')",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "ESC Prevention 2021 §4.8"
+      ],
+      "branches": [
+        {
+          "when": "HbA1c < 7.0%",
+          "outcome": "Թիրախում է (Class I)",
+          "tone": "green",
+          "source": "ESC Prevention 2021 §4.8"
+        },
+        {
+          "when": "HbA1c 7.0–8.9%",
+          "outcome": "Թիրախից դուրս · բժիշկ 2–4 շաբաթում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §4.8"
+        },
+        {
+          "when": "HbA1c >= 9.0%",
+          "outcome": "RF-11 ՆԱՐՆՋԱԳՈՒՅՆ",
+          "tone": "orange",
+          "source": "NOREON (ESC թիրախ <7.0% Class I)"
+        },
+        {
+          "when": "չգիտի / չի հանձնել",
+          "outcome": "HbA1c պատվիրվում է ≤2 շաբաթում",
+          "tone": "action",
+          "source": "ESC Prevention 2021 §4.8"
+        }
+      ]
+    },
+    {
+      "id": "Q7.1",
+      "order": 23,
+      "section": "Q7",
+      "sectionTitle": "Ընտանեկան անամնեզ",
+      "text": "Ձեր մերձավոր ազգականների մոտ եղե՞լ են հետևյալ հիվանդությունները։",
+      "help": "Ծնող, եղբայր, քույր, երեխա։",
+      "inputType": "check",
+      "inputTypeNote": "open-choice (multi-select)",
+      "answerKey": "fhx",
+      "required": false,
+      "options": [
+        {
+          "value": "CAD",
+          "label": "Սրտի կաթված (ինֆարկտ) կամ ստենտ/շունտավորում"
+        },
+        {
+          "value": "STROKE",
+          "label": "Ինսուլտ"
+        },
+        {
+          "value": "SCD",
+          "label": "Հանկարծամահություն 50 տարեկանից շուտ"
+        },
+        {
+          "value": "DM",
+          "label": "Շաքարային դիաբետ"
+        },
+        {
+          "value": "CKD",
+          "label": "Երիկամային հիվանդություն"
+        },
+        {
+          "value": "FH",
+          "label": "Բարձր խոլեստերին / ընտանեկան հիպերքոլեստերինեմիա"
+        },
+        {
+          "value": "HTN",
+          "label": "Բարձր ճնշում"
+        },
+        {
+          "value": "none",
+          "label": "Ոչ մեկը / չգիտեմ"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "Modifier Layer — ՈՉ SCORE2-ի մուտք",
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.3.5"
+      ],
+      "branches": [
+        {
+          "when": "CAD | STROKE | SCD նշված է",
+          "outcome": "Անցում Q6.2 — տարիքի ճշտում",
+          "tone": "info",
+          "source": "ESC Prevention 2021 §3.3.5"
+        },
+        {
+          "when": "FH նշված է",
+          "outcome": "Lp(a) մեկ անգամ կյանքում · լիպիդային պանել · Dutch Lipid Clinic Network-ի գնահատում",
+          "tone": "yellow",
+          "source": "2025 ESC/EAS"
+        },
+        {
+          "when": "«Ոչ մեկը / չգիտեմ»",
+          "outcome": "Modifier չի կիրառվում",
+          "tone": "info",
+          "source": "—"
+        }
+      ]
+    },
+    {
+      "id": "Q7.2",
+      "order": 24,
+      "section": "Q7",
+      "sectionTitle": "Ընտանեկան անամնեզ",
+      "text": "Մոտավորապես քանի՞ տարեկան էր Ձեր ազգականը, երբ դա տեղի ունեցավ։",
+      "help": "Եթե մեկից ավելի են՝ նշեք ամենավաղ դեպքը։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "prem",
+      "required": false,
+      "options": [
+        {
+          "value": "m55",
+          "label": "Տղամարդ ազգական, 55 տարեկանից շուտ"
+        },
+        {
+          "value": "f65",
+          "label": "Կին ազգական, 65 տարեկանից շուտ"
+        },
+        {
+          "value": "later",
+          "label": "Ավելի ուշ տարիքում"
+        },
+        {
+          "value": "idk",
+          "label": "Չգիտեմ"
+        }
+      ],
+      "showWhen": {
+        "expression": "['CAD','STROKE','SCD'].some(x=>(s.fhx||[]).includes(x))",
+        "variables": "s = answer state object"
+      },
+      "modifierLayer": true,
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.3.5",
+        "2024 ESC HTN Risk modifiers"
+      ],
+      "branches": [
+        {
+          "when": "prem = m55 կամ f65 (վաղաժամ)",
+          "outcome": "Modifier ակտիվ · ռիսկը ՈՐԱԿԱՊԵՍ up-classify միայն 5%–<10% սահմանային գոտում · տոկոսը ՉԻ փոխվում",
+          "tone": "yellow",
+          "source": "2024 ESC HTN Risk modifiers · ESC Prevention 2021 §3.3.5"
+        },
+        {
+          "when": "prem = later | idk",
+          "outcome": "Modifier չի կիրառվում",
+          "tone": "info",
+          "source": "—"
+        }
+      ]
+    },
+    {
+      "id": "Q8.1",
+      "order": 25,
+      "section": "Q8",
+      "sectionTitle": "Քուն և սթրես",
+      "text": "Ինչպե՞ս կգնահատեք Ձեր քնի որակը։",
+      "help": "1 = շատ վատ, 10 = գերազանց։",
+      "inputType": "slider",
+      "inputTypeNote": "integer 1–10 (visual analog)",
+      "answerKey": "sleepq",
+      "required": false,
+      "scale": {
+        "min": 1,
+        "max": 10,
+        "minLabel": "շատ վատ",
+        "maxLabel": "գերազանց"
+      },
+      "showWhen": null,
+      "purpose": "STOP-BANG-ի յոթ բաղադրիչի հավաքում + Modifier Layer",
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.9"
+      ],
+      "branches": [
+        {
+          "when": "sleepq < 7",
+          "outcome": "Անցում Q7.2 — շնչառական խանգարման սկրինինգ",
+          "tone": "info",
+          "source": "NOREON"
+        }
+      ]
+    },
+    {
+      "id": "Q8.1a",
+      "order": 26,
+      "section": "Q8",
+      "sectionTitle": "Քուն և սթրես",
+      "text": "Միջինում քանի՞ ժամ եք քնում գիշերը։",
+      "help": null,
+      "inputType": "num",
+      "inputTypeNote": "decimal|integer (one or more numeric fields)",
+      "answerKey": null,
+      "required": true,
+      "fields": [
+        {
+          "key": "sleeph",
+          "label": "Ժամ",
+          "unit": "ժ",
+          "min": 2,
+          "max": 14,
+          "step": 0.5,
+          "optional": false
+        }
+      ],
+      "showWhen": null,
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.9"
+      ],
+      "branches": [
+        {
+          "when": "քնի տևողությունը ≠ ~7 ժ",
+          "outcome": "Քնի հիգիենայի մոդուլ",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.9 («7 h seems to be optimal»)"
+        }
+      ]
+    },
+    {
+      "id": "Q8.2",
+      "order": 27,
+      "section": "Q8",
+      "sectionTitle": "Քուն և սթրես",
+      "text": "Քնի ընթացքում խռմփո՞ւմ եք բարձր, կամ Ձեզ ասե՞լ են, որ քնած ժամանակ շնչառությունը ընդհատվում է։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "sdb",
+      "required": false,
+      "options": [
+        {
+          "value": "snore",
+          "label": "Այո, բարձր խռմփում եմ"
+        },
+        {
+          "value": "apnoea",
+          "label": "Այո, ասել են, որ շնչառությունս ընդհատվում է"
+        },
+        {
+          "value": "both",
+          "label": "Այո, երկուսն էլ"
+        },
+        {
+          "value": "no",
+          "label": "Ոչ / չգիտեմ"
+        }
+      ],
+      "showWhen": {
+        "expression": "s.sleepq!=null&&s.sleepq<7",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "stopBang"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.9"
+      ],
+      "branches": [
+        {
+          "when": "sdb = snore|apnoea|both",
+          "outcome": "Անցում Q7.3 և Q7.4a · STOP-BANG-ի հաշվարկ",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.9"
+        }
+      ]
+    },
+    {
+      "id": "Q8.3",
+      "order": 28,
+      "section": "Q8",
+      "sectionTitle": "Քուն և սթրես",
+      "text": "Օրվա ընթացքում հաճա՞խ եք զգում ուժեղ քնկոտություն կամ հոգնածություն։",
+      "help": "Օրինակ՝ հեռուստացույց դիտելիս, մեքենա վարելիս կամ զրուցելիս։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "sleepy",
+      "required": false,
+      "options": [
+        {
+          "value": "never",
+          "label": "Երբեք կամ գրեթե երբեք"
+        },
+        {
+          "value": "some",
+          "label": "Երբեմն"
+        },
+        {
+          "value": "often",
+          "label": "Հաճախ"
+        },
+        {
+          "value": "daily",
+          "label": "Գրեթե ամեն օր"
+        }
+      ],
+      "showWhen": {
+        "expression": "['snore','apnoea','both'].includes(s.sdb)",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "stopBang"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.9"
+      ],
+      "branches": [
+        {
+          "when": "sleepy = often|daily",
+          "outcome": "STOP-BANG +1 · վարորդական անվտանգության ուղերձ",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.9"
+        }
+      ]
+    },
+    {
+      "id": "Q8.4a",
+      "order": 29,
+      "section": "Q8",
+      "sectionTitle": "Քուն և սթրես",
+      "text": "Եթե հնարավոր է, չափեք Ձեր պարանոցի շրջագիծը։",
+      "help": "STOP-BANG-ի ութ բաղադրիչից սա միակն է, որը Noreon-ը դեռ չունի — մնացած յոթը արդեն հավաքված են։",
+      "inputType": "numskip",
+      "inputTypeNote": "decimal with explicit «unknown» escape",
+      "answerKey": null,
+      "required": false,
+      "fields": [
+        {
+          "key": "neck",
+          "label": "Պարանոց",
+          "unit": "սմ",
+          "min": 25,
+          "max": 70,
+          "step": 1,
+          "optional": false
+        }
+      ],
+      "unknownEscape": "Չեմ կարող չափել",
+      "showWhen": {
+        "expression": "['snore','apnoea','both'].includes(s.sdb)",
+        "variables": "s = answer state object"
+      },
+      "derives": [
+        "stopBang"
+      ],
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.9"
+      ],
+      "branches": [
+        {
+          "when": "STOP-BANG 5–8",
+          "outcome": "Բարձր հավանականություն · պոլիսոմնոգրաֆիա / HSAT",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.9"
+        },
+        {
+          "when": "STOP-BANG 3–4",
+          "outcome": "Միջին հավանականություն · բժշկի գնահատում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.9"
+        },
+        {
+          "when": "STOP-BANG 0–2",
+          "outcome": "Ցածր հավանականություն",
+          "tone": "green",
+          "source": "ESC Prevention 2021 §3.4.9"
+        }
+      ]
+    },
+    {
+      "id": "Q8.5",
+      "order": 30,
+      "section": "Q8",
+      "sectionTitle": "Քուն և սթրես",
+      "text": "Ձեր աշխատանքը կամ առօրյան սթրեսային համարո՞ւմ եք։",
+      "help": "Ցուցադրվում է բոլոր ուղիներով — OSA-ն և սթրեսը հաճախ համակցվում են։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "stress",
+      "required": false,
+      "options": [
+        {
+          "value": "no",
+          "label": "Ոչ, հանգիստ եմ"
+        },
+        {
+          "value": "some",
+          "label": "Երբեմն"
+        },
+        {
+          "value": "often",
+          "label": "Այո, հաճախ"
+        },
+        {
+          "value": "always",
+          "label": "Այո, մշտապես"
+        }
+      ],
+      "showWhen": null,
+      "modifierLayer": true,
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.3.1",
+        "ESC Prevention 2021 Box 2",
+        "2024 ESC HTN Risk modifiers"
+      ],
+      "branches": [
+        {
+          "when": "stress = often|always",
+          "outcome": "Modifier ակտիվ · ՈՐԱԿԱՊԵՍ up-classify միայն 5%–<10% գոտում · առաջարկվում է ուղեգիր հոգեթերապևտի",
+          "reason": "RR 1.2–2.0, բայց միայն «vital exhaustion»-ն է բարելավում ռեկլասիֆիկացիան — տոկոսը չի բազմապատկվում",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.3.1 · Box 2"
+        }
+      ]
+    },
+    {
+      "id": "Q9.1",
+      "order": 31,
+      "section": "Q9",
+      "sectionTitle": "Կրծքավանդակի ցավ",
+      "text": "Զգո՞ւմ եք ցավ, ճնշվածություն, սեղմվածություն կամ ծանրություն կրծքավանդակում ֆիզիկական ծանրաբեռնվածության կամ սթրեսի ժամանակ։",
+      "help": "Կարող է լինել սեղմող, ճնշող կամ այրող զգացողություն կրծքավանդակի կենտրոնում։ Երբեմն տարածվում է ձախ ձեռքին, պարանոցին, ծնոտին, թիկունքին կամ ստամոքսի շրջանին։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "cp",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Այո"
+        },
+        {
+          "value": "no",
+          "label": "Ոչ"
+        },
+        {
+          "value": "unsure",
+          "label": "Համոզված չեմ"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "ACS-ի ուղի — «այս պահին» հարցը միշտ առաջինն է",
+      "guidelineSources": [
+        "2023 ESC ACS §3.1.1"
+      ],
+      "branches": [
+        {
+          "when": "cp = yes|unsure",
+          "outcome": "Անմիջապես Q8.2 (gate) — ոչ թե հաճախականություն",
+          "tone": "red",
+          "source": "2023 ESC ACS §4.1.1"
+        },
+        {
+          "when": "cp = no",
+          "outcome": "Անցում Q9",
+          "tone": "green",
+          "source": "—"
+        }
+      ]
+    },
+    {
+      "id": "Q9.2",
+      "order": 32,
+      "section": "Q9",
+      "sectionTitle": "Կրծքավանդակի ցավ",
+      "text": "ԱՅՍ ՊԱՀԻՆ ունե՞ք այդ ցավը կամ ճնշվածությունը։",
+      "help": null,
+      "inputType": "gate",
+      "inputTypeNote": "boolean gate — ԱՅՈ freezes the app",
+      "answerKey": "cpnow",
+      "required": false,
+      "showWhen": {
+        "expression": "s.cp==='yes'||s.cp==='unsure'",
+        "variables": "s = answer state object"
+      },
+      "gate": true,
+      "redFlagOnPositive": "RF-01",
+      "guidelineSources": [
+        "2023 ESC ACS §3.1.1",
+        "2023 ESC ACS §4.1.1"
+      ],
+      "branches": [
+        {
+          "when": "ԱՅՈ",
+          "outcome": "RF-01 ԿԱՐՄԻՐ — 1-03 էկրան · կանչել շտապօգնություն (ՈՉ ինքնուրույն ներկայանալ) · ԷՍԳ ≤10 ր առաջին բժշկական շփումից",
+          "tone": "red",
+          "source": "2023 ESC ACS §4.1.1 · §3.2"
+        },
+        {
+          "when": "ՈՉ",
+          "outcome": "Անցում Q8.3–Q8.6 — բնութագրում",
+          "tone": "yellow",
+          "source": "2023 ESC ACS §3.1.1"
+        }
+      ]
+    },
+    {
+      "id": "Q9.3",
+      "order": 33,
+      "section": "Q9",
+      "sectionTitle": "Կրծքավանդակի ցավ",
+      "text": "Որքա՞ն հաճախ է դա լինում։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "cpfreq",
+      "required": false,
+      "options": [
+        {
+          "value": "multi",
+          "label": "Օրական մի քանի անգամ"
+        },
+        {
+          "value": "daily",
+          "label": "Ամեն օր"
+        },
+        {
+          "value": "week",
+          "label": "Շաբաթը մի քանի անգամ"
+        },
+        {
+          "value": "month",
+          "label": "Ամսական մի քանի անգամ"
+        },
+        {
+          "value": "rare",
+          "label": "Հազվադեպ՝ տարվա մեջ մի քանի անգամ"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "2023 ESC ACS §4.1.1"
+      ],
+      "branches": [
+        {
+          "when": "cpfreq = multi|daily",
+          "outcome": "RF-07-ի բաղադրիչ",
+          "tone": "orange",
+          "source": "2023 ESC ACS §4.1.1"
+        }
+      ]
+    },
+    {
+      "id": "Q9.4",
+      "order": 34,
+      "section": "Q9",
+      "sectionTitle": "Կրծքավանդակի ցավ",
+      "text": "Վերջին 4 շաբաթվա ընթացքում այդ ցավը դարձե՞լ է ավելի հաճախակի, ավելի ուժեղ, կամ առաջանո՞ւմ է ավելի փոքր ծանրաբեռնվածությունից։",
+      "help": "Կայուն և անկայուն ստենոկարդիայի տարբերությունը հենց դինամիկան է։",
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "cresc",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Այո, վատացել է"
+        },
+        {
+          "value": "same",
+          "label": "Ոչ, նույնն է"
+        },
+        {
+          "value": "better",
+          "label": "Բարելավվել է"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "2023 ESC ACS §4.1.1"
+      ],
+      "branches": [
+        {
+          "when": "cresc = yes",
+          "outcome": "RF-07 ՆԱՐՆՋԱԳՈՒՅՆ — crescendo/անկայուն անգինա · բժիշկ ≤24–48 ժ",
+          "tone": "orange",
+          "source": "2023 ESC ACS §4.1.1"
+        }
+      ]
+    },
+    {
+      "id": "Q9.5",
+      "order": 35,
+      "section": "Q9",
+      "sectionTitle": "Կրծքավանդակի ցավ",
+      "text": "Այդ ցավը երբևէ առաջանո՞ւմ է հանգստի ժամանակ կամ գիշերը՝ առանց ֆիզիկական ծանրաբեռնվածության։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "cprest",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Այո"
+        },
+        {
+          "value": "no",
+          "label": "Ոչ"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "2023 ESC ACS §4.1.1"
+      ],
+      "branches": [
+        {
+          "when": "cprest = yes",
+          "outcome": "RF-07-ի բաղադրիչ — հանգստի անգինա",
+          "tone": "orange",
+          "source": "2023 ESC ACS §4.1.1"
+        }
+      ]
+    },
+    {
+      "id": "Q9.6",
+      "order": 36,
+      "section": "Q9",
+      "sectionTitle": "Կրծքավանդակի ցավ",
+      "text": "Սովորաբար որքա՞ն է տևում ցավը։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "cpdur",
+      "required": false,
+      "options": [
+        {
+          "value": "sec",
+          "label": "Մի քանի վայրկյան"
+        },
+        {
+          "value": "1_5",
+          "label": "1–5 րոպե"
+        },
+        {
+          "value": "5_15",
+          "label": "5–15 րոպե"
+        },
+        {
+          "value": "gt15",
+          "label": "15 րոպեից ավելի"
+        },
+        {
+          "value": "var",
+          "label": "Փոփոխական"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "2023 ESC ACS §4.1.1"
+      ],
+      "branches": [
+        {
+          "when": "cpdur = gt15",
+          "outcome": "RF-07-ի բաղադրիչ — >15 րոպե տևող ցավ",
+          "tone": "orange",
+          "source": "2023 ESC ACS §4.1.1 («prolonged chest pain >15 min»)"
+        }
+      ]
+    },
+    {
+      "id": "Q10.1",
+      "order": 37,
+      "section": "Q10",
+      "sectionTitle": "Առիթմիա, ուշաթափություն, օդի պակաս",
+      "text": "Զգացե՞լ եք հանկարծակի գլխապտույտ, թուլություն, օդի պակասի զգացում կամ մոտալուտ ուշագնացության վիճակ՝ սրտխփոցի հետ միաժամանակ։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "ar",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Այո"
+        },
+        {
+          "value": "no",
+          "label": "Ոչ"
+        },
+        {
+          "value": "palponly",
+          "label": "Սրտխփոց ունեմ, բայց առանց գլխապտույտի"
+        }
+      ],
+      "showWhen": null,
+      "purpose": "Առիթմիայի և սինկոպի ուղի",
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.2"
+      ],
+      "branches": [
+        {
+          "when": "ar = yes",
+          "outcome": "Անմիջապես Q9.2 (gate)",
+          "tone": "red",
+          "source": "2023 ESC ACS §4.1.1"
+        },
+        {
+          "when": "ar = palponly",
+          "outcome": "Q9.3–Q9.5 — բնութագրում առանց gate-ի",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.2"
+        },
+        {
+          "when": "ar = no",
+          "outcome": "Ավարտ · triage-ի հաշվարկ",
+          "tone": "green",
+          "source": "—"
+        }
+      ]
+    },
+    {
+      "id": "Q10.2",
+      "order": 38,
+      "section": "Q10",
+      "sectionTitle": "Առիթմիա, ուշաթափություն, օդի պակաս",
+      "text": "ԱՅՍ ՊԱՀԻՆ ունե՞ք այդ գանգատները։",
+      "help": null,
+      "inputType": "gate",
+      "inputTypeNote": "boolean gate — ԱՅՈ freezes the app",
+      "answerKey": "arnow",
+      "required": false,
+      "showWhen": {
+        "expression": "s.ar==='yes'",
+        "variables": "s = answer state object"
+      },
+      "gate": true,
+      "redFlagOnPositive": "RF-02",
+      "guidelineSources": [
+        "2023 ESC ACS §4.1.1",
+        "ESC Prevention 2021 §3.4.2"
+      ],
+      "branches": [
+        {
+          "when": "ԱՅՈ",
+          "outcome": "RF-02 ԿԱՐՄԻՐ — 1-03 էկրան · շտապօգնություն",
+          "tone": "red",
+          "source": "2023 ESC ACS §4.1.1"
+        },
+        {
+          "when": "ՈՉ",
+          "outcome": "Անցում Q9.3–Q9.5",
+          "tone": "yellow",
+          "source": "—"
+        }
+      ]
+    },
+    {
+      "id": "Q10.3",
+      "order": 39,
+      "section": "Q10",
+      "sectionTitle": "Առիթմիա, ուշաթափություն, օդի պակաս",
+      "text": "Երբևէ կորցրե՞լ եք գիտակցությունը (ուշաթափվել եք)։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "syn",
+      "required": false,
+      "options": [
+        {
+          "value": "exert",
+          "label": "Այո, ֆիզիկական ծանրաբեռնվածության ժամանակ"
+        },
+        {
+          "value": "rest",
+          "label": "Այո, հանգստի ժամանակ կամ առանց նախազգուշացնող նշանների"
+        },
+        {
+          "value": "vaso",
+          "label": "Այո, երկար կանգնելուց / արյան տեսքից / ցավից հետո"
+        },
+        {
+          "value": "never",
+          "label": "Ոչ, երբեք"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.2"
+      ],
+      "branches": [
+        {
+          "when": "syn = exert",
+          "outcome": "RF-08 ՆԱՐՆՋԱԳՈՒՅՆ — ուշաթափություն ծանրաբեռնվածությամբ · ԷխոԿԳ · ԷՍԳ · ուղեգիր",
+          "tone": "orange",
+          "source": "NOREON + ESC Prevention (SCD ռիսկ)"
+        },
+        {
+          "when": "syn = rest",
+          "outcome": "RF-09 ՆԱՐՆՋԱԳՈՒՅՆ — առանց նախանշանների ուշաթափություն",
+          "tone": "orange",
+          "source": "NOREON"
+        },
+        {
+          "when": "syn = vaso",
+          "outcome": "Վազովագալ բնույթ · բացատրություն, առանց red flag-ի",
+          "tone": "yellow",
+          "source": "NOREON"
+        }
+      ]
+    },
+    {
+      "id": "Q10.4",
+      "order": 40,
+      "section": "Q10",
+      "sectionTitle": "Առիթմիա, ուշաթափություն, օդի պակաս",
+      "text": "Երբ սրտխփոց եք զգում, սրտի բաբախյունը՝",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "rhy",
+      "required": false,
+      "options": [
+        {
+          "value": "fast",
+          "label": "Արագ է, բայց կանոնավոր"
+        },
+        {
+          "value": "irreg",
+          "label": "Անկանոն է, «թռչում» է"
+        },
+        {
+          "value": "strong",
+          "label": "Առանձին ուժեղ հարվածներ են"
+        },
+        {
+          "value": "idk",
+          "label": "Չեմ կարող որոշել"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.2"
+      ],
+      "branches": [
+        {
+          "when": "rhy = irreg",
+          "outcome": "ԷՍԳ + Հոլտեր 24–48 ժ · ՆՖ-ի կասկած",
+          "tone": "yellow",
+          "source": "ESC Prevention 2021 §3.4.2"
+        }
+      ]
+    },
+    {
+      "id": "Q10.5",
+      "order": 41,
+      "section": "Q10",
+      "sectionTitle": "Առիթմիա, ուշաթափություն, օդի պակաս",
+      "text": "Որքա՞ն են տևում այդ նոպաները։",
+      "help": null,
+      "inputType": "radio",
+      "inputTypeNote": "choice (single-select)",
+      "answerKey": "ardur",
+      "required": false,
+      "options": [
+        {
+          "value": "sec",
+          "label": "Վայրկյաններ"
+        },
+        {
+          "value": "lt5",
+          "label": "5 րոպեից քիչ"
+        },
+        {
+          "value": "5_30",
+          "label": "5–30 րոպե"
+        },
+        {
+          "value": "gt30",
+          "label": "30 րոպեից ավելի"
+        }
+      ],
+      "showWhen": {
+        "expression": "(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'",
+        "variables": "s = answer state object"
+      },
+      "guidelineSources": [
+        "ESC Prevention 2021 §3.4.2"
+      ],
+      "branches": [
+        {
+          "when": "ardur = gt30",
+          "outcome": "RF-10 ՆԱՐՆՋԱԳՈՒՅՆ — նոպաներ >30 րոպե",
+          "tone": "orange",
+          "source": "NOREON"
+        }
+      ]
+    }
+  ]
+}

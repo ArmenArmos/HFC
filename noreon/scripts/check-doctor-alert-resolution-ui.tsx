@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';
+import React from 'react';
+import TestRenderer,{act} from 'react-test-renderer';
+import {DoctorAlertResolution} from '@/components/staff/doctor-workspace/alert-resolution';
+import type {CareAlert} from '@/lib/care-alerts/contracts';
+Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+const alert={id:'11111111-1111-4111-8111-111111111111',stateSeq:7,state:'open',lastSeenAt:'2026-11-01T00:00:00Z'} as CareAlert;
+let tree:TestRenderer.ReactTestRenderer;const calls:unknown[]=[];
+const button=(label:string)=>tree!.root.findAllByType('button').find(b=>b.children.join('')===label)!;
+let result:{kind:string;resolvedBy?:string;resolvedAt?:string}={kind:'changed'};
+const command=async(input:unknown)=>{calls.push(input);return result;};
+await act(async()=>{tree=TestRenderer.create(<DoctorAlertResolution alert={alert} locale="en" command={command}/>);});
+assert.equal(calls.length,0);
+assert.equal(tree!.root.findAllByType('form').filter(f=>!f.props.hidden).length,0,'Closed disclosure hides unused resolution fields');
+await act(async()=>button('Resolve alert').props.onClick());
+await act(async()=>tree!.root.findByType('select').props.onChange({target:{value:'member_contacted'}}));
+await act(async()=>tree!.root.findByType('textarea').props.onChange({target:{value:'Called at 14:30. Reading 135/85 discussed.'}}));
+assert.equal(calls.length,0,'Editing is not approval');
+assert.ok(JSON.stringify(tree!.toJSON()).includes('135/85'),'Exact numbers are shown before saving');
+await act(async()=>{const click=tree!.root.findByType('form').props.onSubmit;await Promise.all([click({preventDefault(){}}),click({preventDefault(){}})]);});
+assert.deepEqual(calls,[{alertId:alert.id,seq:7,resolution:'member_contacted',note:'Called at 14:30. Reading 135/85 discussed.'}]);
+assert.ok(JSON.stringify(tree!.toJSON()).includes('changed'));
+assert.equal(tree!.root.findByType('textarea').props.value,'Called at 14:30. Reading 135/85 discussed.','Stale save retains the note');
+assert.equal(button('Resolve this alert').props.disabled,true,'Stale card cannot create another write');
+await act(async()=>tree!.unmount());
+for(const locale of ['hy','ru'] as const){await act(async()=>{tree=TestRenderer.create(<DoctorAlertResolution alert={alert} locale={locale} command={command}/>);});assert.ok(!JSON.stringify(tree!.toJSON()).includes('Review resolution'));await act(async()=>tree!.unmount());}
+console.log('Alert resolution: collapsed form and explicit resolve approval, exact seq/value binding, double press, stale lock and translations pass (controlled IO)');
+
+result={kind:'already_resolved',resolvedBy:'Doctor Earlier',resolvedAt:'2026-11-01T01:00:00Z'};
+await act(async()=>{tree=TestRenderer.create(<DoctorAlertResolution alert={alert} locale="en" command={command}/>);});
+await act(async()=>button('Resolve alert').props.onClick());
+await act(async()=>tree!.root.findByType('select').props.onChange({target:{value:'member_contacted'}}));
+await act(async()=>tree!.root.findByType('textarea').props.onChange({target:{value:'My unsaved outcome note'}}));
+await act(async()=>tree!.root.findByType('form').props.onSubmit({preventDefault(){}}));
+
+const closedText=JSON.stringify(tree!.toJSON());
+assert.ok(closedText.includes('Doctor Earlier'),'Show who already closed the alert');
+assert.ok(closedText.includes('2026-11-01T01:00:00Z'),'Show when the alert was closed');
+assert.ok(closedText.includes('not saved'),'Explain that this outcome and note were not saved');
+assert.ok(tree!.root.findAllByType('p').some(p=>p.children[0]==='Resolved'),'The conflicting result updates the displayed status');
+assert.ok(!tree!.root.findAllByType('p').some(p=>p.children[0]==='Open'),'A resolved alert cannot retain its stale open status');
+assert.equal(tree!.root.findByType('textarea').props.value,'My unsaved outcome note');
+assert.equal(button('Resolve this alert').props.disabled,true,'Already closed cards stay locked');
+await act(async()=>tree!.unmount());
+
+result={kind:'saved'};let refreshes=0;
+await act(async()=>{tree=TestRenderer.create(<DoctorAlertResolution alert={alert} locale="en" command={command} onRefresh={()=>{refreshes++;}}/>);});
+await act(async()=>button('Resolve alert').props.onClick());
+await act(async()=>tree!.root.findByType('select').props.onChange({target:{value:'member_contacted'}}));
+await act(async()=>tree!.root.findByType('textarea').props.onChange({target:{value:'Spoke with member.'}}));
+await act(async()=>tree!.root.findByType('form').props.onSubmit({preventDefault(){}}));
+assert.equal(refreshes,1,'Saved resolution refreshes the live alert queue and banner');
+assert.equal(tree!.root.findAllByType('form').filter(f=>!f.props.hidden).length,0,'Saved resolution replaces the editable form');
+assert.ok(JSON.stringify(tree!.toJSON()).includes('Spoke with member.'));
+await act(async()=>tree!.unmount());

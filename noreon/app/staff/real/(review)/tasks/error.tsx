@@ -1,0 +1,4 @@
+'use client';
+import { ReportError } from '@/components/report-error';
+import Link from 'next/link';
+export default function TasksError({error,reset}:{error?:unknown;reset:()=>void}){return <section className="max-w-xl space-y-4 rounded-lg border bg-card p-5" role="alert"><ReportError error={error}/><h1 className="text-h2">Your tasks could not load</h1><p className="text-body2">Try again to load your current assignments before recording a change.</p><button type="button" onClick={reset} className="min-h-11 rounded-md bg-primary px-4 text-body2 text-primary-foreground">Try loading tasks again</button><Link href="/staff/real/members" className="ml-3 inline-flex min-h-11 items-center rounded-md border px-4 text-body2 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">Back to assigned members</Link></section>;}

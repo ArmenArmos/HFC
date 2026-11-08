@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import React from 'react';
+import TestRenderer,{act} from 'react-test-renderer';
+import {DoctorCardReload} from '@/components/staff/doctor-workspace/card-reload';
+Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+let tree:TestRenderer.ReactTestRenderer,reloads=0;
+const button=(label:string)=>tree!.root.findAllByType('button').find(b=>b.children.join('')===label)!;
+await act(async()=>{tree=TestRenderer.create(<DoctorCardReload locale="en" pending={false} confirmDiscard onReload={async()=>{reloads++;}}/>);});
+await act(async()=>button('Refresh').props.onClick());assert.equal(reloads,0);
+await act(async()=>button('Keep my entries').props.onClick());assert.equal(reloads,0);assert.equal(button('Clear entries and reload'),undefined);
+await act(async()=>button('Refresh').props.onClick());await act(async()=>button('Clear entries and reload').props.onClick());assert.equal(reloads,1);
+await act(async()=>tree!.update(<DoctorCardReload locale="en" pending={false} confirmDiscard={false} onReload={async()=>{reloads++;}}/>));
+assert.equal(button('Clear entries and reload'),undefined,'A discard warning disappears when no unsaved text remains');
+await act(async()=>button('Refresh').props.onClick());assert.equal(reloads,2,'A card with no unsaved text reloads directly');
+await act(async()=>tree!.unmount());
+console.log('Entry cards require explicit discard before reload; keeping entries never reloads');

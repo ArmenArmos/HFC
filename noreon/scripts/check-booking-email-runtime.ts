@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import {createAppointmentPorts,readAppointmentSummary,readAppointmentData} from '@/lib/real-booking/appointment-runtime';
+import {schedulingEnvelopeHash} from '@/lib/real-booking/scheduling-notice';
+import type {SchedulingRuntime} from '@/lib/real-booking/scheduling-template';
+const id='b3000000-0000-4000-8000-000000000001';
+const runtime:SchedulingRuntime={enabled:true,apiKey:'synthetic-key-not-a-real-secret',sender:'sender@example.invalid',template:{version:'approved-test',approvalReference:'synthetic-only',subject:'Synthetic {{reference}}',textContent:'{{coveredTests}}'}};
+const content={senderEmail:runtime.sender,clinicEmail:'clinic@example.invalid',copyEmail:'copy@example.invalid',templateVersion:runtime.template.version,subject:'Synthetic',textContent:'Synthetic only'};
+const calls:string[]=[];let httpCalls=0;let claim:unknown=null;let failReceipt=false;let wrongClaim=false;
+const details={offerId:id,offerVersion:'v1',clinicId:id,mode:'clinic',startsAt:'2030-01-01T09:00:00+04:00',endsAt:'2030-01-01T10:00:00+04:00',timezone:'Asia/Yerevan',location:'Synthetic clinic',preparation:'Synthetic only',preparationVersion:'v1',coveredTestIds:['synthetic'],followUps:[]};
+const appointment={version:'email-pilot-v1',id,memberId:id,revision:0,status:'confirmed',program:[{id:'synthetic',title:'Synthetic',method:'lab',preparation:''}],current:details,proposed:details,noticeId:id,createdAt:'2026-10-16T00:00:00Z'};
+const workspace={member:{id,name:'Synthetic member'},appointments:[]};
+const read={rpc:async(name:string)=>{calls.push(name);return {data:name==='booking_pilot_workspace_details'?{memberId:id,phone:'37400000001',purposes:{},clinics:{}}:workspace,error:null};}};
+const write={rpc:async(name:string,args:Record<string,unknown>={})=>{
+ calls.push(name);
+ if(name==='claim_booking_notice'){
+  assert.equal(args.p_generation,1,'Ordinary replay may never implicitly retry a failed notice');
+  if(claim)return {data:{...content,templateVersion:wrongClaim?'other-template':content.templateVersion,noticeId:id,attemptId:args.p_attempt,generation:1,envelopeHash:schedulingEnvelopeHash(content)},error:null};
+ }
+ if(name==='recover_booking_command')assert.equal('commandId'in(args.p_selection as object),false,'Command is a separate RPC argument, not browser selection JSON');
+ if(name==='record_booking_notice_receipt')return failReceipt?{data:null,error:{code:'08006'}}:{data:true,error:null};
+ if(name==='apply_booking_notice_receipt')return {data:appointment,error:null};
+ return {data:null,error:null};
+}};
+const http:typeof fetch=async()=>{calls.push('HTTP');httpCalls++;return new Response(JSON.stringify({messageId:'synthetic-provider-receipt'}),{status:201});};
+const make=(enabled:SchedulingRuntime|null)=>createAppointmentPorts({memberId:id,actorId:id,read,write,runtime:enabled,invalidate:()=>{},http});
+assert.equal(await make(null).dispatch(id),'pending');assert.equal(httpCalls,0);assert.deepEqual(calls,[],'Disabled runtime must never claim or send');
+assert.equal(await make(runtime).dispatch(id),'pending');assert.equal(httpCalls,0,'Duplicate/absent claim does not send');
+claim=true;failReceipt=true;calls.length=0;
+assert.equal(await make(runtime).dispatch(id),'unknown');assert.equal(httpCalls,1);
+assert.deepEqual(calls,['claim_booking_notice','HTTP','record_booking_notice_receipt'],'A receipt-persistence failure may never advance confirmation');
+failReceipt=false;calls.length=0;
+assert.equal(await make(runtime).dispatch(id),'confirmed');
+assert.deepEqual(calls,['claim_booking_notice','HTTP','record_booking_notice_receipt','apply_booking_notice_receipt'],'Confirmation requires a durable receipt then successful DB projection');
+wrongClaim=true;calls.length=0;const previousHttp=httpCalls;
+assert.equal(await make(runtime).dispatch(id),'unknown');assert.equal(httpCalls,previousHttp,'Mismatched claimed template never reaches HTTP');
+calls.length=0;await make(runtime).recover({commandId:id,offerId:id,offerVersion:'v1',homeAddress:null});
+assert.deepEqual(calls,['recover_booking_command'],'Recovery may not derive new source, claim or send');
+calls.length=0;
+const legacy={id,revision:0,status:'requested',requestedTerms:{startsAt:details.startsAt,endsAt:details.endsAt,timezone:'Asia/Yerevan',mode:'clinic',location:'Synthetic clinic'},requirements:[{id:'synthetic',title:'Synthetic',method:'lab'}],algorithmVersion:'synthetic',contextToken:'synthetic',contextStale:false,proposal:null,currentArrangement:null,pendingChange:null,createdAt:appointment.createdAt};
+const blocked=createAppointmentPorts({memberId:id,actorId:id,read:{rpc:async name=>{assert.equal(name,'patient_test_booking_requests');return {data:[legacy],error:null};}},write,runtime,invalidate:()=>{},http});
+await assert.rejects(()=>blocked.prepare(),/requires reconciliation/);
+assert.deepEqual(calls,[],'An unconverted provider arrangement blocks new program admission, including direct action submissions');
+calls.length=0;await readAppointmentSummary({memberId:id,read});assert.deepEqual(calls,['booking_pilot_workspace','booking_pilot_workspace_details','booking_pilot_programme_state'],'Home/Tests summary may only read the scoped workspace; never seal a program or fetch offers');
+calls.length=0;await createAppointmentPorts({memberId:id,actorId:id,read,write,runtime:null,allowRecovery:false,invalidate:()=>{}}).recover({commandId:id,offerId:id,offerVersion:'v1',homeAddress:null});assert.deepEqual(calls,[],'Disabled/demo member path must not invoke service recovery');
+const readContext={memberId:id,actorId:id,read,write,runtime,invalidate:()=>{}};
+const held=await readAppointmentData({...readContext,write:{rpc:async()=>{throw Error('Urgent guidance takes priority over routine publication.');}}});assert.equal(held.data.unavailableReason,'clinical-hold');
+const stale=await readAppointmentData({...readContext,write:{rpc:async()=>({data:null,error:{code:'40001'}})}});assert.equal(stale.data.unavailableReason,'source-unavailable');
+console.log('Actual runtime RPC composition: disabled/no-claim no sends, generation1 only, durable receipt before apply, isolated recovery. Injected RPC/HTTP, not real Auth/DB.');

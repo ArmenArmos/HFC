@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {qualifyingReadings,memberMonitoring,monitoringProgress,type MonitoringRequirement,type AcceptedReading} from '@/lib/service-workflow/follow-up';
+const requirement={id:'requirement',case_id:'case',created_at:'2026-10-11T08:00:00Z',starts_at:'2026-10-11T09:00:00Z',ends_at:'2026-10-11T10:00:00Z',required_count:2,instructions:'Fictional instructions',status:'active',actor_id:'private-staff-id',actor_label:'Fictional doctor',acknowledged_at:null,revision:0,source_publication:1,current_publication:1} as MonitoringRequirement;
+const reading=(id:string,measured_at:string,accepted_at:string):AcceptedReading=>({id,case_id:'case',submission_id:id,measured_at,accepted_at,systolic:120,diastolic:80,pulse:null});
+const readings=[reading('one','2026-10-11T09:00:00Z','2026-10-11T09:01:00Z'),reading('late','2026-10-11T09:59:00Z','2026-10-11T11:00:00Z'),reading('outside','2026-10-11T10:00:00Z','2026-10-11T10:01:00Z'),reading('early','2026-10-11T08:59:00Z','2026-10-11T09:01:00Z')];
+assert.deepEqual(qualifyingReadings(requirement,readings).map(r=>r.id),['one','late']);
+assert.equal(monitoringProgress(requirement,[...readings,readings[0]]).received,2);
+assert.equal(monitoringProgress(requirement,readings).late,1);
+assert.equal(monitoringProgress(requirement,readings).missing,0);
+const member=memberMonitoring([requirement],readings,[{requirement_id:requirement.id,reading_id:"one",late:false},{requirement_id:requirement.id,reading_id:"late",late:true}]);
+assert.equal(member[0].received,2);assert.ok(!JSON.stringify(member).includes('private-staff-id'));assert.ok(!JSON.stringify(member).includes('systolic'));
+assert.equal(qualifyingReadings({...requirement,status:'cancelled'},readings).length,2,'historical evidence remains inspectable after cancellation');
+assert.equal(qualifyingReadings(requirement,[reading('preapproval','2026-10-11T09:30:00Z','2026-10-11T07:59:00Z')]).length,0);
+console.log('Follow-up half-open window, late acceptance, distinct evidence and member projection passed.');

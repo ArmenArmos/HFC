@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { fictionalResultStatus, questionnaireEvidenceStatus } from '@/lib/service-workflow/review-copy';
+import { createWorkflow } from '@/lib/service-workflow/model';
+const w=createWorkflow([]);
+assert.equal(fictionalResultStatus(w,'lipid'),'Awaiting approval');
+w.receivedTestIds=['lipid'];
+assert.match(questionnaireEvidenceStatus(w),/Received results await interpretation/);
+w.publication={at:new Date().toISOString(),doctor:'Fictional GP',version:1,resultTestIds:['lipid'],draft:w.draft};
+assert.equal(fictionalResultStatus(w,'lipid'),'Published');
+assert.equal(fictionalResultStatus(w,'bp'),'Awaiting approval');
+assert.match(questionnaireEvidenceStatus(w),/published plan/);
+assert.match(questionnaireEvidenceStatus(w),/not recalculated/);
+console.log('Review copy checks passed: original questionnaire evidence and per-result publication state.');

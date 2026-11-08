@@ -1,0 +1,68 @@
+name: CI burst server watchdog
+# Last line of defence for the temporary CI server, which is billed until it is
+# deleted. output/workflow-tools/ci-burst on Khikar's Mac normally removes it;
+# this runs when the Mac is off. It sees only servers labelled
+# purpose=noreon-ci-burst, deletes the ones past the age limit and installs
+# nothing. No checkout and no PR trigger: the token, which covers the whole
+# Hetzner project, must never sit near repository or PR code. The environment
+# limits the secret to main. The workflow_dispatch age never applies to a real
+# burst server: only one also labelled watchdog-test=true.
+on:
+  schedule:
+    - cron: "23 */3 * * *"
+  workflow_dispatch:
+    inputs:
+      max_age_hours:
+        description: Test only, age limit in hours for servers also labelled watchdog-test=true
+        default: "16.5"
+permissions: {}
+concurrency:
+  group: ci-burst-watchdog
+  cancel-in-progress: false
+jobs:
+  reap:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    environment: ci-burst-watchdog
+    timeout-minutes: 5
+    steps:
+      - name: Delete burst servers past the age limit
+        shell: bash
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
+          MAX_AGE_HOURS: ${{ inputs.max_age_hours || '16.5' }}
+        run: |
+          [[ "$MAX_AGE_HOURS" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "max_age_hours must be a number"; exit 1; }
+          test_age=$(awk -v h="$MAX_AGE_HOURS" 'BEGIN { printf "%d", h * 3600 }')
+          real_age=88200 # 24.5 hours
+          api=https://api.hetzner.cloud/v1
+          # The header goes over stdin, so the token is never in a command line.
+          hz() { printf 'header = "Authorization: Bearer %s"\n' "$HCLOUD_TOKEN" | curl -sS --max-time 30 -K - "$@"; }
+          status() { hz -o /dev/null -w '%{http_code}' "$api/servers/$1"; }
+
+          list=$(hz -f "$api/servers?label_selector=purpose%3D%3Dnoreon-ci-burst&per_page=50")
+          rows=$(jq -r '.servers[]
+            | select(.labels.purpose == "noreon-ci-burst" and .name != "noreon-ci-1" and .name != "noreon-ci-2")
+            | [.id, .name, .created, (.labels["watchdog-test"] // "no")] | @tsv' <<< "$list")
+          [ -n "$rows" ] || { echo "No burst server."; exit 0; }
+
+          failed=0
+          while IFS=$'\t' read -r id name created is_test; do
+            age=$(( $(date +%s) - $(date -d "$created" +%s) ))
+            max_age=$real_age
+            if [ "$is_test" = true ]; then max_age=$test_age; fi
+            if [ "$age" -lt "$max_age" ]; then echo "$name ($id): $age s old, keeping."; continue; fi
+            # Read the label again from the server itself just before deleting.
+            label=$(hz -f "$api/servers/$id" | jq -r '.server.labels.purpose')
+            if [ "$label" != noreon-ci-burst ]; then echo "$name ($id): label changed, keeping."; continue; fi
+            echo "$name ($id): $age s old, deleting."
+            hz -f -X DELETE -o /dev/null "$api/servers/$id" || { failed=1; continue; }
+            gone=
+            for _ in $(seq 1 24); do
+              sleep 5
+              if [ "$(status "$id")" = 404 ]; then gone=1; break; fi
+            done
+            if [ -n "$gone" ]; then echo "$name ($id): deleted."
+            else echo "$name ($id): still there two minutes after delete."; failed=1; fi
+          done <<< "$rows"
+          exit "$failed"

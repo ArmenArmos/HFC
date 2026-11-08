@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {issueRecoveryProof,verifyRecoveryProof} from '@/lib/staff/recovery-proof';
+import {staffSessionMethodAllowed} from '@/lib/staff/staff-session-method';
+const now=1_800_000_000_000,secret='synthetic-local-secret-'.repeat(3);
+const input={operationId:'11111111-1111-4111-8111-111111111111',generation:1,userId:'22222222-2222-4222-8222-222222222222',sessionId:'33333333-3333-4333-8333-333333333333',tokenDigest:'a'.repeat(64),stage:'verified' as const,operationExpiresAt:now+3600000};
+const signed=issueRecoveryProof(input,secret,now),proof=verifyRecoveryProof(signed,secret,now)!;
+assert.equal(proof.purpose,'staff-password-recovery');assert.equal(proof.expiresAt,now+600000);assert.equal(proof.sessionId,input.sessionId);
+for(const bad of ['',signed+'x',signed.replace(/^./,'z')])assert.equal(verifyRecoveryProof(bad,secret,now),null);
+assert.equal(verifyRecoveryProof(signed,secret,now+600000),null);assert.equal(verifyRecoveryProof(signed,'other-secret'.repeat(4),now),null);
+assert.equal(verifyRecoveryProof(issueRecoveryProof({...input,operationExpiresAt:now+1000},secret,now),secret,now+1000),null);
+for(const amr of [undefined,null,{},[],[{method:'otp'}],[{method:'otp'},{method:'totp'}],[{method:'password'},{method:'recovery'}],[{method:'password'},{}],[{method:2}],[{method:''}]])assert.equal(staffSessionMethodAllowed(amr),false,JSON.stringify(amr));
+for(const methods of [['password'],['password','totp'],['password','otp']])assert.equal(staffSessionMethodAllowed(methods.map(method=>({method}))),true);
+console.log('Recovery proofs bind purpose/session/generation/digest and expire; strict shared staff AMR matrix passed.');

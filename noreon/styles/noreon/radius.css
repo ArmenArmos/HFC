@@ -1,0 +1,9 @@
+/* Brand Book p.12 "Border Radius": rounded corners for a friendly, modern feel. */
+:root{
+  --radius-xs:4px;   /* small elements, checkboxes, chips inside rows */
+  --radius-sm:8px;   /* inputs, buttons */
+  --radius-md:12px;  /* cards, modals */
+  --radius-lg:16px;  /* sheets, menus */
+  --radius-xl:24px;  /* large containers, hero panels */
+  --radius-pill:999px; /* status badges, progress tracks, avatars */
+}

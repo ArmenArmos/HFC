@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import {staffInvitationConfig} from "@/lib/staff/real-admin";
+const env={NEXT_PUBLIC_PATIENT_DEMO:"false",NOREON_DEPLOYMENT_TARGET:"app",NOREON_REAL_MEMBER_REVIEW_ENABLED:"true",NEXT_PUBLIC_SUPABASE_URL:"https://fixture.example.invalid",NEXT_PUBLIC_SUPABASE_ANON_KEY:"synthetic-public-key",SUPABASE_SERVICE_ROLE_KEY:"synthetic-server-key",NOREON_STAFF_INVITATIONS_ENABLED:"true",NOREON_STAFF_INVITATION_SECRET:"synthetic-proof-secret-32-characters-minimum",NOREON_BREVO_API_KEY:"synthetic-email-key-32-characters-minimum",NOREON_BREVO_EMAIL_SENDER:"ops@example.invalid",NODE_ENV:"production"};
+assert.ok(staffInvitationConfig(env));
+assert.equal(staffInvitationConfig({...env,SUPABASE_SERVICE_ROLE_KEY:undefined}),null,"Do not offer invitations that cannot create the reserved account");
+assert.equal(staffInvitationConfig({...env,NOREON_STAFF_INVITATIONS_ENABLED:"false"}),null);
+assert.equal(staffInvitationConfig({...env,NOREON_STAFF_INVITATION_SECRET:undefined}),null);
+assert.equal(staffInvitationConfig({...env,NOREON_BREVO_EMAIL_SENDER:undefined}),null);
+assert.equal(staffInvitationConfig({...env,NOREON_STAFF_INVITATION_ORIGIN:"https://elsewhere.example.invalid"}),null);
+console.log("Staff invitation readiness requires server credentials, purpose secret, sender and fixed doctor origin.");

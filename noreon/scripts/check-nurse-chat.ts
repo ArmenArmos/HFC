@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {ConversationRepository} from '@/lib/conversation-persistence/repository';
+
+assert.equal(typeof ConversationRepository.prototype.nurseWorkspace, 'function', 'Assigned nurses need a deliberately scoped conversation reader');
+assert.equal(typeof ConversationRepository.prototype.nurseReply, 'function', 'Nurse replies must use their own operation, not doctor approval');
+const {nurseChatEnabled}=await import('@/lib/nurse-chat/config');
+for(const value of [undefined,'false','TRUE','1',' true','true '])assert.equal(nurseChatEnabled({NOREON_NURSE_CHAT:value}),false);
+assert.equal(nurseChatEnabled({NOREON_NURSE_CHAT:'true'}),true);
+const calls:{name:string;args:Record<string,unknown>}[]=[];
+const member='ad110000-0000-4000-8000-000000000001',request='ad110000-0000-4000-8000-000000000002';
+const telegramFlag=process.env.NOREON_TELEGRAM_ENABLED;
+process.env.NOREON_TELEGRAM_ENABLED='false';
+const repo=new ConversationRepository({rpc:async(name,args)=>{calls.push({name,args});return {error:null,data:name==='conversation_nurse_reply'?{ok:true,replyId:request,replayed:false}:{ok:true,memberId:member,memberName:'Member',doctorName:'Doctor',version:2,canSend:true,items:[]}};}});
+assert.equal((await repo.nurseWorkspace(member)).ok,true);
+assert.equal((await repo.nurseReply({memberId:member,requestId:request,expectedVersion:2,body:'  Written by your nurse\r\nSecond line  '})).ok,true);
+assert.deepEqual(calls,[{name:'conversation_nurse_workspace',args:{p_member:member,p_telegram_enabled:false}},{name:'conversation_nurse_reply',args:{p_member:member,p_request_id:request,p_expected_version:2,p_body:'Written by your nurse\nSecond line'}}]);
+await assert.rejects(()=>repo.nurseReply({memberId:member,requestId:request,expectedVersion:2,body:'  '}));
+await assert.rejects(()=>repo.nurseReply({memberId:member,requestId:request,expectedVersion:2,body:'x'.repeat(4097)}));
+await assert.rejects(()=>repo.nurseReply({memberId:member,requestId:request,expectedVersion:2,body:'hello',sender:'doctor'}));
+await assert.rejects(()=>repo.nurseWorkspace('invalid'));
+assert.equal(calls.length,2,'Invalid input never reaches SQL');
+process.env.NOREON_TELEGRAM_ENABLED='true';
+await repo.nurseWorkspace(member);
+assert.deepEqual(calls.at(-1),{name:'conversation_nurse_workspace',args:{p_member:member,p_telegram_enabled:true}},'The known non-secret environment switch participates in the scoped route projection');
+if(telegramFlag===undefined)delete process.env.NOREON_TELEGRAM_ENABLED;else process.env.NOREON_TELEGRAM_ENABLED=telegramFlag;
+console.log('Nurse chat: exact flag, scoped RPCs, normalized exact body, length and forged sender checks passed.');

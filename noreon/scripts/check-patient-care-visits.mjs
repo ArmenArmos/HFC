@@ -1,0 +1,11 @@
+import {clinicSqlTarget} from './fixtures/clinic-db-target.mjs';
+const target=clinicSqlTarget();
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+const sql=(process.env.NOREON_VISIT_TRANSACTIONAL_MIGRATION==='1'?'begin;\n'+['20261016035421_patient_care_visit_evidence.sql','20261016040649_patient_visit_nested_uuid_validation.sql'].map(name=>readFileSync(`supabase/migrations/${name}`,'utf8')).join('\n'):'')+readFileSync('scripts/check-patient-care-visits.sql','utf8').replace(process.env.NOREON_VISIT_TRANSACTIONAL_MIGRATION==='1'?'begin;':'__unused__','');
+const result=spawnSync('docker',['exec','-i',target.container,'psql','-U','postgres','-d',target.database,'-X','-v','ON_ERROR_STOP=1'],{input:sql,encoding:'utf8'});
+const log=process.env.NOREON_VISIT_SQL_LOG??'/tmp/noreon-visit-sql.log';
+writeFileSync(log,(result.stdout??'')+'\n'+(result.stderr??''));
+assert.equal(result.status,0,`Nurse SQL check failed; see ${log}`);
+console.log('PASS normal fictional nurse SQL persistence checks (rollback). Actual Auth/UI and concurrent schedules remain separate gates.');

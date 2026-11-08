@@ -1,0 +1,22 @@
+import {withRouteLogging} from '@/lib/observability/with-logging';
+import {requireClinicPortal} from '@/lib/clinic-portal/identity';
+import {clinicLocale} from '@/lib/clinic-portal/locale';
+import {clinicAuditPageSchema,EXPORT_LIMIT,parseFilters,rpcArgs,toCsv,withDefaultWindow} from '@/lib/activity-log/contracts';
+export const dynamic='force-dynamic';
+export const GET=withRouteLogging(async function GET(request:Request){
+ const query=Object.fromEntries(new URL(request.url).searchParams),locale=await clinicLocale(query.locale);
+ const t=(en:string,hy:string,ru:string)=>locale==='hy'?hy:locale==='ru'?ru:en;
+ const context=await requireClinicPortal(query.clinic??null);
+ const text=(body:string,status:number)=>new Response(body,{status,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'private, no-store'}});
+ if(context.identity.capability!=='clinic_admin')return text(t('You cannot export this audit log.','Դուք չեք կարող արտահանել այս մատյանը։','Вы не можете выгрузить этот журнал.'),403);
+ const asked=parseFilters(query);
+ if(asked.memberInvalid)return text(t('Not a member reference.','Սա անդամի հղում չէ։','Это не идентификатор участника.'),400);
+ const filters=withDefaultWindow(asked);
+ const result=await context.rpc.rpc('clinic_audit_log_export',{p_profile_values:true,p_clinic:context.identity.clinicId,...rpcArgs(filters)});
+ const parsed=clinicAuditPageSchema.safeParse(result.data);
+ if(result.error||!parsed.success)return text(t('The audit log could not load. Try again.','Գործողությունների մատյանը չհաջողվեց բեռնել։ Նորից փորձեք։','Не удалось загрузить журнал действий. Попробуйте снова.'),503);
+ const page=parsed.data;
+ if('status'in page)return text(page.status==='disabled'?t('The audit log is not switched on yet.','Գործողությունների մատյանը դեռ միացված չէ։','Журнал действий пока не включён.'):t('You cannot export this audit log.','Դուք չեք կարող արտահանել այս մատյանը։','Вы не можете выгрузить этот журнал.'),403);
+ if(page.next)return text(t(`More than ${EXPORT_LIMIT} rows match. Narrow the dates and download again.`,`Համապատասխանում է ավելի քան ${EXPORT_LIMIT} տող։ Կրճատեք ամսաթվերի միջակայքը և նորից ներբեռնեք։`,`Найдено более ${EXPORT_LIMIT} строк. Сузьте диапазон дат и скачайте снова.`),400);
+ return new Response(toCsv(page.rows),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="noreon-clinic-audit-${new Date().toISOString().slice(0,10)}.csv"`,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
+});

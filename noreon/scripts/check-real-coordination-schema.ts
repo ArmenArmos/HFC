@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {coordinationCommandSchema} from '../lib/staff/real-coordination/schema';
+const ids={caseId:'a8000000-0000-4000-8000-000000000001',taskId:'a8000000-0000-4000-8000-000000000002',requestId:'a8000000-0000-4000-8000-000000000003'};
+assert.ok(coordinationCommandSchema.safeParse({...ids,revision:0,operation:'create',input:{kind:'contact-followup',title:' Contact ',instructions:' Call to collect an operational update ',ownerId:ids.taskId,dueAt:null}}).success);
+for(const operation of ['publish','approve-report','receive-result','measurement'])assert.equal(coordinationCommandSchema.safeParse({...ids,revision:1,operation,input:{}}).success,false);
+assert.equal(coordinationCommandSchema.safeParse({...ids,revision:1,operation:'cancel',input:{note:'  '}}).success,false);
+assert.equal(coordinationCommandSchema.safeParse({...ids,revision:1,operation:'reassign',input:{ownerId:ids.taskId,actorId:ids.caseId}}).success,false);
+assert.equal(coordinationCommandSchema.safeParse({...ids,revision:1,operation:'contact',input:{outcome:'reached',note:'Fictional contact'},role:'doctor'}).success,false);
+assert.equal(coordinationCommandSchema.safeParse({...ids,revision:0,operation:'complete',input:{note:'Fictional completion'}}).success,false);
+for(const origin of ['nurse_handoff','doctor_handover','zoe_side_effect'])assert.equal(coordinationCommandSchema.safeParse({...ids,revision:0,operation:'create',input:{kind:'contact-followup',title:'Nurse handoff',instructions:'Fictional note',ownerId:ids.taskId,dueAt:null,origin}}).success,false,'Staff cannot supply system provenance');
+console.log('Coordination payloads accept bounded operational commands and reject clinical commands, spoofed authority and empty reasons.');

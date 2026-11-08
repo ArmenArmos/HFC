@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {runAppointmentSelection,readPilotForm} from '@/lib/real-booking/appointment-commands';
+import type {BookingProgram,TrustedOffer} from '@/lib/real-booking/appointment-schema';
+const id='b3000000-0000-4000-8000-000000000001';
+const input={commandId:id,offerId:id,offerVersion:'v1',homeAddress:null,suggestedSetFingerprint:'["synthetic-test"]'};
+const program:BookingProgram={memberId:id,sourceToken:'source',requirementsToken:'requirements',engineVersion:'synthetic-engine',items:[{id:'synthetic-test',title:'Synthetic test',method:'lab',preparation:'Synthetic only',source:'fixture'}]};
+const offer:TrustedOffer={id,version:'v1',source:'synthetic',clinicId:id,mode:'clinic',startsAt:'2030-01-01T09:00:00+04:00',endsAt:'2030-01-01T10:00:00+04:00',timezone:'Asia/Yerevan',clinicAddress:'Synthetic clinic',preparation:'Synthetic only',preparationVersion:'v1',coveredTestIds:['synthetic-test'],followUps:[],reservationContract:{version:'manual-v1',reference:'synthetic'}};
+const details={offerId:id,offerVersion:'v1',clinicId:id,mode:'clinic',startsAt:offer.startsAt,endsAt:offer.endsAt,timezone:'Asia/Yerevan',location:'Synthetic clinic',preparation:'Synthetic only',preparationVersion:'v1',coveredTestIds:['synthetic-test'],followUps:[]};
+const appointment={version:'email-pilot-v1',id,memberId:id,revision:0,status:'notification-pending',program:program.items.map(item=>({id:item.id,title:item.title,method:item.method,preparation:item.preparation})),current:null,proposed:details,noticeId:id,createdAt:'2026-10-16T00:00:00Z'};
+let prepares=0,writes=0,dispatches=0;let seen:unknown;
+const deps={available:true,recover:async()=>({data:null,error:null}),prepare:async()=>{prepares++;return {program,sealId:id};},offer:async()=>offer,render:()=>({senderEmail:'noreon@example.invalid',templateVersion:'synthetic-approved',subject:'Synthetic',textContent:'Synthetic only'}),select:async(args:unknown)=>{writes++;seen=args;return {data:appointment,error:null};},dispatch:async()=>{dispatches++;return 'confirmed' as const;},invalidate:()=>{}};
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,available:false}),{ok:false,code:'unavailable'});assert.equal(prepares,0);assert.equal(writes,0);
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},{...input,program:[]},deps),{ok:false,code:'invalid'});assert.equal(prepares,0);
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,deps),{ok:true,code:'saved',commandRecorded:true});assert.equal(writes,1);assert.equal(dispatches,1);
+assert.equal((seen as {memberId:string}).memberId,id);assert.equal('program'in(seen as object),false,'Admission receives only private program reference');
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,select:async()=>({data:null,error:{code:'40001'}})}),{ok:false,code:'conflict'});
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,select:async()=>({data:null,error:{code:'40001'},status:503})}),{ok:false,code:'unknown',commandRecorded:true,outcomeUnknown:true});
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,select:async()=>{throw Error('lost after commit');}}),{ok:false,code:'unknown',commandRecorded:true,outcomeUnknown:true});
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,prepare:async()=>{throw Error('source unavailable');}}),{ok:false,code:'unavailable'});
+const beforeRecovery={prepares,writes};
+for(const changed of ['["other-test"]','[]',undefined]){
+ assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},{...input,suggestedSetFingerprint:changed},deps),{ok:false,code:'tests-changed'});
+ assert.equal(writes,beforeRecovery.writes,'A missing or changed displayed set never reaches admission');
+}
+const beforeReplay={prepares,writes};
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,recover:async()=>({data:appointment,error:null})}),{ok:true,code:'saved',commandRecorded:true});
+assert.deepEqual({prepares,writes},beforeReplay,'Original HTTP recovery must precede changed-source derivation or admission');
+const beforeDisabledRecovery=dispatches;
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,available:false,recover:async()=>({data:appointment,error:null})}),{ok:true,code:'pending',commandRecorded:true});
+assert.equal(dispatches,beforeDisabledRecovery,'Disabled delivery can recover a committed receipt without a send claim');
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,offer:async()=>({...offer,mode:'home',clinicAddress:null})}),{ok:false,code:'invalid'});
+const form=new FormData();for(const[k,v]of Object.entries({...input,homeAddress:''}))form.set(k,v);
+assert.deepEqual(readPilotForm(form,false),input);
+form.set('program','[]');assert.equal(readPilotForm(form,false),null,'Extra authority fields reject before any writer');
+assert.deepEqual(await runAppointmentSelection({memberId:id,actorId:id},input,{...deps,recover:async()=>({data:appointment,error:null}),dispatch:async()=>'arrangement-review' as const}),{ok:false,code:'arrangement-review',commandRecorded:true},'Initial selection also preserves the saved-receipt review distinction');
+console.log('Pilot command: no legacy fallback, private reference admission, known rollback vs uncertain commit, home address and strict form authority passed. Mocked IO.');

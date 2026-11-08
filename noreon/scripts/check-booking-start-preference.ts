@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { bookingPreferenceSchema, bookingRequestSchema, bookingTermsSchema, providerInputSchema } from '@/lib/real-booking/schema';
+const preference = {startsAt:'2099-11-02T05:00:00Z',timezone:'Asia/Yerevan',mode:'clinic',location:'Fictional clinic'};
+const request = {id:'00112233-4455-4677-8899-aabbccddeeff',revision:0,status:'requested',requestedTerms:preference,requirements:[],algorithmVersion:'synthetic',contextToken:'context',contextStale:false,proposal:null,currentArrangement:null,pendingChange:null,createdAt:'2026-10-15T00:00:00Z'};
+assert.equal(bookingRequestSchema.safeParse(request).success,true,'Member preferences have a start and no invented end');
+assert.equal(bookingTermsSchema.safeParse(preference).success,false,'Actual provider windows still require an end');
+assert.equal(providerInputSchema.safeParse({provider:'Fictional clinic',terms:preference,obtainedAt:'2026-10-14T00:00:00Z',channel:'phone',source:'Synthetic source',preparation:'Synthetic preparation'}).success,false);
+assert.equal(bookingRequestSchema.safeParse({...request,requestedTerms:{...preference,endsAt:'2099-11-02T06:00:00Z'}}).success,true,'Old saved windows remain readable');
+assert.equal(bookingRequestSchema.safeParse({...request,requestedTerms:{...preference,endsAt:preference.startsAt}}).success,false,'Malformed legacy preferences remain invalid');
+assert.equal(bookingRequestSchema.safeParse({...request,pendingChange:{kind:'reschedule',terms:preference}}).success,true,'Rescheduling supports start-only preference');
+assert.equal(bookingRequestSchema.safeParse({...request,requestedTerms:{...preference,startsAt:'invalid'}}).success,false);
+const office={...preference,mode:'office',location:'Synthetic office address and reception'};
+assert.equal(bookingPreferenceSchema.safeParse(office).success,true,'Office is a requested location, without implying a provider offers it');
+assert.equal(bookingTermsSchema.safeParse(office).success,false,'An office provider window still requires an explicit end');
+assert.equal(bookingTermsSchema.safeParse({...office,endsAt:'2099-11-02T06:00:00Z'}).success,true);
+assert.equal(bookingRequestSchema.safeParse({...request,requestedTerms:office,pendingChange:{kind:'reschedule',terms:office}}).success,true);
+assert.equal(bookingPreferenceSchema.safeParse({...office,location:''}).success,false);
+console.log('Member start-only and strict provider-window contracts passed.');

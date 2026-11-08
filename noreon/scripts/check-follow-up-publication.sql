@@ -1,0 +1,43 @@
+begin;
+do $$
+declare c uuid:=gen_random_uuid();d uuid:=gen_random_uuid();cl uuid:=gen_random_uuid();a uuid:=gen_random_uuid();req uuid:=gen_random_uuid();ev bigint;rev integer;w jsonb;s jsonb;draft jsonb;before_case jsonb;
+begin
+ insert into auth.users(id) values(d),(a);
+ insert into public.workspace_clinics(id,name) values(cl,'Fictional monitoring clinic');
+ insert into public.workspace_staff(user_id,role,display_name,clinic_id) values(d,'doctor','Fictional monitoring doctor',cl);
+ insert into public.workspace_staff(user_id,role,display_name) values(a,'admin','Fictional coordinator');
+ draft:=jsonb_build_object('explanation','Reviewed','instructions','Fictional plan','followUp','','medicationName','','medicationDose','','medicationInstructions','','medicationTimes','[]'::jsonb);
+ w:=jsonb_build_object('revision',0,'startedAt',now(),'tests','[]'::jsonb,'receivedTestIds','[]'::jsonb,'allResultsAt',now(),'consultation','not-required','draft',draft,'draftSaved',false,'publication',null);
+ s:=jsonb_build_object('userId',c,'expiresAt',extract(epoch from now()+interval '1 day')*1000,'measurements','[]'::jsonb,'state',jsonb_build_object('consentAccepted',true,'profile',jsonb_build_object('userId',c),'assessment',jsonb_build_object('completedAt',now(),'urgentRule',null)));
+ perform public.workspace_create_case(c,s,d);rev:=public.workspace_initialize_workflow(c,0,w);
+ select evidence_revision into ev from public.workspace_cases where id=c;
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft);rev:=public.workspace_publish_review(c,d,rev,ev);
+
+ perform public.workspace_create_monitoring(c,d,rev,ev,req,now()+interval '1 hour',now()+interval '2 hours',2,'Fictional monitoring');
+ perform public.workspace_acknowledge_monitoring(c,req);
+ select revision,evidence_revision into rev,ev from public.workspace_cases where id=c;
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft);
+ begin perform public.workspace_publish_review(c,d,rev,ev);raise exception 'TEST: undecided monitoring published';exception when others then if sqlerrm not like '%Decide whether%' then raise;end if;end;
+ select to_jsonb(x) into before_case from public.workspace_cases x where id=c;
+ begin perform public.workspace_save_review_draft(c,d,rev,ev,draft,jsonb_build_array(jsonb_build_object('requirementId',gen_random_uuid(),'decision','retain')));raise exception 'TEST: foreign decision accepted';exception when others then if sqlerrm not like '%requirement changed%' then raise;end if;end;
+ if (select to_jsonb(x) from public.workspace_cases x where id=c) is distinct from before_case then raise exception 'TEST: invalid decision partially saved draft';end if;
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft,jsonb_build_array(jsonb_build_object('requirementId',req,'decision','retain')));
+ rev:=public.workspace_publish_review(c,d,rev,ev);
+ if not exists(select 1 from public.workspace_monitoring_requirements where id=req and status='active' and current_publication=2 and source_publication=1 and acknowledged_at is not null) then raise exception 'TEST: retention lost provenance or acknowledgement';end if;
+ if (select count(*) from public.workspace_activity where case_id=c and kind='plan.published')<>2 then raise exception 'TEST: duplicate publication activity';end if;
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft,jsonb_build_array(jsonb_build_object('requirementId',req,'decision','supersede')));
+ perform public.workspace_accept_reading(c,gen_random_uuid(),now(),120,80,null);
+ select revision,evidence_revision into rev,ev from public.workspace_cases where id=c;
+ begin perform public.workspace_publish_review(c,d,rev,ev);raise exception 'TEST: stale decisions published';exception when others then if sqlerrm not like '%Decide whether%' then raise;end if;end;
+ rev:=public.workspace_save_review_draft(c,d,rev,ev,draft,jsonb_build_array(jsonb_build_object('requirementId',req,'decision','supersede')));
+ rev:=public.workspace_publish_review(c,d,rev,ev);
+ if not exists(select 1 from public.workspace_monitoring_requirements where id=req and status='superseded') then raise exception 'TEST: supersession not applied';end if;
+ req:=gen_random_uuid();
+ perform public.workspace_create_monitoring(c,d,rev,ev,req,now()+interval '1 hour',now()+interval '2 hours',2,'Replacement fictional requirement');
+ select revision into rev from public.workspace_cases where id=c;
+ rev:=public.workspace_reset_review(c,a,rev,w);
+ if not exists(select 1 from public.workspace_monitoring_requirements where id=req and status='superseded') or not exists(select 1 from public.workspace_followup_events where requirement_id=req and note='workflow.reset') then raise exception 'TEST: reset lost monitoring history';end if;
+ if public.workspace_case_snapshot(c)#>'{monitoring,requirements}' is null then raise exception 'TEST: snapshot missing monitoring';end if;
+ if has_function_privilege('service_role','public.workspace_publish_review_before_monitoring(uuid,uuid,integer,bigint)','EXECUTE') then raise exception 'TEST: publication wrapper bypass allowed';end if;
+end $$;
+rollback;

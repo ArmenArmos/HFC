@@ -1,0 +1,40 @@
+begin;
+select public.configure_patient_message_spend((select revision from public.patient_message_spend_policy where id=1),'{"enabled":true,"currency":"USD","daily_limit_micros":9000000000,"sms_segment_ceiling_micros":1000,"whatsapp_message_ceiling_micros":2000,"max_sms_segments":3,"allowed_prefixes":["+374"]}'::jsonb || jsonb_build_object('valid_until',clock_timestamp()+interval '1 day'),'test-operator');
+do $$ begin
+ if not exists(select 1 from public.patient_message_dispatch_control where id=1 and daily_limit=200 and paused_reason is null) then raise exception 'TEST: default controls missing';end if;
+ if has_table_privilege('service_role','public.patient_message_dispatch_control','UPDATE') or has_function_privilege('service_role','public.begin_patient_message_submission_uncontrolled(uuid)','EXECUTE') then raise exception 'TEST: admission bypass';end if;
+end $$;
+update public.patient_message_dispatch_control set started_count=0,budget_day=(now() at time zone 'UTC')::date where id=1;
+insert into auth.users(id,phone,phone_confirmed_at) values('b9b00000-0000-4000-8000-000000000001','37499000601',now());
+update public.profiles set display_name='Fictional member',birth_date='1980-01-01',biological_sex='female' where id='b9b00000-0000-4000-8000-000000000001';
+insert into public.patient_consents(user_id,version) values('b9b00000-0000-4000-8000-000000000001','patient-pilot-v1');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','b9b00000-0000-4000-8000-000000000001',true);
+select public.save_patient_message_preferences('sms',0,'messaging-service-v1');
+select public.save_patient_reminder_preferences('{"medicationEnabled":true,"medicationOffsetMinutes":0,"bpEnabled":false,"bpTimes":["08:00"],"quietStart":"00:00","quietEnd":"00:00"}',0);
+reset role;
+insert into public.patient_care_plans(id,user_id,clinician,instructions,published_at) values('b9b10000-0000-4000-8000-000000000001','b9b00000-0000-4000-8000-000000000001','Fictional GP','Fictional only',now());
+do $$ declare j uuid;a uuid;r bigint;used integer;begin
+ j:=public.enqueue_patient_plan_message('b9b10000-0000-4000-8000-000000000001');
+ select attempt_id into a from public.begin_patient_message_submission_budgeted(j,(select revision from public.patient_message_spend_policy where id=1),array['sms','whatsapp']);
+ if a is null then raise exception 'TEST: first admission missing';end if;
+ select started_count,revision into used,r from public.patient_message_dispatch_control where id=1;
+ if used<>1 then raise exception 'TEST: budget not reserved';end if;
+ if exists(select 1 from public.begin_patient_message_submission_budgeted(j,(select revision from public.patient_message_spend_policy where id=1),array['sms','whatsapp'])) then raise exception 'TEST: repeat admission';end if;
+ perform public.finish_patient_message_submission(a,'failed',null);
+ if (select paused_reason from public.patient_message_dispatch_control where id=1)<>'provider-rejected' then raise exception 'TEST: failure did not persist pause';end if;
+ if public.resume_patient_message_dispatch(r,'configuration-checked',null,'test-operator') then raise exception 'TEST: stale operator resume';end if;
+ select revision into r from public.patient_message_dispatch_control where id=1;
+ if not public.resume_patient_message_dispatch(r,'configuration-checked',1,'test-operator') then raise exception 'TEST: current resume failed';end if;
+ if (select started_count from public.patient_message_dispatch_control where id=1)<>used then raise exception 'TEST: resume reset daily usage';end if;
+ perform public.finish_patient_message_submission(a,'failed',null);
+ if (select paused_reason from public.patient_message_dispatch_control where id=1) is not null then raise exception 'TEST: duplicate old outcome re-paused';end if;
+end $$;
+update public.patient_care_plans set active=false where id='b9b10000-0000-4000-8000-000000000001';
+insert into public.patient_care_plans(id,user_id,clinician,instructions,published_at) values('b9b10000-0000-4000-8000-000000000002','b9b00000-0000-4000-8000-000000000001','Fictional GP','Fictional only',now());
+do $$ declare j uuid;begin
+ j:=public.enqueue_patient_plan_message('b9b10000-0000-4000-8000-000000000002');
+ begin perform * from public.begin_patient_message_submission_budgeted(j,(select revision from public.patient_message_spend_policy where id=1),array['sms','whatsapp']);raise exception 'TEST: daily limit bypassed';exception when others then if sqlerrm<>'message daily limit' then raise;end if;end;
+ if has_function_privilege('authenticated','public.resume_patient_message_dispatch(bigint,text,integer,text)','EXECUTE') then raise exception 'TEST: member can resume';end if;
+end $$;
+rollback;

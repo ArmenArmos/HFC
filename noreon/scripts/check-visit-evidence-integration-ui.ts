@@ -1,0 +1,14 @@
+import assert from'node:assert/strict';import{createElement}from'react';import{create,act}from'react-test-renderer';
+import{VisitEvidence}from'@/components/staff/visit-evidence';import type{VisitRead,VisitCommandResult}from'@/lib/staff/visit-evidence-schema';
+Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+const member='b2400000-0000-4000-8000-000000000001',visit='b2400000-0000-4000-8000-000000000010',next='b2400000-0000-4000-8000-000000000011',submission='b2400000-0000-4000-8000-000000000020';
+const booking={version:'booking-visit-context-v1' as const,appointmentId:visit,acceptedRevision:0,tests:[{id:'synthetic',title:'Synthetic lab',method:'lab' as const}]};
+const initial:VisitRead={version:'visit-evidence-v1',memberId:member,revision:0,bookingContext:booking,collectionAvailability:'available',visits:[]};
+let calls=0;const command=async():Promise<VisitCommandResult>=>{calls++;return{status:'saved',submissionId:submission,visitId:visit,revision:1,entryIds:[],replayed:false};};
+const props={data:initial,locale:'en' as const,actorScope:'synthetic-session',canRecord:true,visitId:visit,openSubmissionId:submission,appendSubmissionId:next,command,refresh:async()=>({status:'unavailable' as const})};
+let view!:ReturnType<typeof create>;await act(async()=>{view=create(createElement(VisitEvidence,props));});
+const start=view.root.findAllByType('button').find(b=>b.children.includes('Start new visit'));assert.ok(start);await act(async()=>start.props.onClick());assert.equal(calls,1);
+const loaded:VisitRead={...initial,revision:1,visits:[{id:visit,createdAt:'2026-10-16T05:00:00Z',bookingContext:booking,entries:[]}]};
+await act(async()=>view.update(createElement(VisitEvidence,{...props,data:loaded,visitId:next,openSubmissionId:next,appendSubmissionId:member})));
+const collection=view.root.findAllByType('select').filter(s=>s.props['aria-label']==='Synthetic lab');assert.equal(collection.length,1,'Same-revision full RSC data must expose the newly persisted visit collection controls');assert.equal(Boolean(collection[0].props.disabled),false);let parent=collection[0].parent;while(parent&&parent.type!=='fieldset')parent=parent.parent;assert.ok(parent);assert.equal(Boolean(parent.props.disabled),false);
+await act(async()=>view.unmount());console.log('Actual nurse widget: saved open followed by complete same-revision RSC data keeps active visit/draft identity and enables linked collection. Mocked action/RSC, not Auth/DB.');

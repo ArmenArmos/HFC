@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+import React from 'react';
+import * as jsx from 'react/jsx-runtime';
+import {act,create,type ReactTestRenderer} from 'react-test-renderer';
+import * as copy from '@/lib/staff/staff-locale-copy';
+(globalThis as Record<string,unknown>).IS_REACT_ACT_ENVIRONMENT=true;
+let result='code',calls=0,complete:((value:{kind:string})=>void)|null=null,wait=false;
+const action=async()=>{calls++;return wait?new Promise<{kind:string}>(resolve=>{complete=resolve;}):{kind:result};};
+const modules:Record<string,unknown>={'react':React,'react/jsx-runtime':jsx,'@/lib/staff/staff-locale-copy':copy,'@/lib/doctor-telegram/actions':{connectDoctorTelegram:action,verifyDoctorTelegram:action,disconnectDoctorTelegram:async()=>({kind:'disconnected'})}};
+const exports:Record<string,unknown>={};
+vm.runInNewContext(ts.transpileModule(readFileSync('components/doctor-chat-v2/telegram-menu.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,require:(name:string)=>{assert.ok(name in modules,name);return modules[name];}});
+const Menu=exports.DoctorTelegramMenu as typeof import('@/components/doctor-chat-v2/telegram-menu').DoctorTelegramMenu;
+for(const [locale,label] of [['en','Connect Telegram'],['hy','Կապել Telegram-ը'],['ru','Подключить Telegram']] as const){
+ let screen!:ReactTestRenderer;
+ await act(async()=>{screen=create(React.createElement(Menu,{locale,connected:false}));});
+ assert.ok(JSON.stringify(screen.toJSON()).includes(label));
+ await act(async()=>screen.root.findByType('button').props.onClick());
+ assert.equal(screen.root.findByType('input').props.type,'password');
+ assert.equal(screen.root.findByType('input').props.autoComplete,'current-password');
+ const submit=async()=>{await act(async()=>screen.root.findByType('form').props.action(new FormData()));};
+ result='password';await submit();assert.equal(screen.root.findByProps({role:'alert'}).type,'p');assert.equal(screen.root.findByType('input').props.name,'password');
+ result='code';await submit();assert.equal(screen.root.findByType('input').props.name,'code');
+ assert.equal(screen.root.findByType('input').props.autoComplete,'one-time-code');assert.equal(screen.root.findByType('input').props.inputMode,'numeric');
+ result='invalid';await submit();assert.ok(screen.root.findByProps({role:'alert'}));assert.equal(screen.root.findByType('input').props.name,'code');
+ result='unavailable';await submit();assert.ok(screen.root.findByProps({role:'alert'}));
+ wait=true;await submit();assert.equal(screen.root.findByType('input').props.disabled,true);
+ const before=calls;await submit();assert.equal(calls,before,'Busy prevents a repeated connection attempt');
+ await act(async()=>{assert.ok(complete);complete({kind:'connected'});});wait=false;
+ assert.equal(screen.root.findAllByType('input').length,0);assert.ok(screen.root.findByProps({role:'status'}));
+ await act(async()=>screen.root.findByType('button').props.onClick());
+ assert.ok(JSON.stringify(screen.toJSON()).includes(label));
+ await act(async()=>screen.unmount());
+}
+console.log('Doctor Telegram menu: three languages, password/code, failures, loading double-submit guard, connected and disconnect states passed (React render, fake actions; no browser layout).');

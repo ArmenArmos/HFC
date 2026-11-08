@@ -1,0 +1,100 @@
+/* Semantic aliases. Components reference ONLY these, never the base ramp,
+   so the dark theme in tokens/dark.css can re-point them wholesale. */
+:root{
+  /* Surfaces — the ground is WARM by default. Brand Book p.07: "Use Light Gold
+     & Ivory for backgrounds to create warmth and calm." Soft Ivory carries
+     product, chat, and marketing alike; the cool grey is the exception, kept
+     for dense data views where a warm cast would tint the numbers. */
+  --surface-page:var(--noreon-ivory);
+  --surface-page-warm:var(--noreon-ivory);
+  --surface-page-gold:var(--noreon-gold-50);
+  --surface-page-cool:var(--noreon-gray-100);
+  --surface-card:var(--noreon-white);
+  --surface-raised:var(--noreon-white);
+  --surface-sunken:var(--noreon-sand-100);
+  --surface-inverse:var(--noreon-navy-700);
+  --surface-inverse-deep:var(--noreon-navy-900);
+  --surface-brand:var(--noreon-teal-600);
+  --surface-subtle-teal:var(--noreon-teal-50);
+  --surface-subtle-gold:var(--noreon-gold-50);
+  --surface-subtle-blue:var(--noreon-blue-50);
+  --surface-overlay:rgba(20,26,54,.55);
+
+  /* Text */
+  --text-strong:var(--noreon-navy-700);   /* headings — navy, not black */
+  --text-body:var(--noreon-slate-900);
+  --text-muted:var(--noreon-slate-600);
+  --text-subtle:#8A91A1;
+  --text-on-inverse:var(--noreon-white);
+  --text-on-inverse-muted:rgba(255,255,255,.72);
+  --text-on-brand:var(--noreon-white);
+  --text-accent:var(--noreon-teal-600);
+  --text-link:var(--noreon-blue-600);
+  --text-link-hover:var(--noreon-blue-500);
+  --text-emphasis:var(--noreon-gold-600);
+
+  /* Borders — all warm, because every ground in this system is warm.
+     subtle  = a card EDGE against the ivory ground
+     divider = a rule drawn ON white, inside a card
+     default = a control outline (input, chip, checkbox)
+     The brand book assigns Cool Gray #E6E9F0 to borders; against Soft Ivory that
+     reads as a blue line, so the warm ramp carries the same job at the same
+     lightness. Cool Gray is still available for cool contexts. */
+  --border-subtle:var(--noreon-sand-200);
+  --border-divider:var(--noreon-warm-200);
+  --border-default:var(--noreon-warm-300);
+  --border-strong:var(--noreon-navy-700);
+  --border-focus:var(--noreon-teal-600);
+  --border-inverse:rgba(255,255,255,.16);
+
+  /* Actions */
+  --action-primary-bg:var(--noreon-navy-700);
+  --action-primary-bg-hover:var(--noreon-navy-800);
+  --action-primary-bg-active:var(--noreon-navy-900);
+  --action-primary-fg:var(--noreon-white);
+  --action-secondary-bg:var(--noreon-teal-600);
+  --action-secondary-bg-hover:var(--noreon-teal-700);
+  --action-secondary-bg-active:var(--noreon-teal-800);
+  --action-secondary-fg:var(--noreon-white);
+  --action-tertiary-bg:transparent;
+  --action-tertiary-bg-hover:var(--noreon-navy-50);
+  --action-tertiary-border:var(--noreon-navy-700);
+  --action-tertiary-fg:var(--noreon-navy-700);
+  --action-emphasis-bg:var(--noreon-gold-600);
+  --action-emphasis-bg-hover:var(--noreon-gold-700);
+  --action-emphasis-fg:var(--noreon-navy-900);
+  --action-disabled-bg:var(--noreon-gray-200);
+  --action-disabled-fg:#A6ADBB;
+
+  /* Status */
+  --status-success-fg:var(--noreon-success-600);
+  --status-success-bg:var(--noreon-success-50);
+  --status-warning-fg:var(--noreon-warning-600);
+  --status-warning-bg:var(--noreon-warning-50);
+  --status-info-fg:var(--noreon-info-600);
+  --status-info-bg:var(--noreon-info-50);
+  --status-danger-fg:var(--noreon-danger-600);
+  --status-danger-bg:var(--noreon-danger-50);
+  --status-danger-strong:var(--noreon-danger-800);
+  --status-warning-accent:var(--noreon-warning-500);
+  --status-warning-bg-strong:var(--noreon-warning-100);
+
+  /* Biomarker result vocabulary — the product's own semantic layer.
+     "Optimal" / "Attention" / "Out of range" (app screens, p.11/p.12). */
+  --marker-optimal-fg:var(--noreon-success-600);
+  --marker-optimal-bg:var(--noreon-success-50);
+  --marker-attention-fg:var(--noreon-warning-600);
+  --marker-attention-bg:var(--noreon-warning-50);
+  --marker-out-fg:var(--noreon-danger-600);
+  --marker-out-bg:var(--noreon-danger-50);
+  --marker-low-fg:var(--noreon-low-700);
+  --marker-low-bg:var(--noreon-low-50);
+
+  /* Data visualisation */
+  --chart-primary:var(--noreon-teal-600);
+  --chart-secondary:var(--noreon-blue-500);
+  --chart-track:var(--noreon-warm-200);
+  --chart-ring-from:var(--noreon-teal-700);
+  --chart-ring-to:var(--noreon-teal-300);
+  --chart-grid:var(--noreon-warm-200);
+}

@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {handleMemberConversation} from '../lib/conversation-persistence/member-handler';
+import {ConversationRepository} from '../lib/conversation-persistence/repository';
+const env={NODE_ENV:'development',NOREON_CONVERSATION_HARNESS_ENABLED:'true',NOREON_REAL_MEMBER_REVIEW_ENABLED:'true',NEXT_PUBLIC_PATIENT_DEMO:'false',NEXT_PUBLIC_SUPABASE_URL:'http://localhost:54321',NEXT_PUBLIC_SUPABASE_ANON_KEY:'synthetic-public-key'};
+let calls=0;let data:unknown={ok:true,conversation:null};
+const repo=new ConversationRepository({rpc:async()=>{calls++;return {data,error:null};}});
+const req=(body:unknown,origin='http://localhost:3198')=>new Request('http://localhost:3198/internal/conversation',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)});
+assert.equal((await handleMemberConversation(req({op:'read'}),{env,authenticate:async()=>null})).status,401);
+assert.equal((await handleMemberConversation(req({op:'read'},'https://foreign.invalid'),{env,authenticate:async()=>repo})).status,403);
+assert.equal(calls,0);
+assert.equal((await handleMemberConversation(req({op:'read',memberId:'forged'}),{env,authenticate:async()=>repo})).status,400);
+assert.equal((await handleMemberConversation(req({op:'read'}),{env,authenticate:async()=>repo})).status,200);
+data={ok:true,conversation:null,drafts:[{body:'private'}]};
+const unsafe=await handleMemberConversation(req({op:'read'}),{env,authenticate:async()=>repo});
+assert.equal(unsafe.status,503);assert.equal((await unsafe.text()).includes('private'),false,'Malformed/overbroad database response never discloses a draft');
+assert.equal((await handleMemberConversation(req({op:'read'}),{env:{...env,NODE_ENV:'production'},authenticate:async()=>repo})).status,404);
+console.log('PASS actual member handler input/response/privacy paths with injected authentication/RPC; not remote Auth proof');

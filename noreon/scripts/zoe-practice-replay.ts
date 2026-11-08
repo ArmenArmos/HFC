@@ -1,0 +1,14 @@
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {resolve,dirname,relative} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {replayPracticeCorrections,configuredPracticeReplay,type PracticeCorrectionSet,type PracticeReplayFactory,type CorrectionComparator} from '@/lib/zoe/practice/replay';
+const args=process.argv.slice(2),source=args[0],destination=resolve(args[1]??'docs/reference/zoe-eval/practice-replay.json'),factoryIndex=args.indexOf('--factory'),factoryPath=factoryIndex<0?null:args[factoryIndex+1];
+const root=resolve('docs/reference/zoe-eval'),rel=relative(root,destination);
+if(!source||rel.startsWith('..')||rel.startsWith('/'))throw new Error('Usage: zoe-practice-replay.ts <corrections.json> [docs/reference/zoe-eval/file.json] [--factory module]');
+const custom=factoryPath?await import(pathToFileURL(resolve(factoryPath)).href) as {createPracticeDependencies:PracticeReplayFactory;comparePracticeCorrection?:CorrectionComparator}:null;
+const configured=custom?null:configuredPracticeReplay();
+if(custom&&typeof custom.createPracticeDependencies!=='function')throw new Error('Factory must export createPracticeDependencies');
+const result=await replayPracticeCorrections(JSON.parse(await readFile(resolve(source),'utf8')) as PracticeCorrectionSet,custom?.createPracticeDependencies??configured!.factory,custom?.comparePracticeCorrection??configured?.compare);
+await mkdir(dirname(destination),{recursive:true});await writeFile(destination,JSON.stringify(result,null,2)+'\n',{flag:'wx'});
+for(const row of result.results)console.log(`${row.id}: ${row.assessment}: ${row.reason}`);
+console.log(`Saved ${result.results.length} fictional reply comparisons to ${destination}`);

@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {newDemoState} from '@/lib/patient/demo-model';
+import {normalizeSharedWorkflow} from '@/lib/service-workflow/normalization';
+const data=newDemoState();
+const answers=JSON.parse(readFileSync('scripts/fixtures/patient-answers.json','utf8'));
+for(const [fieldId,value] of Object.entries({'q6.conditions':['diabetes'],'q6.hba1c':'unknown','q2.waist':75,'q2.height':180,'q2.weight':65,'q2.activity':'active','q2.activity_minutes':180,'q2.activity_intensity':'moderate'}))answers[fieldId]={fieldId,value,source:'manual',answeredAt:'2026-10-15T00:00:00Z'};
+data.state={profile:{userId:data.userId,name:'Synthetic upgrade',birthDate:'1974-01-01',biologicalSex:'male',locale:'en'},consentAccepted:true,assessment:{id:'assessment',revision:1,assessmentDate:'2026-10-15',answers,completedAt:'2026-10-15T00:00:00Z',urgentRule:null}};
+normalizeSharedWorkflow(data);
+// Urine ACR for every diabetic (catalogue A.3, B.1; tests-vs-tree audit A5) is the source-rule change modelled here.
+assert.ok(data.workflow!.tests.some(t=>t.id==='urine-acr'));
+// Emulate an already-normalized record saved by the previous implementation.
+data.workflow!.tests=data.workflow!.tests.filter(t=>t.id!=='urine-acr');
+data.workflow!.requirements=data.workflow!.requirements!.filter(r=>r.test.id!=='urine-acr');
+const priorEvidence=data.workflow!.evidenceRevision??0;
+const lipid=data.workflow!.tests.find(t=>t.id==='lipid-panel')!;
+const priorRequirement=data.workflow!.requirements!.find(r=>r.test.id==='lipid-panel')!.requirementId;
+data.workflow!.receivedTestIds=[lipid.id];
+data.workflow!.receiptHistory=[{testId:lipid.id,method:lipid.method,requirementId:priorRequirement,receivedAt:'2026-10-15T01:00:00Z'}];
+data.workflow!.consultation='not-required';
+assert.equal(normalizeSharedWorkflow(data),true,'Unchanged answers must still reconcile source-rule changes');
+assert.ok(data.workflow!.tests.some(t=>t.id==='urine-acr'));
+assert.equal(data.workflow!.evidenceRevision,priorEvidence+1,'The changed test requirement invalidates prior evidence review');
+assert.equal(data.workflow!.consultation,'undecided');
+assert.ok(data.workflow!.receivedTestIds.includes('lipid-panel'),'Existing matching receipt is preserved');
+assert.equal(data.workflow!.allResultsAt,null,'New investigation cannot be treated as received');
+assert.equal(normalizeSharedWorkflow(data),false,'Second reconciliation is idempotent');
+const unchanged=structuredClone(data.workflow);
+data.state.profile!.locale='hy';
+data.state.profile!.name='Renamed synthetic member';
+assert.equal(normalizeSharedWorkflow(data),false,'Presentation-only edits must not trigger clinical requirement upgrades');
+assert.deepEqual(data.workflow,unchanged,'Language/name edits preserve consultation, evidence review and historical state');
+console.log('Saved pre-upgrade requirements reconcile once without losing matching result receipts.');

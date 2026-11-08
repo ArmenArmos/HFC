@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {sampleReports} from '@/lib/reports/demo';
+import {emptyReportReview,reportReviewReducer as reduce} from '@/lib/service-workflow/report-review-state';
+const report=sampleReports()[0];
+let state=reduce(emptyReportReview,{trackEvidence:true,update:s=>({...s,reports:[report]})});
+assert.equal(state.evidenceRevision,1);assert.equal(state.reports[0],report);
+assert.equal(reduce(state,{trackEvidence:true,update:s=>({...s,reports:structuredClone(s.reports)})}),state,'duplicate report state is not new evidence');
+state=reduce(state,{trackEvidence:true,update:s=>({...s,approvals:{[report.id]:{revision:report.revision,at:'2026-10-11T00:00:00Z',doctor:'Fictional',report}}})});
+assert.equal(state.evidenceRevision,2);
+state=reduce(state,{trackEvidence:true,update:()=>({reports:[],approvals:{}})});
+assert.equal(state.evidenceRevision,3,'removing a report and its approval is one evidence change');
+state=reduce(state,{trackEvidence:false,update:()=>({reports:[report],approvals:{}})});
+assert.equal(state.evidenceRevision,3,'shared snapshot uses database freshness');
+console.log('Report state and local freshness update atomically; duplicates and shared snapshots do not invent revisions.');

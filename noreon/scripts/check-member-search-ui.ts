@@ -1,0 +1,67 @@
+import assert from 'node:assert/strict';
+import {createElement} from 'react';
+import {create,act} from 'react-test-renderer';
+import {MemberSearch} from '@/components/real-review/member-search';
+import {MemberQueueList} from '@/components/real-review/member-queue-list';
+import type {MemberSearchPage,MemberSearchResult} from '@/lib/staff/member-search-schema';
+Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true,self:globalThis});
+const empty:MemberSearchPage={rows:[],hasMore:false,nextCursor:null};
+const row=(n:number)=>({id:`11111111-1111-4111-8111-${String(n).padStart(12,'0')}`,name:`Synthetic ${n}`,revision:0,doctorId:null,nurseId:null,createdAt:'2026-10-16T00:00:00+00:00',bookingCounts:{requested:0,providerProposed:0,confirmed:0,changePending:0}});
+const pending:Array<{input:unknown;resolve:(r:MemberSearchResult)=>void}>=[];
+const search=async(input:unknown):Promise<MemberSearchResult>=>await new Promise(resolve=>pending.push({input,resolve}));
+let view!:ReturnType<typeof create>;
+await act(async()=>{view=create(createElement(MemberSearch,{initialPage:empty,scopeKey:'actor-A:clinic-A',refreshToken:'initial',role:'admin',doctors:[],nurses:[],searchAction:search,bookingSummaryAction:async()=>({})}));});
+const input=()=>view.root.findByProps({id:'member-search-query'});
+const form=()=>view.root.findByProps({'aria-label':'Find a member'});
+const text=()=>JSON.stringify(view.toJSON());
+const edit=async(value:string)=>await act(async()=>input().props.onChange({target:{value}}));
+const submit=async()=>await act(async()=>form().props.onSubmit({preventDefault(){}}));
+await edit('First');await submit();assert.equal(pending.length,1);
+await edit('Second');await submit();assert.equal(pending.length,2);
+await act(async()=>pending[1].resolve({ok:true,page:{rows:[row(2)],hasMore:false,nextCursor:null}}));
+await act(async()=>pending[0].resolve({ok:true,page:{rows:[row(1)],hasMore:false,nextCursor:null}}));
+assert.ok(text().includes('Synthetic 2'));assert.ok(!text().includes('Synthetic 1'),'Late old query must not replace current results');
+await edit('123');await submit();assert.equal(pending.length,2);assert.ok(text().includes('role":"alert'));
+await edit('Kept draft');await submit();await act(async()=>pending[2].resolve({ok:false,reason:'unavailable'}));
+assert.equal(input().props.value,'Kept draft');assert.ok(text().includes('unavailable'));assert.ok(!text().includes('No matching'));
+await submit();const last=row(50);await act(async()=>pending[3].resolve({ok:true,page:{rows:[last],hasMore:true,nextCursor:{id:last.id,createdAt:last.createdAt}}}));
+const more=view.root.findAllByType('button').find(b=>Array.isArray(b.props.children)&&b.props.children.includes('Load more members'));assert.ok(more);
+await act(async()=>more.props.onClick());assert.deepEqual(pending[4].input,{query:'Kept draft',cursor:{id:last.id,createdAt:last.createdAt}});
+await edit('New name');await act(async()=>pending[4].resolve({ok:true,page:{rows:[row(51)],hasMore:false,nextCursor:null}}));
+assert.ok(!text().includes('Synthetic 51'),'Obsolete pagination must not restore old results');
+const clear=view.root.findAllByType('button').find(b=>Array.isArray(b.props.children)&&b.props.children.includes('Clear search'));assert.ok(clear);
+await act(async()=>clear.props.onClick());assert.equal(input().props.value,'');assert.deepEqual(pending[5].input,{query:'',cursor:null});
+await act(async()=>pending[5].resolve({ok:true,page:empty}));assert.ok(text().includes('No member requests'));
+// Refresh retains a target beyond the old200 boundary but replaces its revision.
+await edit('Beyond200');await submit();await act(async()=>pending[6].resolve({ok:true,page:{rows:[row(205)],hasMore:true,nextCursor:{id:row(205).id,createdAt:row(205).createdAt}}}));
+const moreButton=()=>view.root.findAllByType('button').find(b=>Array.isArray(b.props.children)&&b.props.children.includes('Load more members'))!;
+await act(async()=>moreButton().props.onClick());await act(async()=>pending[7].resolve({ok:true,page:{rows:[row(205),row(206)],hasMore:false,nextCursor:null}}));assert.equal(view.root.findAllByType('li').length,2,'Load more appends earlier rows without duplicates');
+const render=(token:string,scope='actor-A:clinic-A',role:'admin'|'nurse'='admin')=>createElement(MemberSearch,{initialPage:empty,scopeKey:scope,refreshToken:token,role,doctors:[],nurses:[],searchAction:search,bookingSummaryAction:async()=>({})});
+assert.ok(!text().includes('Assignment saved.'),'Generic loaded rows must not imply a saved assignment');
+await act(async()=>view.root.findByType(MemberQueueList).props.onAssignmentSaved());assert.ok(text().includes('Assignment saved.'));
+await act(async()=>view.update(render('after-assignment')));assert.equal(input().props.value,'Beyond200','RSC refresh retains private in-memory query');assert.deepEqual(pending[8].input,{query:'Beyond200',cursor:null});assert.ok(!text().includes('Synthetic 205'),'Stale revision controls hidden during refresh');
+assert.ok(text().includes('Assignment saved.'),'Success announcement survives assignment-form unmount and refresh');
+const fresh={...row(205),revision:7,createdAt:'2026-10-17T00:00:00+00:00'};await act(async()=>pending[8].resolve({ok:true,page:{rows:[fresh],hasMore:true,nextCursor:{id:fresh.id,createdAt:fresh.createdAt}}}));assert.deepEqual(pending[9].input,{query:'Beyond200',cursor:{id:fresh.id,createdAt:fresh.createdAt}},'Restore loaded depth using fresh boundaries');await act(async()=>pending[9].resolve({ok:true,page:{rows:[row(207)],hasMore:false,nextCursor:null}}));assert.ok(text().includes('Synthetic 205'));assert.ok(text().includes('Synthetic 207'));assert.ok(view.root.findAll(node=>typeof node.type!=='string'&&node.props.revision===7&&typeof node.props.onSaved==='function').length>0,'Fresh care-team controls receive refreshed revision');assert.ok(!text().includes('Synthetic 206'));
+await act(async()=>view.update(render('old-refresh')));await act(async()=>view.update(render('new-refresh')));await act(async()=>pending[10].resolve({ok:true,page:{rows:[row(208)],hasMore:false,nextCursor:null}}));assert.ok(!text().includes('Synthetic 208'),'Late refresh ignored');await act(async()=>pending[11].resolve({ok:true,page:empty}));
+await edit('');assert.deepEqual(pending[12].input,{query:'',cursor:null},'Native empty input reloads scoped list just like Clear');await act(async()=>pending[12].resolve({ok:true,page:{rows:[row(209)],hasMore:false,nextCursor:null}}));assert.ok(text().includes('Synthetic 209'));
+await edit('Old scope');await submit();await act(async()=>view.update(render('new-scope','actor-B:clinic-B','nurse')));assert.equal(input().props.value,'');assert.ok(!text().includes('Assignment saved.'),'Scope change clears prior private success feedback');await act(async()=>pending[13].resolve({ok:true,page:{rows:[row(210)],hasMore:false,nextCursor:null}}));assert.ok(!text().includes('Synthetic 210'),'Role/identity/scope change invalidates old responses');
+await act(async()=>view.update(createElement(MemberSearch,{initialPage:null,scopeKey:'actor-C',refreshToken:'failed-initial',role:'doctor',doctors:[],nurses:[],searchAction:search,bookingSummaryAction:async()=>({})})));assert.ok(!text().includes('Your text is retained'),'Initial failure must not claim a retained draft');
+await act(async()=>view.unmount());
+// More than 50 listed members ("load more"): summaries are read in chunks of at most 50, so none vanish (review item 40).
+{const calls:number[]=[];const many=Array.from({length:60},(_,i)=>row(300+i));
+ const action=async(ids:string[])=>{calls.push(ids.length);if(ids.length>50)return {};return Object.fromEntries(ids.map(id=>[id,{state:'confirmed' as const,mode:'clinic' as const,startsAt:'2026-10-20T09:00:00+04:00',clinicName:'Synthetic clinic'}]));};
+ let list!:ReturnType<typeof create>;
+ await act(async()=>{list=create(createElement(MemberQueueList,{rows:many,role:'admin',doctors:[],nurses:[],bookingSummaryAction:action}));});
+ await act(async()=>{await new Promise(r=>setTimeout(r,0));});
+ assert.deepEqual(calls,[50,10],'60 rows are read as 50 + 10');
+ assert.equal((JSON.stringify(list.toJSON()).match(/Synthetic clinic/g)??[]).length,60,'every row keeps its booking line');
+ await act(async()=>list.unmount());}
+for(const locale of ['en','hy','ru'] as const)for(const role of ['admin','doctor'] as const){
+ let list!:ReturnType<typeof create>;
+ await act(async()=>{list=create(createElement(MemberQueueList,{rows:[{...row(900),testAccount:true}],role,locale,doctors:[],nurses:[],bookingSummaryAction:async()=>({})}));});
+ const label={en:'Test account',hy:'Փորձնական հաշիվ',ru:'Тестовая учётная запись'}[locale];
+ const badge=list.root.findByProps({'aria-label':label});
+ assert.equal(badge.props.children,{en:'TEST',hy:'ՓՈՐՁՆԱԿԱՆ',ru:'ТЕСТ'}[locale]);
+ await act(async()=>list.unmount());
+}
+console.log('Actual search component: stale query/page/refresh/scope responses ignored; target205 retained through refresh with fresh revisions and rebuilt loaded pages/cursors; append deduplicates; native/Clear reload scoped list; initial error truthful; retained draft private in memory; test-account badges localized in en, hy and ru.');

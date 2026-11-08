@@ -1,0 +1,6 @@
+import Link from 'next/link';
+import type {Metadata} from 'next';
+import {readRecoverySetup} from '@/lib/staff/real-recovery-session';
+import {ConfirmStaffPasswordResetForm,ResetStaffPasswordForm} from '@/components/real-review/recovery-forms';
+export const metadata:Metadata={referrer:'no-referrer',robots:{index:false,follow:false}};
+export default async function ResetStaffPasswordPage(){const setup=await readRecoverySetup();return <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-5 py-8"><Link href="/staff/real/login" className="text-h2">Noreon</Link><h1 className="text-h1">{setup?.stage==='password_saved'?'Confirm your password reset':'Reset your password'}</h1>{!setup?<p role="alert">Your recovery session is incomplete or expired. Ask your administrator for a new link.</p>:setup.stage==='unavailable'?<><p role="alert">Password recovery is temporarily unavailable.</p><Link href="/staff/real/reset-password" className="inline-flex min-h-11 items-center underline">Try again</Link></>:<><p className="break-words text-body2">{setup.name}</p>{setup.stage==='password_saved'?<><p>Your password is saved. Retry confirmation before signing in.</p><ConfirmStaffPasswordResetForm/></>:<ResetStaffPasswordForm/>}</>}<Link href="/staff/real/login" className="inline-flex min-h-11 items-center underline">Staff sign in</Link></main>;}

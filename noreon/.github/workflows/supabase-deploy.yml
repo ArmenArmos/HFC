@@ -1,0 +1,169 @@
+# The deploy steps themselves. Called by supabase-deploy-production.yml and
+# supabase-deploy-staging.yml, which differ only in when they run and which
+# secrets they hand over. Keeping the steps here means a change to how a deploy
+# works cannot land on one environment and miss the other.
+name: supabase-deploy
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: Which project is being deployed to — names the environment and labels the run.
+        type: string
+        required: true
+      pooler_host:
+        description: Optional IPv4 session pooler host for the target project.
+        type: string
+        required: false
+    secrets:
+      SUPABASE_ACCESS_TOKEN:
+        required: true
+      SUPABASE_PROJECT_ID:
+        required: true
+      SUPABASE_DB_PASSWORD:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Which of this commit's migrations the target has not applied yet, read from
+  # the target's own history table (scripts/schema-pending.mjs). Cheap, and it
+  # runs on every push to main, so replay and deploy below start only when there
+  # is something to apply.
+  pending:
+    if: ${{ inputs.target != 'production' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      count: ${{ steps.pending.outputs.count }}
+    env:
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_POOLER_HOST: ${{ inputs.pooler_host }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - id: pending
+        name: Migrations the ${{ inputs.target }} database has not applied
+        run: node scripts/schema-pending.mjs
+
+  replay:
+    needs: pending
+    if: ${{ needs.pending.outputs.count != '0' && (inputs.target != 'production' || github.ref == 'refs/heads/main') }}
+    # GitHub-hosted, so a production deploy never waits behind the Verify queue
+    # on the self-hosted runners (4 Nov: #631's replay queued 10+ minutes behind
+    # 16 Verify runs). On 27 Oct only ghcr.io throttled here ("toomanyrequests"
+    # pulling postgres-meta for db:types); db start's public.ecr.aws pulls were
+    # fine, so db:types now tries public.ecr.aws first. The project_id and
+    # ports step stays harmless on a fresh VM.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - name: Own Supabase project and ports for this job
+        run: |
+          sed -i -e 's/^project_id = "noreon-core"/project_id = "noreon-replay"/' \
+            -e 's/^\(\(shadow_\|inspector_\)\?port\) = 543\([0-9][0-9]\)$/\1 = 553\3/' supabase/config.toml
+          grep -nE '^(project_id|(shadow_|inspector_)?port) =' supabase/config.toml
+          pnpm exec supabase stop --no-backup || true
+      - name: Replay every migration from zero on a local database
+        run: |
+          pnpm exec supabase db start
+          pnpm db:reset
+      - name: Generated database types match the replayed schema
+        env:
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
+        run: |
+          # ghcr.io throttles GitHub-hosted pulls; it is only the fallback.
+          pnpm db:types || SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io pnpm db:types
+          git diff --exit-code -- lib/db/types.ts
+      - name: Supabase images used (local cache)
+        if: always()
+        run: docker image ls --format '{{.Repository}}:{{.Tag}} {{.CreatedSince}}' | grep supabase || true
+      - name: Stop the replay database
+        if: always()
+        run: pnpm exec supabase stop --no-backup || true
+
+  deploy:
+    needs: [pending, replay]
+    # Never deploy production migrations from an unmerged dispatch ref.
+    if: ${{ needs.pending.outputs.count != '0' && (inputs.target != 'production' || github.ref == 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+
+    # Referencing an environment lets you add required reviewers in repo
+    # settings, turning a schema change into an explicit approval. GitHub
+    # creates the environment on first run; repo-level secrets still resolve.
+    environment: ${{ inputs.target }}
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_POOLER_HOST: ${{ inputs.pooler_host }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # The merge gate checks a PR's files; this checks main itself, so an applied
+      # migration edited through the merge button or a direct push never reaches
+      # production as a silently skipped change.
+      - name: Every applied migration on main is unchanged
+        if: ${{ inputs.target == 'production' }}
+        run: node scripts/migration-history.mjs --history HEAD
+
+      # The CLI is a devDependency so CI runs the same version as every
+      # developer. Installing it here rather than via supabase/setup-cli keeps
+      # that single source of truth in package.json.
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # An unset secret arrives as an empty string rather than an error, and an
+      # empty ref is how a run ends up pointed at the wrong project. Fail here,
+      # before anything is linked.
+      - name: Check the target's secrets are set
+        run: |
+          test -n "$SUPABASE_PROJECT_ID" || { echo "::error::SUPABASE_PROJECT_ID is empty for ${{ inputs.target }}"; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "::error::SUPABASE_DB_PASSWORD is empty for ${{ inputs.target }}"; exit 1; }
+
+      - name: Link ${{ inputs.target }} project
+        run: pnpm supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      # Printed before anything is applied, so the run log records what the
+      # remote had and what this deploy is about to add.
+      - name: Show local vs remote migration history
+        run: node scripts/supabase-migrate.mjs migration list
+
+      - name: Apply pending migrations to ${{ inputs.target }}
+        run: node scripts/supabase-migrate.mjs db push
+
+  # The app deploy waits on this job. Vercel holds each production deployment of
+  # this commit until the check "deploy / Schema ready on production" passes
+  # (Deployment Checks, docs/operations/deploy-order.md). It passes only when the
+  # database has every migration of this commit, so new code never goes live
+  # on the old schema, and a failed migration keeps the previous app live.
+  # Runs whatever happened above (skipped, failed) and decides from the database.
+  ready:
+    name: Schema ready on ${{ inputs.target }}
+    needs: [pending, replay, deploy]
+    if: ${{ !cancelled() && (inputs.target != 'production' || github.ref == 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_POOLER_HOST: ${{ inputs.pooler_host }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Every migration of this commit is applied
+        run: node scripts/schema-pending.mjs --require-none

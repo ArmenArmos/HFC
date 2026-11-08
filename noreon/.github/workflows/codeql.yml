@@ -1,0 +1,38 @@
+name: CodeQL
+# Static analysis for JavaScript and TypeScript (docs/operations/supply-chain.md).
+# OFF until the repository variable CODEQL_ENABLED is 'true'. This repository is private on
+# GitHub Free: code scanning results need GitHub Code Security (paid), and the CodeQL licence
+# only covers private code with that licence. Turning it on is Khikar's purchase decision.
+# GitHub-hosted runner, weekly plus pushes to main, to keep Actions minutes low.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**/*.md", "docs/**", "output/**"]
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    if: vars.CODEQL_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+          config: |
+            paths-ignore: [node_modules, output, docs, "**/*.test.ts", lib/db/types.ts]
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          category: /language:javascript-typescript

@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {schedulingEmailSchema,clinicSchedulingInputSchema,copySchedulingInputSchema,clinicSchedulingResultSchema} from '@/lib/staff/clinic-scheduling-schema';
+const id='11111111-1111-4111-8111-111111111111';
+assert.equal(schedulingEmailSchema.parse(' clinic@example.invalid '),'clinic@example.invalid');
+assert.equal(schedulingEmailSchema.parse(''),null);
+assert.equal(schedulingEmailSchema.parse('   '),null);
+for(const email of ['a@example.invalid\r\nBcc:b@example.invalid','a@example.invalid\n','a@example.invalid,b@example.invalid','a@example.invalid; b@example.invalid','not-an-email','a..b@example.invalid','a@-example.invalid','a'.repeat(250)+'@example.invalid']) assert.equal(schedulingEmailSchema.safeParse(email).success,false,email);
+const parsed=clinicSchedulingInputSchema.parse({clinicId:id,expectedRevision:'0',requestId:id,email:' clinic@example.invalid '});
+assert.equal(parsed.expectedRevision,0);assert.equal(parsed.email,'clinic@example.invalid');
+for(const revision of ['',null,'-1','1.5','2147483648','not-a-number']) assert.equal(clinicSchedulingInputSchema.safeParse({...parsed,expectedRevision:revision}).success,false,`revision ${revision}`);
+assert.equal(clinicSchedulingInputSchema.safeParse({...parsed,clinicId:'bad'}).success,false);
+assert.equal(clinicSchedulingInputSchema.safeParse({...parsed,requestId:'bad'}).success,false);
+assert.equal(copySchedulingInputSchema.parse({expectedRevision:'0',requestId:id,email:''}).email,null);
+assert.equal(clinicSchedulingResultSchema.parse({id,email:null,revision:1}).email,null);
+assert.equal(clinicSchedulingResultSchema.safeParse({id,email:'bad',revision:1}).success,false);
+console.log('Clinic scheduling email/revision/request schemas passed; single mailbox, no header/list injection, explicit null and bounded revision.');

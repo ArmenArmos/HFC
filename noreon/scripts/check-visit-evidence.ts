@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {visitCommandSchema,visitReadSchema,visitRefreshInputSchema} from '@/lib/staff/visit-evidence-schema';
+const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const envelope={version:'visit-evidence-v1',id:id(1),revision:3,submissionId:id(2),visitId:id(3)};
+const time='2026-10-16T10:00:00+04:00';
+const obs=(field:string,value:number,unit:string,observedAt=time)=>({kind:'observation',field,state:'known',value,unit,observedAt});
+const append=(entries:unknown[])=>({...envelope,op:'append-evidence',entries});
+assert.ok(visitCommandSchema.safeParse({...envelope,op:'open-visit',booking:null}).success);
+for(const entry of [obs('height',172.5,'cm'),obs('pulse',72,'beats/min'),{kind:'observation',field:'neck',state:'unknown',reason:'Not measured',observedAt:time}])assert.ok(visitCommandSchema.safeParse(append([entry])).success);
+for(const entry of [obs('height',Infinity,'cm'),obs('weight',70,'lb'),obs('temperature',37,'°C')])assert.equal(visitCommandSchema.safeParse(append([entry])).success,false);
+for(const entry of [obs('pulse',19,'beats/min'),obs('pulse',72.5,'beats/min'),obs('systolic',1,'mmHg'),obs('diastolic',1.5,'mmHg')])assert.ok(visitCommandSchema.safeParse(append([entry])).success,'Standalone raw evidence has no new clinical bounds');
+assert.equal(visitCommandSchema.safeParse(append([obs('systolic',120,'mmHg'),obs('diastolic',80,'mmHg'),obs('pulse',19,'beats/min')])).success,false,'Same-instant included pulse must satisfy legacy projection bounds');
+assert.ok(visitCommandSchema.safeParse(append([obs('systolic',120,'mmHg'),obs('diastolic',80,'mmHg'),obs('pulse',19,'beats/min','2026-10-16T10:01:00+04:00')])).success,'Different-instant pulse stays raw and separate');
+assert.ok(visitCommandSchema.safeParse(append([obs('temperature',37,'C'),obs('height',-1,'cm')])).success,'No invented clinical range');
+assert.ok(visitCommandSchema.safeParse(append([obs('systolic',120,'mmHg'),obs('diastolic',80,'mmHg','2026-10-16T06:00:00Z')])).success,'Equivalent offset instant');
+for(const entries of [[obs('systolic',80,'mmHg'),obs('diastolic',95,'mmHg')],[obs('systolic',120,'mmHg'),obs('diastolic',80,'mmHg','2026-10-16T10:01:00+04:00')],[obs('pulse',70,'beats/min'),obs('pulse',71,'beats/min')],[],Array(129).fill({kind:'note',text:'x',observedAt:time})])assert.equal(visitCommandSchema.safeParse(append(entries)).success,false);
+const collection={kind:'collection',observedAt:time,appointmentId:id(5),acceptedRevision:2,testId:'cbc',outcome:'unknown',reason:'Sample status unclear'};
+assert.ok(visitCommandSchema.safeParse(append([collection])).success);
+assert.equal(visitCommandSchema.safeParse(append([collection,collection])).success,false);
+assert.equal(visitCommandSchema.safeParse(append([{...collection,reason:''}])).success,false);
+assert.equal(visitCommandSchema.safeParse({...append([obs('height',170,'cm')]),actorId:id(9)}).success,false);
+assert.equal(visitReadSchema.safeParse({version:'old'}).success,false);
+console.log('Visit schema: partial/tristate, exact units/finite values, complete BP projection limits, same-instant BP, duplicates, technical caps and input authority exclusions PASS.');
+
+const frozen=append([obs('height',172.5,'cm')]);assert.ok(visitRefreshInputSchema.safeParse({id:id(1),visitId:id(3),command:frozen}).success);assert.equal(visitRefreshInputSchema.safeParse({id:id(9),visitId:id(3),command:frozen}).success,false);assert.equal(visitRefreshInputSchema.safeParse({id:id(1),visitId:id(9),command:frozen}).success,false);assert.equal(visitRefreshInputSchema.safeParse({id:id(1),visitId:id(3),submissionId:id(2)}).success,false,'IDs-only recovery is unsupported');

@@ -1,0 +1,50 @@
+# Dependency updates (docs/operations/supply-chain.md). Weekly, grouped, so one PR per
+# ecosystem per week rather than a PR per package. Major versions stay separate PRs: they
+# usually need code changes (this repo pins a Next.js with breaking changes, see AGENTS.md).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    # Major upgrades that fail Verify; do them as planned work, not bot PRs.
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Yerevan
+    open-pull-requests-limit: 3
+    groups:
+      web-minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: deps
+  - package-ecosystem: npm
+    directory: /apps/patient-mobile
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Yerevan
+    open-pull-requests-limit: 2
+    groups:
+      mobile-minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: deps(mobile)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Asia/Yerevan
+    open-pull-requests-limit: 2
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci

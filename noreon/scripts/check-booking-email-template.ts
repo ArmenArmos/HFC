@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {schedulingRuntime,renderSchedulingNotice} from '@/lib/real-booking/scheduling-template';
+const template={version:'synthetic-v1',approvalReference:'synthetic-human-approval',subject:'Synthetic {{reference}}',textContent:'Synthetic {{memberName}}\n{{startsAt}} to {{endsAt}} {{timezone}}\n{{location}}\n{{tests}}\n{{coveredTests}}\n{{preparation}}\n{{followUp}}'};
+const env={NOREON_SCHEDULING_EMAIL_ENABLED:'true',NOREON_SCHEDULING_APPROVED_TEMPLATE_JSON:JSON.stringify(template),NOREON_BREVO_API_KEY:'fictional-key-not-a-real-credential',NOREON_BREVO_EMAIL_SENDER:'noreon@example.invalid'};
+assert.equal(schedulingRuntime({}),null);assert.equal(schedulingRuntime({...env,NOREON_SCHEDULING_EMAIL_ENABLED:'false'}),null);
+assert.equal(schedulingRuntime({...env,NOREON_SCHEDULING_APPROVED_TEMPLATE_JSON:JSON.stringify({...template,textContent:'{{rawAssessment}}'})}),null);
+assert.equal(schedulingRuntime({...env,NOREON_SCHEDULING_APPROVED_TEMPLATE_JSON:JSON.stringify({...template,approvalReference:''})}),null);
+const runtime=schedulingRuntime(env);assert.ok(runtime);
+const program={memberId:'71000000-0000-4000-8000-000000000001',sourceToken:'source',requirementsToken:'requirements',engineVersion:'synthetic',items:[{id:'lab',title:'Synthetic lab',method:'lab' as const,preparation:'Synthetic',source:'PRIVATE_INTERNAL_RULE'},{id:'follow',title:'Synthetic follow-up test',method:'clinic' as const,preparation:'Synthetic',source:'PRIVATE_INTERNAL_RULE'}]};
+const offer={id:program.memberId,version:'v1',source:'synthetic-only',clinicId:program.memberId,mode:'clinic' as const,startsAt:'2030-01-01T09:00:00+04:00',endsAt:'2030-01-01T10:00:00+04:00',timezone:'Asia/Yerevan' as const,clinicAddress:'Trusted clinic address',preparation:'Approved synthetic preparation',preparationVersion:'v1',coveredTestIds:['lab'],followUps:[{testId:'follow',owner:'Approved owner',action:'Approved follow-up',reference:'approved-source'}],reservationContract:{version:'manual-v1',reference:'synthetic-capacity'}};
+const input={reference:program.memberId,memberName:'Synthetic name',clinicName:'Synthetic clinic',program,offer,homeAddress:null};
+const rendered=renderSchedulingNotice(runtime,input);
+assert.equal(rendered.senderEmail,'noreon@example.invalid');assert.equal(rendered.templateVersion,'synthetic-v1');assert.ok(rendered.textContent.includes('Trusted clinic address'));assert.ok(rendered.textContent.includes('09:00'));assert.ok(rendered.textContent.includes('Approved follow-up'));assert.ok(!rendered.textContent.includes('PRIVATE_INTERNAL_RULE'));
+assert.throws(()=>renderSchedulingNotice(runtime,{...input,offer:{...offer,mode:'home',clinicAddress:null}}),/address/i);
+assert.ok(renderSchedulingNotice(runtime,{...input,offer:{...offer,mode:'home',clinicAddress:null},homeAddress:'Confirmed synthetic home address'}).textContent.includes('Confirmed synthetic home address'));
+const subjectName={...runtime,template:{...template,subject:'{{memberName}}'}};
+assert.throws(()=>renderSchedulingNotice(subjectName,{...input,memberName:'bad\r\nBcc:injected@example.invalid'}),/subject/i);
+console.log('Approved scheduling template/runtime: explicit activation/config only, allowed operational fields, no raw rules, trusted clinic/home address and subject injection checks passed.');

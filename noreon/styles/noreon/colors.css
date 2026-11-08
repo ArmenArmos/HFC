@@ -1,0 +1,91 @@
+/* Base palette. Canonical hex values are from Brand Book p.07 "Color Palette".
+   Ramps around each base are derived for hover / press / tint surfaces. */
+:root{
+  /* Deep Navy — trust, science, authority. Primary brand colour. */
+  --noreon-navy-900:#141A36;
+  --noreon-navy-800:#1A2144;
+  --noreon-navy-700:#222B56; /* BASE — #222B56 */
+  --noreon-navy-600:#2E3A6E;
+  --noreon-navy-500:#3F4C86;
+  --noreon-navy-200:#C3C9DC;
+  --noreon-navy-100:#E4E7F0;
+  --noreon-navy-50:#F1F3F8;
+
+  /* Medical Blue — technology, clarity. UI elements, charts, links. */
+  --noreon-blue-800:#07335F;
+  --noreon-blue-700:#093C72;
+  --noreon-blue-600:#0B4683; /* BASE — #0B4683 */
+  --noreon-blue-500:#0F599F;
+  --noreon-blue-400:#1D6FBE;
+  --noreon-blue-100:#DBE8FB;
+  --noreon-blue-50:#EDF5FE;
+
+  /* Cyan / Teal — health, progress, balance. Interactive, active, focus. */
+  --noreon-teal-800:#0F6E6D;
+  --noreon-teal-700:#157F7E;
+  --noreon-teal-600:#1A9695; /* BASE — #1A9695 */
+  --noreon-teal-500:#22ADAB;
+  --noreon-teal-400:#4CC6C0;
+  --noreon-teal-300:#7FDCCF; /* ring gradient terminal — mint */
+  --noreon-teal-200:#A8DEDD;
+  --noreon-teal-100:#DDF0EB;
+  --noreon-teal-50:#EDF8F8;
+
+  /* Warm Gold — premium, achievement. CTAs, highlights, important moments. */
+  --noreon-gold-800:#A87310;
+  --noreon-gold-700:#BD8210;
+  --noreon-gold-600:#D69510; /* BASE — #D69510 */
+  --noreon-gold-500:#E8A81C;
+  --noreon-gold-400:#F2D87A; /* Light Gold — #F2D87A */
+  --noreon-gold-200:#FAE9B8;
+  --noreon-gold-100:#FCEBCF;
+  --noreon-gold-50:#FEF5E3;
+
+  /* Soft Ivory — calm, clean, friendly. Warm page ground, plus the deeper warm
+     steps the ground needs to sit things on. #FBF7EC and #F6EFDC are only
+     ~1.07:1 apart, so anything that must READ against the ground (a hairline, a
+     recessed field) uses sand-100/200, not ivory-deep. */
+  --noreon-ivory:#FBF7EC;
+  --noreon-ivory-deep:#F6EFDC;
+  --noreon-sand-100:#F2E9D2;
+  --noreon-sand-200:#E9DFC6;
+  --noreon-sand-300:#DCCEAE;
+
+  /* Neutrals — Brand Book p.07 "Neutral Palette". */
+  --noreon-slate-900:#1A2233; /* Dark Slate — body text, high contrast */
+  --noreon-slate-600:#5E6678; /* Slate — secondary text */
+  --noreon-gray-300:#D8DCE6;  /* input borders (derived, one step darker than Cool Gray) */
+  --noreon-gray-200:#E6E9F0;  /* Cool Gray — borders, dividers */
+  --noreon-gray-100:#F3F5F8;  /* Light Gray — background surfaces */
+  --noreon-white:#FFFFFF;
+
+  /* Warm neutrals — the greys that sit ON the ivory ground.
+     Cool Gray is correct next to white and navy, but against #FBF7EC it reads
+     blue, so every control border, chart track, and grid line uses these
+     instead. Same lightness steps as the cool ramp, warm hue. */
+  --noreon-warm-100:#F4F0E6;
+  --noreon-warm-200:#E7E1D3;
+  --noreon-warm-300:#D8D0BF;
+  --noreon-warm-400:#BEB5A2;
+
+  /* Status — sampled from the badge + input specimens on Brand Book p.12.
+     Design system update 17 Oct 2026: the text-bearing status steps were
+     darkened to the reviewed Patient Journey v6 values so that every status
+     colour passes WCAG AA as text on white and on its own tint (the earlier
+     #158A78, #C08018 and #E24A40 measured 4.3, 3.3 and 4.0 to 1). */
+  --noreon-success-700:#0E5E5D;
+  --noreon-success-600:#127574;  /* 5.5:1 on white */
+  --noreon-success-50:#E3F3F2;
+  --noreon-warning-600:#8F6204;  /* text, 5.4:1 on white, 4.7:1 on warning-50 */
+  --noreon-warning-500:#B27A06;  /* icon and fill only, never text */
+  --noreon-warning-100:#F8EBCB;
+  --noreon-warning-50:#FBF0D6;
+  --noreon-info-600:#1D5FBF;
+  --noreon-info-50:#EDF5FE;
+  --noreon-low-700:#2B3A8F;      /* a reading below range, 8.5:1 on low-50 */
+  --noreon-low-50:#E8ECFB;
+  --noreon-danger-800:#8A1B12;   /* pressed urgent action, text on danger-50 */
+  --noreon-danger-600:#B42318;   /* 6.6:1 on white */
+  --noreon-danger-400:#ED5A56; /* error input border */
+  --noreon-danger-50:#FDECEA;
+}

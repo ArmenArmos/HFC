@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { loadStaffDirectory, doctorDirectoryRows } from '@/lib/staff/directory-data';
+let clinicCalls=0;const emailModes:boolean[]=[];
+const loaders={clinics:async()=>{clinicCalls++;return [];},doctors:async(includeEmail:boolean)=>{emailModes.push(includeEmail);return [];}};
+await loadStaffDirectory('clinics',loaders);assert.equal(clinicCalls,1);assert.deepEqual(emailModes,[false],'Clinic linked counts do not require email lookups');
+await loadStaffDirectory('doctors',loaders);assert.deepEqual(emailModes,[false,true],'Doctor directory retains email data');
+const rows=[1,2,3].map(n=>({user_id:String(n),display_name:`Doctor ${n}`,clinic_id:'clinic',active:true}));
+let calls=0;const noEmails=await doctorDirectoryRows(rows,false,async()=>{calls++;return 'unexpected';});assert.equal(calls,0,'Operational queues do not hit auth admin email API');assert.equal(noEmails.length,3);
+const releases:Array<()=>void>=[];
+const pending=doctorDirectoryRows(rows,true,id=>{calls++;return new Promise<string>(resolve=>releases.push(()=>resolve(`doctor-${id}@example.invalid`)));});
+await Promise.resolve();assert.equal(calls,3,'Independent doctor email lookups start concurrently');releases.forEach(release=>release());
+const withEmails=await pending;assert.deepEqual(withEmails.map(d=>d.email),['doctor-1@example.invalid','doctor-2@example.invalid','doctor-3@example.invalid']);
+const unavailable=await doctorDirectoryRows([...rows,{user_id:'none',display_name:'No clinic',clinic_id:null,active:true}],true,async id=>id==='2'?null:`${id}@example.invalid`);assert.deepEqual(unavailable.map(d=>d.id),['1','3'],'Failed lookups and unlinked entries preserve current omission behavior');
+console.log('Staff navigation checks passed: section-specific directory loading, no unnecessary email calls, concurrent lookups, order and failure behavior.');

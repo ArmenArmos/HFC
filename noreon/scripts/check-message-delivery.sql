@@ -1,0 +1,25 @@
+begin;
+select public.configure_patient_message_spend((select revision from public.patient_message_spend_policy where id=1),'{"enabled":true,"currency":"USD","daily_limit_micros":9000000000,"sms_segment_ceiling_micros":1000,"whatsapp_message_ceiling_micros":2000,"max_sms_segments":3,"allowed_prefixes":["+374"]}'::jsonb || jsonb_build_object('valid_until',clock_timestamp()+interval '1 day'),'test-operator');
+insert into auth.users(id,phone,phone_confirmed_at) values('b9600000-0000-4000-8000-000000000001','37499000555',now());
+update public.profiles set display_name='Fictional member',birth_date='1980-01-01',biological_sex='female' where id='b9600000-0000-4000-8000-000000000001';
+insert into public.patient_consents(user_id,version) values('b9600000-0000-4000-8000-000000000001','patient-pilot-v1');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','b9600000-0000-4000-8000-000000000001',true);
+select public.save_patient_message_preferences('sms',0,'messaging-service-v1');
+select public.save_patient_reminder_preferences('{"medicationEnabled":true,"medicationOffsetMinutes":0,"bpEnabled":false,"bpTimes":["08:00"],"quietStart":"00:00","quietEnd":"00:00"}',0);
+reset role;
+insert into public.patient_care_plans(id,user_id,clinician,instructions,published_at) values('b9610000-0000-4000-8000-000000000001','b9600000-0000-4000-8000-000000000001','Fictional GP','Fictional only',now());
+do $$ declare j uuid; a uuid;begin
+ j:=public.enqueue_patient_plan_message('b9610000-0000-4000-8000-000000000001');
+ select attempt_id into a from public.begin_patient_message_submission_budgeted(j,(select revision from public.patient_message_spend_policy where id=1),array['sms','whatsapp']);
+ if not public.record_patient_message_delivery(a,'SM11111111111111111111111111111111','delivered') then raise exception 'TEST: early callback rejected';end if;
+ if (select status from public.patient_message_attempts where id=a)<>'accepted' then raise exception 'TEST: early callback did not reconcile submission';end if;
+ if not public.record_patient_message_delivery(a,'SM11111111111111111111111111111111','delivered',null) then raise exception 'TEST: duplicate callback rejected';end if;
+ if (select count(*) from public.patient_message_delivery_events where attempt_id=a)<>1 then raise exception 'TEST: duplicate event';end if;
+ if public.record_patient_message_delivery(a,'SM22222222222222222222222222222222','failed','30003') then raise exception 'TEST: reference rebound';end if;
+ if not public.record_patient_message_delivery(a,'SM11111111111111111111111111111111','failed','30003') then raise exception 'TEST: conflicting evidence discarded';end if;
+ if (select status from public.patient_message_attempts where id=a)<>'accepted' then raise exception 'TEST: delivery failure rewrote submission';end if;
+ if has_table_privilege('service_role','public.patient_message_delivery_events','UPDATE') or has_table_privilege('authenticated','public.patient_message_delivery_events','SELECT') or has_function_privilege('authenticated','public.record_patient_message_delivery(uuid,text,text,text)','EXECUTE') then raise exception 'TEST: event grants';end if;
+ begin perform public.record_patient_message_delivery(a,'SM11111111111111111111111111111111','invented',null);raise exception 'TEST: invalid status';exception when others then if sqlerrm<>'invalid' then raise;end if;end;
+end $$;
+rollback;

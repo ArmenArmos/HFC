@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { operationsItem } from '@/lib/staff/operations';
+import { createWorkflow } from '@/lib/service-workflow/model';
+import type { DemoState } from '@/lib/patient/demo-model';
+const data={state:{profile:{name:'Fictional'},assessment:{answers:{},completedAt:'2026-10-01'}}} as unknown as DemoState;
+const w=createWorkflow([],new Date('2026-10-01'));
+w.allResultsAt='2026-10-01T10:00:00Z';
+const now=new Date('2026-10-09T10:00:00Z');
+let row=operationsItem('case',data,w,null,'Unassigned',false,now);
+assert(row.flags.includes('Needs assignment'));assert(row.flags.includes('Overdue review'));
+w.consultation='required';w.appointment={at:'2026-10-12T10:00:00Z',mode:'video',status:'needs-reschedule'};
+row=operationsItem('case',data,w,'doctor','GP',true,now);
+assert(row.flags.includes('Needs rescheduling'));assert(!row.flags.includes('Overdue review'));
+const urgent=structuredClone(data);urgent.state.assessment!.urgentRule='RF-01';
+assert.equal(operationsItem('case',urgent,w,null,'Unassigned',false,now).priority,0);
+console.log('Operations queue checks passed: overlapping filters, urgency, unavailable assignment, rescheduling and review ownership.');

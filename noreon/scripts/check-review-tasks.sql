@@ -1,0 +1,32 @@
+begin;
+do $$
+declare c uuid:=gen_random_uuid(); d uuid:=gen_random_uuid(); cl uuid:=gen_random_uuid(); t uuid; t2 uuid; opened timestamptz;
+begin
+ insert into auth.users(id) values(d);
+ insert into public.workspace_clinics(id,name) values(cl,'Fictional review task clinic');
+ insert into public.workspace_staff(user_id,role,display_name,clinic_id) values(d,'doctor','Fictional reviewer',cl);
+ perform public.workspace_create_case(c,jsonb_build_object('userId',c,'expiresAt',extract(epoch from now()+interval '1 day')*1000,'state',jsonb_build_object('consentAccepted',true)),d);
+ if public.workspace_reconcile_review_task(c,false,'measurement') is not null then raise exception 'TEST: nonopening change created a task';end if;
+ t:=public.workspace_reconcile_review_task(c,true,'questionnaire');
+ select opened_at into opened from public.workspace_review_tasks where id=t;
+ update public.workspace_cases set evidence_revision=1 where id=c;
+ t2:=public.workspace_reconcile_review_task(c,false,'measurement');
+ if t2<>t or not exists(select 1 from public.workspace_review_tasks where id=t and target_evidence_revision=1 and opened_at=opened) then raise exception 'TEST: evidence did not advance original task';end if;
+ begin perform public.workspace_finish_review_task(c,t,d,0,'no-change','Reviewed');raise exception 'TEST: stale closure accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ begin perform public.workspace_finish_review_task(c,t,d,1,'no-change',' ');raise exception 'TEST: blank note accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ update public.workspace_cases set assigned_doctor_id=null where id=c;
+ perform public.workspace_reconcile_review_task(c,false,'assignment');
+ if not exists(select 1 from public.workspace_review_tasks where id=t and owner_id is null) then raise exception 'TEST: owner not synchronized';end if;
+ begin perform public.workspace_finish_review_task(c,t,d,1,'no-change','Reviewed');raise exception 'TEST: reassigned closure accepted';exception when others then if sqlerrm like 'TEST:%' then raise;end if;end;
+ update public.workspace_cases set assigned_doctor_id=d where id=c;
+ perform public.workspace_reconcile_review_task(c,false,'assignment');
+ perform public.workspace_finish_review_task(c,t,d,1,'no-change','Reviewed fictional evidence');
+ if not exists(select 1 from public.workspace_review_tasks where id=t and status='completed' and completed_by=d and completed_evidence_revision=1) then raise exception 'TEST: completion missing attribution';end if;
+ if not exists(select 1 from public.workspace_cases where id=c and reviewed_evidence_revision=1) then raise exception 'TEST: case watermark missing';end if;
+ update public.workspace_cases set evidence_revision=2 where id=c;
+ t2:=public.workspace_reconcile_review_task(c,true,'report');
+ if t2=t or (select count(*) from public.workspace_review_tasks where case_id=c)<>2 then raise exception 'TEST: reopening erased history';end if;
+ if not (select relrowsecurity from pg_class where oid='public.workspace_review_tasks'::regclass) then raise exception 'TEST: missing RLS';end if;
+ if has_table_privilege('service_role','public.workspace_review_tasks','INSERT') or has_function_privilege('service_role','public.workspace_finish_review_task(uuid,uuid,uuid,bigint,text,text)','EXECUTE') then raise exception 'TEST: direct task mutation exposed';end if;
+end $$;
+rollback;

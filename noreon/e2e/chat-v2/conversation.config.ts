@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'../web',testMatch:'chat-v2-conversation.spec.ts',outputDir:'/tmp/noreon-conversation-browser',workers:1,retries:0,timeout:60_000,expect:{timeout:10_000},reporter:'list',projects:[{name:'desktop-chromium',use:{browserName:'chromium',viewport:{width:1280,height:800}}},{name:'phone-webkit',use:{browserName:'webkit',viewport:{width:320,height:714},isMobile:true,hasTouch:true}}]});

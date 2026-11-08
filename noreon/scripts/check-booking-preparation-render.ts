@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import {createElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {BookingPreparation} from '@/components/service-workflow/booking-preparation';
+import {createWorkflow,applyServiceCommand as apply,demoPreparation} from '@/lib/service-workflow/model';
+import {activeTestBookings} from '@/lib/service-workflow/reconciliation';
+const now=new Date('2026-10-13T04:00:00Z');
+let workflow=apply(createWorkflow(['one','two','three'].map(id=>({id,title:id,method:'lab' as const,preparation:'',source:'demo'})),now),{type:'book',testIds:['one','two','three'],at:'2026-10-13T09:00:00+04:00',mode:'home',address:'Hanrapetutyan 4a, 15'},now);
+const render=(locale:'en'|'hy')=>renderToStaticMarkup(createElement(BookingPreparation,{workflow,booking:workflow.bookings[0],locale}));
+assert.match(render('en'),/Preparation needs provider confirmation/);
+assert.doesNotMatch(render('en'),/View instructions/,'Missing instructions must not offer an instructions disclosure');
+for (const locale of ['en','hy'] as const) {
+  const visiblePending = render(locale).replace(/<details[\s\S]*?<\/details>/g,'');
+  assert.ok(visiblePending.includes(demoPreparation[locale]),'The exact pending provider/fasting/medicine caution must remain visible before any disclosure');
+}
+assert.match(render('hy'),/Նախապատրաստումը/);
+const pendingAction=renderToStaticMarkup(createElement(BookingPreparation,{workflow,booking:workflow.bookings[0],pendingInstructionsAction:createElement('button',null,'Add instructions')}));
+assert.match(pendingAction,/Add instructions/);
+assert.doesNotMatch(pendingAction,/View instructions/,'Operations must show one missing-instructions action');
+workflow=apply(workflow,{type:'record-provider-preparation',bookingId:workflow.bookings[0].id,provider:'Demo provider',instructions:'Received fixture instructions.\nSecond line <safe>'},now,{role:'admin',id:'ops'});
+assert.match(render('en'),/<details[^>]*><summary[^>]*>View instructions<\/summary>/,'Provider text must start collapsed');
+assert.doesNotMatch(render('en'),/<details[^>]* open/);
+assert.match(render('en'),/Demo provider/);assert.match(render('en'),/Second line &lt;safe&gt;/);assert.doesNotMatch(render('en'),/Preparation needs provider confirmation/);
+assert.match(render('en'),/Preparation recorded/);
+assert.match(render('hy'),/Նախապատրաստումը գրանցված է/);assert.match(render('hy'),/Received fixture instructions/);
+workflow.recommendationsPending=true;assert.match(render('en'),/Preparation needs provider confirmation/);assert.doesNotMatch(render('en'),/Received fixture/);workflow.recommendationsPending=false;
+workflow=apply(workflow,{type:'receive',testIds:['one','two','three']},now);
+assert.match(render('en'),/Results received for this booking/);
+assert.equal(activeTestBookings(workflow).length,0);
+const legacy={...workflow,receiptHistory:workflow.receiptHistory!.map(receipt=>({...receipt,receivedAt:null}))};
+assert.equal(activeTestBookings(legacy).length,0);assert.doesNotMatch(render('en'),/Preparation needs provider confirmation/);
+assert.match(render('hy'),/արդյունքները ստացված են/);
+assert.throws(()=>apply(workflow,{type:'record-provider-preparation',bookingId:workflow.bookings[0].id,provider:'Demo provider',instructions:'Late preparation'},now,{role:'admin',id:'ops'}),/current booking/);
+console.log('Actual preparation component EN/HY: pending, exact escaped provider text, changed recommendations and reported completed three-lab booking passed.');
+
+const home=createWorkflow([{id:'home',title:'Home log',method:'home-log',preparation:'Record the supplied measurement instructions.',source:'demo'}],now);
+workflow=apply(home,{type:'book',testIds:['home'],at:'2026-10-13T09:00:00+04:00',mode:'home',address:''},now);
+assert.match(render('en'),/<details[^>]*><summary[^>]*>View instructions<\/summary>/,'Home clinical text must start collapsed');
+assert.match(render('en'),/Home recording instructions/);
+assert.match(render('en'),/Record the supplied measurement instructions/);
+assert.doesNotMatch(render('en'),/provider confirmation/);
+assert.match(render('hy'),/Տնային գրառման ցուցումներ/);
+
+workflow=apply(createWorkflow(['one','two','three'].map(id=>({id,title:id,method:'lab',preparation:'',source:'demo'})),now),{type:'book',testIds:['one','two','three'],at:'2026-10-13T09:00:00+04:00',mode:'home',address:'Hanrapetutyan 4a, 15'},now);
+workflow=apply(workflow,{type:'receive',testIds:['one']},now);
+assert.match(render('en'),/Results are being received for this booking/);
+assert.doesNotMatch(render('en'),/Preparation needs provider confirmation/);
+assert.doesNotMatch(render('en'),/Results received for this booking/);
+assert.match(render('hy'),/արդյունքները ստացվում են/);
+assert.equal(activeTestBookings(workflow).length,1);
+assert.throws(()=>apply(workflow,{type:'record-provider-preparation',bookingId:workflow.bookings[0].id,provider:'Demo provider',instructions:'Too late'},now,{role:'admin',id:'ops'}),/current booking/);
+workflow.bookings[0].providerPreparation={provider:'Recorded provider',instructions:'Previously received fixture text',recordedAt:now.toISOString(),recordedBy:'ops'};
+assert.match(render('en'),/Previously received fixture text/);
+assert.doesNotMatch(render('en'),/Preparation was not recorded/);

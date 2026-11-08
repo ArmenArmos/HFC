@@ -1,0 +1,25 @@
+/* 8px base grid — Brand Book p.12: "Use multiples of 8px for spacing to create
+   harmony and rhythm." 4px is the only sub-step, for icon/label gaps. */
+:root{
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;  /* card padding, screen gutter (p.12 spacing diagram) */
+  --space-5:20px;
+  --space-6:24px;
+  --space-8:32px;
+  --space-10:40px;
+  --space-12:48px;
+  --space-16:64px;
+  --space-20:80px;
+  --space-24:96px; /* marketing section rhythm */
+
+  --gutter-screen:16px;   /* mobile screen edge */
+  --gutter-page:32px;     /* web page edge, small viewports */
+  --container-max:1200px; /* marketing content column */
+  --tabbar-height:64px;
+  --appbar-height:56px;
+  --control-height-sm:36px;
+  --control-height-md:44px; /* default button / input */
+  --control-height-lg:52px;
+}

@@ -1,0 +1,53 @@
+/* Dark mode — Brand Book p.11 "Light & Dark Mode". Deep navy ground, cards a
+   step lighter navy, teal and gold unchanged as accents. Never true black. */
+[data-theme="dark"]{
+  --surface-page:#101733;
+  --surface-page-warm:#101733;
+  --surface-page-gold:#171B33;
+  --surface-page-cool:#101733;
+  --surface-card:#1A2249;
+  --surface-raised:#222B56;
+  --surface-sunken:#0C1229;
+  --surface-inverse:var(--noreon-white);
+  --surface-inverse-deep:var(--noreon-ivory);
+  --surface-subtle-teal:rgba(26,150,149,.14);
+  --surface-subtle-gold:rgba(214,149,16,.14);
+  --surface-subtle-blue:rgba(29,95,191,.16);
+  --surface-overlay:rgba(6,10,24,.66);
+
+  --text-strong:var(--noreon-white);
+  --text-body:#E7EAF2;
+  --text-muted:#9AA3BA;
+  --text-subtle:#77809A;
+  --text-on-inverse:var(--noreon-navy-700);
+  --text-on-inverse-muted:rgba(34,43,86,.72);
+  --text-accent:var(--noreon-teal-400);
+  --text-link:#7FB6F2;
+  --text-link-hover:#A6CEF8;
+  --text-emphasis:var(--noreon-gold-500);
+
+  --border-subtle:rgba(255,255,255,.10);
+  --border-divider:rgba(255,255,255,.10);
+  --border-default:rgba(255,255,255,.16);
+  --border-strong:rgba(255,255,255,.40);
+  --border-inverse:rgba(34,43,86,.16);
+
+  --action-primary-bg:var(--noreon-white);
+  --action-primary-bg-hover:#EEF1F8;
+  --action-primary-bg-active:#DDE2EE;
+  --action-primary-fg:var(--noreon-navy-700);
+  --action-tertiary-bg-hover:rgba(255,255,255,.07);
+  --action-tertiary-border:rgba(255,255,255,.36);
+  --action-tertiary-fg:var(--noreon-white);
+  --action-disabled-bg:rgba(255,255,255,.10);
+  --action-disabled-fg:rgba(255,255,255,.36);
+
+  --status-success-bg:rgba(18,117,116,.18);
+  --status-warning-bg:rgba(178,122,6,.18);
+  --status-info-bg:rgba(29,95,191,.20);
+  --status-danger-bg:rgba(180,35,24,.18);
+  --marker-optimal-bg:rgba(18,117,116,.18);
+  --marker-attention-bg:rgba(178,122,6,.18);
+  --marker-out-bg:rgba(180,35,24,.18);
+  --chart-track:rgba(255,255,255,.12);
+}

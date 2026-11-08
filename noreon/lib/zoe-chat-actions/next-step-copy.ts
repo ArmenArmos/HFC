@@ -1,0 +1,25 @@
+/** Draft HY/EN/RU words for PR 13. No interpretation of clinical results. */
+const c=(en:string,hy:string,ru:string)=>({en,hy,ru});
+export const NEXT_STEP={
+ failure:{hy:'Չհաջողվեց բացել։ Կարող եք փորձել նորից կամ գրել ձեր խնամքի թիմին։',en:'Could not open this. You can try again or write to your care team.',ru:'Не удалось открыть. Вы можете попробовать снова или написать вашей команде заботы.'},
+ retry:{hy:'Փորձել նորից',en:'Try again',ru:'Попробовать снова'},
+ careTeam:{hy:'Գրել իմ խնամքի թիմին',en:'Write to my care team',ru:'Написать моей команде заботы'},
+ message:c('Message my doctor','Գրել իմ բժշկին','Написать моему врачу'),
+ review:c('Send my review request','Ուղարկել վերանայման իմ հարցումը','Отправить мой запрос врачу'),
+ reviewSent:c('Your review request is saved. Your next step will appear here.','Ձեր վերանայման հարցումը պահված է։ Հաջորդ քայլը կհայտնվի այստեղ։','Ваш запрос врачу сохранён. Ваш следующий шаг появится здесь.'),
+ title:c('Your next step','Ձեր հաջորդ քայլը','Ваш следующий шаг'),
+ tests:c('Your tests','Ձեր հետազոտությունները','Ваши анализы'),
+ testsDetail:{hy:'Ձեր այցը ներառում է այս բոլոր հետազոտությունները։ Ընտրեք այցի ժամը։',ru:'Ваш визит включает все эти анализы. Выберите время визита.',en:'Your visit includes all these tests. Choose a visit time.'},
+ seeTests:c('See my tests','Տեսնել իմ հետազոտությունները','Посмотреть мои анализы'),
+ book:c('Choose my visit','Ընտրել իմ այցը','Выбрать мой визит'),
+ plan:c('Your doctor has published your plan. Read it here, then confirm what you will do.','Ձեր բժիշկը հրապարակել է ձեր պլանը։ Կարդացեք այն այստեղ, ապա հաստատեք ձեր անելիքը։','Ваш врач опубликовал ваш план. Прочитайте его здесь, затем подтвердите ваши действия.'),
+ openPlan:c('Read my plan','Կարդալ իմ պլանը','Прочитать мой план'),
+ confirmed:c('Your plan is confirmed. Nothing to do now. We will tell you when your next step is due.','Ձեր պլանը հաստատված է։ Այժմ անելիք չկա։ Կտեղեկացնենք, երբ հաջորդ քայլի ժամանակը լինի։','Вы подтвердили ваш план. Сейчас ничего делать не нужно. Мы сообщим, когда придёт время следующего шага.'),
+ waiting:c('Nothing to do now. We will tell you when your next step is ready.','Այժմ անելիք չկա։ Կտեղեկացնենք, երբ ձեր հաջորդ քայլը պատրաստ լինի։','Сейчас ничего делать не нужно. Мы сообщим, когда ваш следующий шаг будет готов.'),
+ unavailable:c('Not available right now. Try again later.','Այս պահին հասանելի չէ։ Փորձեք ավելի ուշ։','Сейчас недоступно. Попробуйте позже.'),
+ waitingResults:c("We'll let you know once your doctor has reviewed the results and approved your plan. No action is needed from you right now.",'Կտեղեկացնենք ձեզ, երբ ձեր բժիշկը վերանայի արդյունքները և հաստատի ձեր պլանը։ Այս պահին ձեզնից գործողություն չի պահանջվում։','Мы сообщим вам, когда ваш врач проверит результаты и одобрит ваш план. Сейчас вам ничего не нужно делать.'),
+ doctor:c('Your results have gone to your doctor.','Ձեր արդյունքներն ուղարկվել են ձեր բժշկին։','Ваши результаты переданы вашему врачу.'),
+ fresh:c('Fresh result already saved','Թարմ արդյունքն արդեն պահված է','Свежий результат уже сохранён'),
+ saved:c('Opened here in your chat.','Բացվել է այստեղ՝ ձեր զրույցում։','Открыто здесь, в вашем чате.'),
+ emptyTests:c('No tests are listed right now. We will tell you when your next step is ready.','Այս պահին հետազոտություններ նշված չեն։ Կտեղեկացնենք, երբ ձեր հաջորդ քայլը պատրաստ լինի։','Сейчас анализы не указаны. Мы сообщим, когда ваш следующий шаг будет готов.'),
+};

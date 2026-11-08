@@ -1,0 +1,185 @@
+/* Physician v8.1 shell: canvas, white cards, navy bubbles, pill queries. Brand values stay in tokens. */
+.dw { background: var(--noreon-gray-100); color: var(--text-body); border-radius: var(--radius-xl); padding: 1rem; font-family: var(--font-body); }
+.dw :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.dw-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.dw-grid { display: grid; gap: 1rem; align-items: start; }
+.dw-grid > * { min-width: 0; }
+.dw-members,.dw-glance { background: var(--surface-card); border-radius: var(--radius-lg); overflow: clip; }
+.dw summary { padding: 1rem; cursor: pointer; font-weight: 700; }
+.dw-chat { min-width: 0; border-radius: var(--radius-xl); }
+.dw-input { width: 100%; min-height: 3rem; padding: .75rem; background: var(--surface-sunken); border-radius: var(--radius-lg); }
+.dw-pill { min-height: 2.75rem; padding: .5rem 1rem; border-radius: var(--radius-pill); background: var(--noreon-navy-50); color: var(--noreon-navy-700); font-weight: 600; }
+.dw button:disabled { opacity: .6; cursor: not-allowed; }
+.dw-member { display: flex; flex-direction: column; gap: .25rem; width: 100%; min-height: 3rem; padding: .75rem; text-align: left; border-radius: var(--radius-lg); overflow-wrap: anywhere; }
+.dw-member:hover,.dw-member[aria-current="true"] { background: var(--noreon-navy-50); }
+.dw-welcome { min-height: 20rem; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1rem; padding: 1.5rem; }
+.dw .zk-orb { width: 2rem; height: 2rem; }
+.dw .sz-member { background: var(--surface-card); border: 0; border-radius: var(--radius-xl); }
+.dw .sz-member p:first-child { font-family: var(--font-body); }
+.dw .sz-thread { padding: 1rem .25rem; min-height: 16rem; overflow-wrap: anywhere; }
+.dw-greeting { display: grid; justify-items: start; gap: .75rem; padding: 1rem; background: var(--surface-card); border-radius: var(--radius-xl); }
+.dw .sz-question { background: var(--noreon-navy-700); border-radius: var(--radius-xl) var(--radius-xl) var(--radius-sm) var(--radius-xl); white-space: pre-wrap; overflow-wrap: anywhere; }
+.dw .sz-query-strip button { min-height: 2.75rem; border: 0; border-radius: var(--radius-pill); background: var(--surface-card); font-size: .875rem; }
+.dw .sz-composer { background: var(--surface-card); border-radius: var(--radius-xl); padding: .5rem; align-items: flex-end; }
+.dw .sz-composer textarea { border: 0; border-radius: var(--radius-lg); background: var(--surface-sunken); }
+.dw .sz-composer button { background: var(--noreon-navy-700); border-radius: var(--radius-pill); }
+.dw .sz-record { background: var(--surface-card); border: 0; border-radius: var(--radius-xl); }
+.dw .sz-record h3 { font-family: var(--font-body); font-size: 1rem; }
+.dw-metric { display: grid; gap: .25rem; align-content: start; padding: .75rem; border-radius: var(--radius-lg); background: var(--noreon-navy-50); min-width: 0; }
+@media (min-width: 64rem) {
+ .dw-grid { grid-template-columns: 14rem minmax(0,1fr); }
+ .dw-glance { grid-column: 2; }
+ .dw .sz-thread { max-height: 55dvh; overflow-y: auto; scrollbar-width: thin; }
+}
+@media (min-width: 96rem) {
+ .dw-grid { grid-template-columns: 14rem minmax(0,1fr) 22rem; }
+ .dw-glance { grid-column: 3; }
+ .dw-glance > div { max-height: 75dvh; overflow-y: auto; scrollbar-width: thin; }
+}
+@media (max-width: 40rem) { .dw { padding: .5rem; } .dw-heading { padding: .5rem; } }
+
+.dw-members ul { max-height: 25rem; overflow-y: auto; scrollbar-width: thin; }
+
+.dw-metric[data-tool="ldl"] { background: var(--marker-low-bg); }
+.dw-metric[data-tool="adherence"] { background: var(--noreon-teal-50); }
+
+/* v12 physician home. Scoped to the flag-on page; the original workspaces keep their layout. */
+body:has(.dw-home) { overflow: hidden; }
+.min-h-screen:has(> div > main > .dw-home) { height: 100dvh; min-height: 0; display: grid; grid-template-rows: auto minmax(0,1fr); }
+.min-h-screen:has(> div > main > .dw-home) > div { min-height: 0; display: flex; flex-direction: column; }
+main:has(> .dw-home) { width: 100%; max-width: none; padding: 0; min-height: 0; flex: 1; }
+.dw-home { height: 100%; border-radius: 0; padding: 0; }
+.dw-home-thread { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.dw-home-top,.dw-patient-header { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .65rem; padding: .75rem 1.25rem; background: var(--zk-surface); border-bottom: 1px solid var(--zk-hair); flex: none; }
+.dw-home-top nav { margin-left: auto; display: flex; flex-wrap: wrap; gap: 1rem; }
+.dw-home .zk-orb { width: 1.375rem; height: 1.375rem; }
+.dw-home .dw-member-avatar { width: 2.25rem; height: 2.25rem; font-size: .875rem; }
+.dw-member-identity { flex: 1; min-width: 10rem; }
+.dw-member-identity h2 { font: 700 1rem/1.35 var(--font-body); letter-spacing: -.02em; }
+.dw-member-identity h2 > span { font-size: .78rem; font-weight: 400; color: var(--zk-muted); }
+.dw-status { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .15rem; }
+.dw-status .zk-tag { border-radius: var(--radius-md); font-size: .75rem; }
+.dw-care-team { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; font-size: .8rem; }
+.dw-doctor-name { margin-left: .35rem; font-weight: 600; }
+.dw-home .zk-link { font-size: .8rem; }
+.dw-salutation { flex: none; display: flex; align-items: baseline; flex-wrap: wrap; gap: .25rem .5rem; padding: .6rem 1rem; }
+.dw-salutation h1 { font: 700 1.2rem/1.2 var(--font-body); letter-spacing: -.025em; }
+.dw-salutation p { color: var(--zk-muted); font-size: .8rem; }
+.dw-home-scroll { flex: 1; min-height: 0; overflow-y: auto; margin-bottom: var(--doctor-dock-height, 0px); padding: .5rem clamp(1rem,3vw,2.75rem) 1rem; overflow-wrap: anywhere; scrollbar-width: thin; scroll-padding-block: 1rem; }
+.dw-home .zk-turn { width: 100%; margin-top: .75rem; }
+.dw-home .zk-bubble { max-width: 100%; font-size: .92rem; white-space: normal; }
+.dw-home .zk-from { font-size: .8rem; }
+.dw-home .zk-me,.dw-home .sz-question { background: var(--zk-action); color: var(--text-on-inverse); font-size: .92rem; }
+.dw-muted { color: var(--zk-muted); font-size: .8rem; }
+.dw-home .dw-action-cards { display: grid; gap: .75rem; padding: .5rem 0; list-style: none; }
+.dw-home .dw-action-cards .zk-card { margin: 0; }
+.dw-home-queries { display: flex; flex-wrap: wrap; gap: .5rem; padding-block: 1rem; }
+.dw-home .dw-pill { background: var(--zk-surface); color: var(--zk-action-ink); font-size: .85rem; }
+.dw-dock { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; padding: .65rem clamp(1rem,3vw,2.75rem) max(.75rem,env(safe-area-inset-bottom)); background: var(--zk-canvas); display: flex; flex-direction: column; gap: .5rem; }
+.dw-dock .zk-composer { margin: 0; }
+.dw-dock > p { font-size: .75rem; }
+.dw-home .dw-member-composer textarea { width: 100%; min-width: 0; border: 0; background: transparent; padding: .5rem 0; font-size: 1rem; min-height: 2.75rem; height: 2.75rem; resize: none; }
+.dw-home .sz-query-strip { flex-wrap: nowrap; overflow-x: auto; padding-block: .2rem; scrollbar-width: thin; }
+.dw-home .sz-query-strip button { flex: none; background: var(--zk-surface); color: var(--zk-action-ink); }
+.dw-home .sz-thread { max-height: none; min-height: 0; overflow: visible; padding: .5rem 0; }
+.dw-home .sz-chat { margin-top: 1rem; }
+.dw-home .sz-record { border-radius: var(--zk-r-card); }
+.dw-home .dw-overview { padding: 1rem; width: 100%; }
+.dw-stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem; }
+.dw-stat { display: flex; flex-direction: column; gap: .15rem; padding: .8rem; border-radius: var(--radius-lg); background: var(--zk-panel); min-width: 0; }
+.dw-stat[data-tool="bp"] { background: var(--zk-tint); }
+.dw-stat[data-tool="ldl"] { background: var(--zk-ldl-bg); }
+.dw-stat[data-tool="adherence"] { background: var(--noreon-teal-50); }
+.dw-stat-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .75rem; color: var(--zk-action-ink); }
+.dw-stat[data-tool="ldl"] .dw-stat-label { color: var(--zk-ldl); }
+.dw-stat-value { font-size: 1rem; font-weight: 700; line-height: 1.35; }
+.dw-stat[data-tool="adherence"] .dw-stat-value { font-size: .875rem; }
+.dw-stat .text-caption { font-size: .7rem; }
+.dw-record-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.dw-record-sections h3 { font: 700 .75rem/1.4 var(--font-body); letter-spacing: .07em; text-transform: uppercase; color: var(--zk-muted); margin-bottom: .5rem; }
+.dw-fact { font-size: .85rem; margin-bottom: .5rem; }
+.dw-sources { width: 100%; }
+.dw-sources summary { padding: .5rem 0; font-size: .8rem; color: var(--zk-action-ink); }
+.dw-sources[open] { display: grid; gap: .75rem; }
+@media (min-width: 64rem) {
+ .min-h-screen:has(> div > main > .dw-home) { grid-template-columns: 11rem minmax(0,1fr); grid-template-rows: minmax(0,1fr); }
+ .min-h-screen:has(> div > main > .dw-home) > aside { height: 100dvh; }
+ .dw-home .dw-dock { left: 11rem; }
+}
+@media (max-width: 40rem) {
+ .dw-home .dw-stats { grid-template-columns: 1fr 1fr; }
+ .dw-home .dw-stat:last-child { grid-column: 1 / -1; }
+ .dw-record-sections { grid-template-columns: 1fr; }
+ .dw-care-team { width: 100%; }
+ .dw-patient-header { padding: .5rem 1rem; gap: .25rem .5rem; }
+ .dw-patient-header > .zk-link { min-height: 2.25rem; }
+ .dw-home-top { padding: .5rem 1rem; }
+ .dw-home-top nav { width: 100%; margin-left: 0; gap: 1rem; }
+ .dw-salutation { padding: .5rem 1rem; }
+ .dw-salutation h1 { font-size: 1.05rem; }
+}
+.dw-home { background: var(--zk-canvas); color: var(--zk-ink); }
+@media (max-width: 63.999rem) {
+ .min-h-screen:has(> div > main > .dw-home) > aside { max-height: 35dvh; overflow-y: auto; }
+ .min-h-screen:has(> div > main > .dw-home) > div > header { padding: .15rem .75rem; }
+ .min-h-screen:has(> div > main > .dw-home) > div > header > div:first-child,
+ .min-h-screen:has(> div > main > .dw-home) > div > header > div:last-child > span { display: none; }
+ .min-h-screen:has(> div > main > .dw-home) > div > header > div:last-child { gap: .25rem; }
+ .min-h-screen:has(> div > main > .dw-home) > div > header button { padding-inline: .5rem; font-size: .8rem; }
+}
+
+.dw-home .zk-composer:focus-within { outline: 2px solid var(--zk-action); outline-offset: 2px; }
+.dw-salutation h1,.dw-member-identity h2 { color: var(--zk-ink); }
+.dw-member-identity,.dw-care-team { overflow-wrap: anywhere; }
+.dw-home .zk-composer input { font-size: 1rem; }
+@media (max-width: 40rem) {
+ .min-h-screen:has(> div > main > .dw-home) > div > header > div:last-child { width: 100%; min-width: 0; justify-content: space-between; }
+ .min-h-screen:has(> div > main > .dw-home) > div > header form:first-of-type { gap: 0; }
+ .min-h-screen:has(> div > main > .dw-home) > div > header form:first-of-type > svg { display: none; }
+}
+.dw-home [data-testid="zoe-answer"] { width: 100%; min-width: 0; }
+.dw-home [data-testid="zoe-answer"] > ul.rounded-xl { background: var(--zk-surface); width: fit-content; max-width: 100%; border-radius: var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-r-bubble) var(--zk-tail); padding: .75rem .875rem; }
+
+/* Chat-only shell: the legacy pages still use AppShell and its sidebar. */
+.doctor-chat-shell .dw-home { height: 100%; }
+.doctor-chat-shell .dw-home .dw-dock { left: 0; }
+.doctor-chat-shell .dw-record-card { min-width: 0; overflow-wrap: anywhere; }
+.doctor-chat-shell .dw-record-card table { display: block; max-width: 100%; overflow-x: auto; }
+
+/* Safari moves the visual viewport when the keyboard opens and closes. Both home shells follow it. */
+@media (max-width: 63.999rem) {
+ html:has(.dw-home),body:has(.dw-home) { height: 100%; overflow: hidden; }
+ .doctor-chat-shell:has(.dw-home),.min-h-screen:has(> div > main > .dw-home) {
+  position: fixed; inset-inline: 0; top: var(--chat-view-top, 0px);
+  height: var(--chat-view-height, 100dvh); min-height: 0; overflow: hidden;
+ }
+ .dw-home .dw-dock:has(.zk-composer:focus-within) .sz-query-strip,
+ .dw-home .dw-dock:has(.zk-composer:focus-within) > p { display: none; }
+ /* The dock is inside the scroll area. Anchor its lower edge to the same viewport as the shell. */
+ .dw-home .dw-dock {
+  top: calc(var(--chat-view-top, 0px) + var(--chat-view-height, 100dvh)); bottom: auto;
+  transform: translateY(-100%);
+ }
+ .dw-home .dw-dock .zk-composer {
+  background: var(--surface-card); border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill); box-shadow: var(--shadow-xs);
+ }
+}
+
+@media (max-width: 39.999rem) {
+ .dw-home .dw-salutation-member { display: none; }
+ .dw-home .dw-patient-header { flex-wrap: nowrap; padding: .25rem .75rem; }
+ .dw-home .dw-member-avatar,.dw-home .dw-care-team,.dw-home .dw-status,
+ .dw-home .dw-member-birth,.dw-home .dw-patient-header > a { display: none; }
+ .dw-home .dw-member-identity { min-width: 0; }
+ .dw-home .dw-member-identity h2 { display: flex; align-items: baseline; gap: .25rem; white-space: nowrap; }
+ .dw-home .dw-member-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+ .dw-home .dw-member-identity h2 > span { flex: none; }
+ .dw-home .dw-patient-header > button { flex: none; min-height: 2.75rem; }
+}
+
+/* One readable conversation column on a wide display; the phone viewport rules stay intact. */
+.doctor-chat-shell .dw-home-thread { max-width: 56rem; margin-inline: auto; }
+.doctor-chat-shell .dw-dock { max-width: 56rem; margin-inline: auto; }
+.dw-home .zk-composer textarea:focus { outline: none; box-shadow: none; }
+.dw-home .dw-member-name { font-family: var(--font-body); font-weight: 600; }

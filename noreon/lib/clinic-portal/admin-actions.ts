@@ -1,0 +1,10 @@
+'use server';
+import {loggedAction} from '@/lib/observability/with-logging';
+import {requireRealAdmin} from '@/lib/staff/real-admin';
+import type {ClinicRpc} from './runtime';
+import {createClinicAdminGateway} from './admin-gateway';
+const gateway=createClinicAdminGateway(async()=>{const c=await requireRealAdmin();return{actorScope:c.actorScope,rpc:c.client as unknown as ClinicRpc};});
+export const clinicAdminRead=loggedAction("clinicAdminRead",async function clinicAdminRead(clinicId:string,cursor:string|null,scope:string){return gateway.read(clinicId,cursor,scope);});
+export const clinicAdminLookup=loggedAction("clinicAdminLookup",async function clinicAdminLookup(clinicId:string,email:string,scope:string){return gateway.lookup(clinicId,email,scope);});
+export const clinicAdminCommand=loggedAction("clinicAdminCommand",async function clinicAdminCommand(clinicId:string,input:unknown,scope:string){return gateway.command(clinicId,input,scope);});
+export const clinicAdminRecover=loggedAction("clinicAdminRecover",async function clinicAdminRecover(clinicId:string,input:unknown,scope:string){return gateway.recover(clinicId,input,scope);});

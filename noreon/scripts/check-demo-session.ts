@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {newDemoState,sealDemoState,openDemoState,sealSharedSession,openDemoSession,localDemoToken} from '@/lib/patient/demo-model';
+const secret='fictional-test-session-secret-at-least-32-characters';
+const state=newDemoState();
+const legacy=sealDemoState(state,secret);
+assert.deepEqual(openDemoSession(legacy,secret),state);
+const session=sealSharedSession(state,secret);
+assert.deepEqual(openDemoSession(session,secret),{version:2,kind:'shared-session',userId:state.userId,expiresAt:state.expiresAt});
+assert.equal(openDemoState(session,secret),null,'identity-only session is not a local case');
+assert.equal(openDemoSession(session,secret,state.expiresAt+1),null);
+assert.equal(openDemoSession(session,'different-key-that-is-long-enough-to-use'),null);
+state.care={stage:'treatment',acknowledged:false,events:Array.from({length:2000},(_,i)=>({medicationId:`fictional-${i}`,dueAt:'2026-10-11T04:00:00Z',status:'taken',recordedAt:'2026-10-11T04:00:00Z'}))};
+assert.throws(()=>localDemoToken(state,secret),/Local demo storage is full/);
+assert.ok(sealSharedSession(state,secret).length<1000,'large shared history does not enter session cookie');
+assert.deepEqual(openDemoState(legacy,secret)?.care,undefined,'previous valid session remains readable');
+console.log('Demo sessions: legacy compatibility, identity envelopes, expiry/key validation, and local storage preflight.');

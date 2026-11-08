@@ -1,0 +1,13 @@
+diff --git a/index.js b/index.js
+index d45e67d91d38c91d05e68e8b338e4bc2de591dcc..9f563579118f7372e4ccd5c7fb84802c9d34c438 100644
+--- a/index.js
++++ b/index.js
+@@ -1,5 +1,7 @@
+ 'use strict';
+ const strictUriEncode = require('strict-uri-encode');
+-const decodeComponent = require('decode-uri-component');
++// Patched decoder is ESM; keep query-string's CommonJS API for Expo Router.
++const decodeModule = require('decode-uri-component');
++const decodeComponent = decodeModule.default || decodeModule;
+ const splitOnFirst = require('split-on-first');
+ const filterObject = require('filter-obj');

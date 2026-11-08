@@ -1,0 +1,5 @@
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
+overrides:
+  follow-redirects: 1.16.2

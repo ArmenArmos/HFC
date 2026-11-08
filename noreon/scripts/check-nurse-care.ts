@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {careCommandSchema,nativeCareCommandSchema} from '@/lib/staff/care-command-schema';
+import {staffVisibleState} from '@/lib/staff/care-visibility';
+const id='83000000-0000-4000-8000-000000000001';
+assert.ok(careCommandSchema.safeParse({caseId:id,caseRevision:1,op:'note',kind:'evidence',note:'Collected source details'}).success);
+for(const op of ['publish','save-draft','approve-report','receive-result','complete-consultation'])assert.equal(careCommandSchema.safeParse({caseId:id,caseRevision:1,op}).success,false);
+assert.equal(nativeCareCommandSchema.safeParse({id,revision:1,op:'note',kind:'evidence',note:'Source',role:'doctor'}).success,false);
+const state={workflow:{draft:{medicationName:'Private change'},draftSaved:true,publication:{draft:{medicationName:'Approved medicine'}}}};
+assert.equal(staffVisibleState(state,'doctor'),state);
+const nurse=staffVisibleState(state,'nurse');
+assert.equal(nurse.workflow.draft.medicationName,'');assert.equal(nurse.workflow.draftSaved,false);
+assert.deepEqual(nurse.workflow.publication,state.workflow.publication);assert.equal(state.workflow.draft.medicationName,'Private change');
+console.log('Nurse care payloads reject clinical commands and private draft redaction preserves approved care.');

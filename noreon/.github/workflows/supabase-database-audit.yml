@@ -1,0 +1,29 @@
+name: Inspect hosted database security metadata
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: supabase-database-audit-production
+  cancel-in-progress: false
+jobs:
+  inspect:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - name: Check PostgreSQL client availability
+        run: command -v psql > /dev/null
+      - name: Read security catalog metadata without member records
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PRODUCTION_DB_PASSWORD }}
+          SUPABASE_POOLER_HOST: aws-0-eu-central-1.pooler.supabase.com
+        run: node --experimental-strip-types scripts/audit-hosted-database.ts

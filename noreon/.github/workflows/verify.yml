@@ -1,0 +1,324 @@
+name: Verify application
+on:
+  # PRs only, and only once they are ready for review: draft PRs do not spend
+  # Actions minutes. Mark a PR ready after the local checks pass. The squash
+  # merge into main is not re-verified; run this workflow manually on main when
+  # a merge order needs a fresh confirmation.
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      scope:
+        # Draft iteration only. A scoped run reports as "verify (sql only)" or
+        # "verify (ts only)", never "verify", so it cannot satisfy the merge gate.
+        description: 'Checks to run: all, sql (replay, types, SQL and race checks) or ts (typecheck, lint, TS checks, build)'
+        type: choice
+        options: [all, sql, ts]
+        default: all
+permissions:
+  contents: read
+  # Read earlier Verify runs on the same commit (the reuse step below).
+  actions: read
+concurrency:
+  # Draft pushes start runs whose job is skipped; keep them in their own group
+  # so one can never cancel the real run that marking the PR ready starts.
+  group: verify-${{ github.ref }}-${{ github.event.pull_request.draft && 'draft' || 'ready' }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: ${{ github.event_name == 'workflow_dispatch' && inputs.scope != 'all' && format('verify ({0} only)', inputs.scope) || 'verify' }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    # Repo variable VERIFY_RUNS_ON picks the runner, e.g. '["self-hosted","noreon-ci"]'
+    # for the Mac runner (docs/operations/ci-runner.md). Unset means GitHub-hosted.
+    runs-on: ${{ fromJSON(vars.VERIFY_RUNS_ON || '"ubuntu-latest"') }}
+    # 2-vCPU Hetzner runners need 29-40 min for the full suite (burst runners 11);
+    # 40 cut hz1 off mid-build three times on 4 Nov.
+    timeout-minutes: 60
+    outputs:
+      mobile_required: ${{ steps.reuse.outputs.reused == 'true' && 'false' || steps.mobile_scope.outputs.mobile_required }}
+    env:
+      NOREON_TEST_DB_CONTAINER: supabase_db_noreon-core
+      NOREON_TEST_DB_NAME: postgres
+      NOREON_VALIDATE_AI: 'false'
+      SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || 'all' }}
+    steps:
+      # A full run that passed on this exact head commit in the last 6 hours (for
+      # example a manual run before the PR was marked ready) is reused: every
+      # later step is skipped and this job passes. Only a job named "verify"
+      # whose Build step ran and succeeded counts, so scoped runs and reused runs
+      # are never reused. Any API error runs the full suite.
+      - name: Reuse a full pass on this commit from the last 6 hours
+        id: reuse
+        if: env.SCOPE == 'all' && github.ref != 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 -I - <<'PY'
+          import json, os, urllib.request
+          from datetime import datetime, timedelta, timezone
+          env = os.environ
+          def get(path):
+              req = urllib.request.Request(f"https://api.github.com/repos/{env['REPO']}/{path}", headers={
+                  'Authorization': f"Bearer {env['GH_TOKEN']}", 'Accept': 'application/vnd.github+json'})
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  return json.load(r)
+          found = None
+          try:
+              since = datetime.now(timezone.utc) - timedelta(hours=6)
+              runs = get(f"actions/workflows/verify.yml/runs?head_sha={env['HEAD_SHA']}&status=success&per_page=20")['workflow_runs']
+              for run in runs:
+                  if str(run['id']) == env['RUN_ID']: continue
+                  if datetime.fromisoformat(run['updated_at'].replace('Z', '+00:00')) < since: continue
+                  for job in get(f"actions/runs/{run['id']}/jobs?per_page=50")['jobs']:
+                      build = [s for s in job.get('steps') or [] if s['name'] == 'Build']
+                      if job['name'] == 'verify' and job['conclusion'] == 'success' and build and build[0]['conclusion'] == 'success':
+                          found = run; break
+                  if found: break
+          except Exception as e:
+              print(f'Reuse lookup failed ({type(e).__name__}); running the full suite.')
+          with open(env['GITHUB_OUTPUT'], 'a') as out, open(env['GITHUB_ENV'], 'a') as genv:
+              if found:
+                  print(f"Reusing full pass {found['html_url']} on {env['HEAD_SHA']}.")
+                  out.write('reused=true\n'); genv.write('REUSED=true\n')
+              else:
+                  print('No full pass on this commit in the last 6 hours; running the full suite.')
+          PY
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        if: env.REUSED != 'true'
+        with:
+          # A pull request checks out its merge commit: that and its first parent (main) are enough for
+          # the migration check. A manual run needs main's full history (see the step below).
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        if: env.REUSED != 'true'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        if: env.REUSED != 'true'
+        with:
+          node-version-file: .nvmrc
+          # Self-hosted runners keep the pnpm store on disk; uploading it to
+          # GitHub's cache took ~1m50s per run there.
+          cache: ${{ runner.environment == 'github-hosted' && 'pnpm' || '' }}
+      - name: No migration already on main is edited, renamed, removed or added out of order
+        if: env.REUSED != 'true'
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            node scripts/migration-history.mjs --range HEAD^1 HEAD
+          elif [ "$REF" = refs/heads/main ]; then
+            node scripts/migration-history.mjs --history HEAD
+          else
+            node scripts/migration-history.mjs --range "$(git merge-base origin/main HEAD)" HEAD
+          fi
+      - name: Test mobile scope decisions
+        if: env.REUSED != 'true'
+        run: node scripts/check-ci-mobile-scope.mjs
+      - name: Detect changes requiring native mobile checks
+        if: env.REUSED != 'true'
+        id: mobile_scope
+        run: node scripts/ci-mobile-scope.mjs
+      - run: pnpm install --frozen-lockfile
+        if: env.REUSED != 'true'
+      - name: Clear a CI database left by a cancelled run (self-hosted only)
+        if: runner.environment == 'self-hosted' && env.REUSED != 'true'
+        run: pnpm exec supabase stop --no-backup || true
+      - name: Start isolated CI database and replay every migration
+        if: env.REUSED != 'true'
+        run: |
+          pnpm exec supabase db start
+          pnpm db:reset
+      - name: Verify generated database types
+        if: env.REUSED != 'true'
+        env:
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
+        run: |
+          pnpm db:types
+          git diff --exit-code -- lib/db/types.ts
+      - name: Typecheck
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        # The Hetzner runners have 3.8 GB of memory, so Node's default heap limit
+        # (about half of it, ~1.9 GB) is too small for tsc over the whole app.
+        # Raise the limit for this step only; swap covers the rest.
+        env:
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm typecheck
+      - run: pnpm lint
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+      - name: TypeScript regression checks (no provider calls)
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        # Auto-discovers check-clinic-member-reveal.ts plus the clinic admin UI/contract checks.
+        run: node scripts/run-checks.mjs
+      - name: Nurse assignment preserves saved selection and stale revision drafts
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        run: node --conditions=noreon-server-test --import ./scripts/register-alias.mjs scripts/check-nurse-assignment-selection.mjs
+      - name: Reports use one Auth context and preserve registration gates
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        run: node --conditions=noreon-server-test --import ./scripts/register-alias.mjs scripts/check-report-registration-reuse.mjs
+      - name: Demo booking action boundaries (mocked persistence, no provider calls)
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        run: node --import ./scripts/register-alias.mjs scripts/check-demo-booking-actions.mjs
+      - name: Profile consent feedback (isolated IO, no provider calls)
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        run: node --import ./scripts/register-alias.mjs scripts/check-profile-consent.mjs
+      - name: Transactional SQL regression checks
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        # Auto-discovers check-clinic-member-masking.sql; every fixture is rolled back.
+        run: node scripts/run-checks.mjs --sql
+      - name: Conversation card hand-back controls (controlled IO)
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        run: node --conditions=noreon-server-test --import ./scripts/register-alias.mjs scripts/check-doctor-conversation-card.tsx
+      - name: One BP staff item in both concurrent creation orders
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-zoe-bp-one-item-races.mjs
+      - name: Alert resolution and reassignment boundary
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-care-alert-resolve-races.mjs
+      - name: Concurrent AI quota boundary
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-ai-quota-concurrency.mjs
+      - name: Concurrent admission boundaries
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-admission-concurrency.mjs
+      - name: Concurrent native API admission boundaries
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-native-api-admission-concurrency.mjs
+      - name: Concurrent staff evidence collection
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-nurse-care-concurrency.mjs
+      - name: Concurrent Verify recipient and feedback boundaries
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-twilio-verify-concurrency.mjs
+      - name: Concurrent real booking boundaries
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-real-booking-concurrency.mjs
+      - name: Per-member clinical source locks (two-member race)
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-member-source-lock-race.mjs
+      - name: Concurrent operational coordination authority
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-real-coordination-concurrency.mjs
+      - name: AI care plan draft save serializes with lab reviews
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-ai-care-plan-race.mjs
+      - name: Concurrent test account resets return one reset
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-test-account-reset-race.mjs
+      - name: Concurrent test sign-in acceptance spends the admin code once
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-test-account-signin-concurrency.mjs
+      - name: Concurrent real staff invitation and session activation
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-real-staff-onboarding-concurrency.mjs
+      - name: Concurrent real staff management
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-real-staff-management-concurrency.mjs
+      - name: Concurrent several-medicine publication, draft saves and dose reports
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-multi-medicine-concurrency.mjs
+      - name: Guarded targets and booking transport lifecycle
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: |
+          node scripts/check-clinic-db-target.mjs
+          node scripts/check-booking-first-send.mjs
+          node scripts/check-booking-notice-retry.mjs
+          node scripts/check-booking-notice-recovery.mjs
+          node scripts/check-booking-b1-races.mjs
+      - name: Concurrent clinic grant and legacy pilot exclusion
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        env:
+          NOREON_ADMIN_RACE_LOG: ${{ runner.temp }}/clinic-admin-race-${{ github.run_id }}-${{ github.run_attempt }}.log
+          NOREON_COMPAT_RACE_LOG: ${{ runner.temp }}/clinic-compat-race-${{ github.run_id }}-${{ github.run_attempt }}.log
+        run: |
+          python3 scripts/check-clinic-admin-race.py green
+          python3 scripts/check-booking-legacy-compat-races.py
+      - name: Concurrent clinic scheduling settings
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-clinic-scheduling-concurrency.mjs
+      - name: Concurrent conversation commands and Telegram link, inbox and delivery outcomes
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: |
+          node scripts/check-conversation-persistence-races.mjs
+          node scripts/check-telegram-races.mjs
+          node scripts/check-nurse-actor-races.mjs
+          node scripts/check-conversation-grant-lock-races.mjs
+      - name: Nurse visit All done overwrite races
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-nurse-visit-all-done-races.mjs
+      - name: Concurrent Telegram delivery retries
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-telegram-delivery-retry-races.mjs
+      - name: Zoe coach races (publication against an inbound red-flag reply, sweeps, takeover, consent)
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node --disable-warning=DEP0205 --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --conditions=noreon-server-test --import ./scripts/register-alias.mjs scripts/zoe-coach-races.ts
+      - name: Concurrent real staff password recovery
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-real-staff-recovery-concurrency.mjs
+      - name: Staff removal preserves published clinical history
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-real-staff-management-history.mjs
+      - name: Concurrent shared dose corrections
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-shared-dose-concurrency.mjs
+      - name: Concurrent shared report deduplication and cleanup
+        if: env.REUSED != 'true' && env.SCOPE != 'ts'
+        run: node scripts/check-shared-report-deduplication-concurrency.mjs
+      - run: pnpm check:tokens
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+      - run: pnpm check:ru
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+      - name: Build
+        if: env.REUSED != 'true' && env.SCOPE != 'sql'
+        env:
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm build
+      # Evidence for lock failures in any DB step (SQL or TS race checks): other
+      # sessions, locks still held on profiles and recent autovacuum on the patient tables
+      # (autovacuum's lock conflicts with `lock table ... in share mode nowait`).
+      - name: Database snapshot on failure
+        if: failure() && env.REUSED != 'true'
+        run: |
+          docker exec -i "$NOREON_TEST_DB_CONTAINER" psql -U postgres -X -P pager=off -c "select now()" \
+            -c "select pid,backend_type,state,xact_start,left(regexp_replace(coalesce(query,''),'\s+',' ','g'),160) query from pg_stat_activity where pid<>pg_backend_pid() and (backend_type='client backend' or backend_type like 'autovacuum%')" \
+            -c "select l.pid,l.mode,l.granted,a.backend_type from pg_locks l join pg_stat_activity a using(pid) where l.relation='public.profiles'::regclass and l.pid<>pg_backend_pid()" \
+            -c "select relname,last_autovacuum,last_autoanalyze,n_mod_since_analyze from pg_stat_user_tables where schemaname='public' and relname in ('profiles','patient_consents','patient_assessments','patient_measurements','patient_reports','patient_care_visits','patient_care_visit_entries') order by relname" || true
+      - name: Stop isolated CI database
+        if: always() && env.REUSED != 'true'
+        run: pnpm exec supabase stop --no-backup
+
+  mobile:
+    needs: verify
+    # Scoped manual runs skip the native checks.
+    if: needs.verify.outputs.mobile_required != 'false' && (github.event_name != 'workflow_dispatch' || inputs.scope == 'all')
+    # Repo variable MOBILE_RUNS_ON picks this job's runner, falling back to VERIFY_RUNS_ON, then
+    # GitHub-hosted. The Expo export's Hermes compiler crashes on the ARM Mac runner, so the
+    # mobile job can be held to x86 runners (["self-hosted","noreon-ci","X64"]) while verify
+    # keeps every runner (docs/operations/ci-runner.md).
+    runs-on: ${{ fromJSON(vars.MOBILE_RUNS_ON || vars.VERIFY_RUNS_ON || '"ubuntu-latest"') }}
+    timeout-minutes: 20
+    env:
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_PUBLIC_NOREON_ENABLED: 'false'
+    defaults:
+      run:
+        working-directory: apps/patient-mobile
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          # Self-hosted runners keep the pnpm store on disk; uploading it to
+          # GitHub's cache took ~1m50s per run there.
+          cache: ${{ runner.environment == 'github-hosted' && 'pnpm' || '' }}
+          cache-dependency-path: apps/patient-mobile/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:theme
+      - run: pnpm test
+      - run: pnpm test:ui
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm export

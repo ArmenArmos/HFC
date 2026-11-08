@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readCleanupView} from '@/lib/cleanup/admin-view';
+let reads=0;
+await assert.rejects(readCleanupView({}, {authorize:async()=>{throw Error('denied')},read:async()=>{reads++;return {data:[],error:null}}}));assert.equal(reads,0);
+const deps={authorize:async()=>{},read:async()=>{reads++;return {data:[],error:null}}};
+assert.deepEqual(await readCleanupView({},deps),{state:'ready',runs:[],older:false});
+assert.deepEqual(await readCleanupView({before:'invalid'},deps),{state:'invalid'});assert.equal(reads,1);
+assert.deepEqual(await readCleanupView({}, {...deps,read:async()=>({data:null,error:{message:'sensitive'}})}),{state:'unavailable'});
+assert.deepEqual(await readCleanupView({}, {...deps,read:async()=>{throw Error('sensitive')}}),{state:'unavailable'});
+assert.deepEqual(await readCleanupView({}, {...deps,read:async()=>({data:[{member_id:'secret'}],error:null})}),{state:'unavailable'});
+console.log('Admin read authorizes first and distinguishes empty, invalid, malformed, and unavailable outcomes.');

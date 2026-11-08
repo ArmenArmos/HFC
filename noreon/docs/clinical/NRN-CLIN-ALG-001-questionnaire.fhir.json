@@ -1,0 +1,2493 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "noreon-primary-screening",
+  "url": "http://noreon.health/fhir/Questionnaire/noreon-primary-screening",
+  "version": "1.1",
+  "name": "NoreonPrimaryScreening",
+  "title": "Noreon Digital Health Platform — Առաջնային սկրինինգային հարցաշար",
+  "status": "draft",
+  "experimental": true,
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2026-09-05",
+  "publisher": "Noreon Health",
+  "description": "Առաջնային կարդիոմետաբոլիկ սկրինինգային հարցաշար · NRN-CLIN-ALG-001 v1.1. Screening instrument only — not diagnostic, does not prescribe.",
+  "purpose": "Սկրինինգային գործիք է, ոչ ախտորոշիչ սարք · Չի նշանակում դեղորայք · Չի հաստատում ախտորոշում · Չի փոխարինում բժշկի հետ խորհրդակցությանը",
+  "language": "hy",
+  "item": [
+    {
+      "linkId": "Q1",
+      "text": "Տարիք և սեռ",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q1.1",
+          "text": "Քանի՞ տարեկան եք։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q1.1-help",
+              "text": "Տարիքը սրտանոթային ռիսկի ամենաուժեղ գործոններից է։",
+              "type": "display"
+            }
+          ],
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.2.3.3"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 Table 5"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Class IIa"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "տարի"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 18
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 110
+            }
+          ]
+        },
+        {
+          "linkId": "Q1.2",
+          "text": "Ձեր կենսաբանական սեռը",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q1.2-help",
+              "text": "Հարցնում ենք, քանի որ սրտանոթային ռիսկի հաշվարկը տարբերվում է տղամարդկանց և կանանց մոտ։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q1-2",
+                "code": "male",
+                "display": "Արական"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q1-2",
+                "code": "female",
+                "display": "Իգական"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.2.3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q2",
+      "text": "Քաշ, շարժում, սնունդ",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q2.1",
+          "text": "Ինչպե՞ս կգնահատեք Ձեր քաշը։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-1",
+                "code": "ok",
+                "display": "Կարծում եմ՝ նորմալ է"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-1",
+                "code": "over",
+                "display": "Կարծում եմ՝ ավելորդ քաշ ունեմ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-1",
+                "code": "idk",
+                "display": "Չգիտեմ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "NOREON"
+            }
+          ]
+        },
+        {
+          "linkId": "Q2.2",
+          "text": "Նշեք Ձեր հասակը և քաշը։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q2.2-help",
+              "text": "Գոտկատեղի շրջագիծը ըստ ցանկության — ESC-ը դրա համար տալիս է առանձին շեմեր։",
+              "type": "display"
+            },
+            {
+              "linkId": "Q2.2.h",
+              "text": "Հասակ",
+              "type": "integer",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+                  "valueCoding": {
+                    "display": "սմ"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 120
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 230
+                }
+              ]
+            },
+            {
+              "linkId": "Q2.2.w",
+              "text": "Քաշ",
+              "type": "integer",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+                  "valueCoding": {
+                    "display": "կգ"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 30
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 300
+                }
+              ]
+            },
+            {
+              "linkId": "Q2.2.waist",
+              "text": "Գոտկատեղ",
+              "type": "integer",
+              "required": false,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+                  "valueCoding": {
+                    "display": "սմ"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 40
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 200
+                }
+              ]
+            }
+          ],
+          "type": "group",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Class I Level A"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.3.10"
+            }
+          ]
+        },
+        {
+          "linkId": "Q2.3",
+          "text": "Ինչպե՞ս կնկարագրեք Ձեր ֆիզիկական ակտիվությունը վերջին 3 ամսվա ընթացքում։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3",
+                "code": "A",
+                "display": "Ակտիվ եմ՝ շաբաթը 3 կամ ավելի անգամ մարզվում եմ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3",
+                "code": "B",
+                "display": "Երբեմն եմ մարզվում, անկանոն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3",
+                "code": "C",
+                "display": "Նստակյաց եմ՝ գրասենյակային աշխատանք, հազվադեպ եմ շարժվում"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3",
+                "code": "D",
+                "display": "Առողջական պատճառով չեմ կարող մարզվել"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.3.1.2"
+            }
+          ]
+        },
+        {
+          "linkId": "Q2.3a",
+          "text": "Շաբաթվա ընթացքում ընդհանուր որքա՞ն ժամանակ եք մարզվում։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q2.3a-help",
+              "text": "Չափավոր՝ շնչառությունս արագանում է, բայց կարող եմ ազատ խոսել։ Ինտենսիվ՝ շնչում եմ շատ արագ, դժվարանում եմ խոսել։",
+              "type": "display"
+            },
+            {
+              "linkId": "Q2.3a.pamin",
+              "text": "Րոպե/շաբաթ",
+              "type": "integer",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+                  "valueCoding": {
+                    "display": "ր"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 0
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 1200
+                }
+              ]
+            },
+            {
+              "linkId": "Q2.3a.paint",
+              "text": "Ինտենսիվություն",
+              "type": "choice",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3a",
+                    "code": "mod",
+                    "display": "Չափավոր ինտենսիվություն"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3a",
+                    "code": "vig",
+                    "display": "Ինտենսիվ"
+                  }
+                }
+              ]
+            }
+          ],
+          "type": "group",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.3.1.2"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q2.3",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3",
+                "code": "A"
+              }
+            },
+            {
+              "question": "Q2.3",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-3",
+                "code": "B"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q2.4",
+          "text": "Ինչպե՞ս եք սնվում։ Նշեք այն ամենը, ինչը ճիշտ է Ձեր դեպքում։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q2.4-help",
+              "text": "ESC-ի Table 8 «Healthy diet characteristics»-ի ութ բաղադրիչը։ Ալկոհոլը հարցվում է առանձին՝ Q4-ում։",
+              "type": "display"
+            }
+          ],
+          "type": "open-choice",
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "veg",
+                "display": "Օրական ≥200 գ բանջարեղեն (2–3 բաժին)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "fruit",
+                "display": "Օրական ≥200 գ միրգ (2–3 բաժին)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "fish",
+                "display": "Շաբաթը 1–2 անգամ ձուկ, հատկապես ճարպոտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "nuts",
+                "display": "Ամեն օր 30 գ չաղած ընկույզ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "meat",
+                "display": "Կարմիր միս շաբաթը 350–500 գ-ից քիչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "grain",
+                "display": "Ամբողջական հացահատիկ (թեփով հաց, ձավարեղեն)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "salt",
+                "display": "Աղը՝ օրական 5 գ-ից (1 թեյի գդալ) քիչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q2-4",
+                "code": "ssb",
+                "display": "Չեմ խմում շաքարով ըմպելիքներ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 Table 8"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §8.2.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Alcohol · sugar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q3",
+      "text": "Ծխելը",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q3.1",
+          "text": "Ծխո՞ւմ եք։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "cur",
+                "display": "Այո, ներկայումս ծխում եմ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "former",
+                "display": "Նախկինում ծխել եմ, հիմա՝ ոչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "never",
+                "display": "Երբեք չեմ ծխել"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "alt",
+                "display": "Օգտագործում եմ էլեկտրոնային / տաքացվող ծխախոտ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.5.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 Table 9"
+            }
+          ]
+        },
+        {
+          "linkId": "Q3.2",
+          "text": "Ընդհանուր քանի՞ տարի եք ծխել (կամ ծխում)։",
+          "required": true,
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.5.1"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "տ."
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 80
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q3.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "cur"
+              }
+            },
+            {
+              "question": "Q3.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "former"
+              }
+            },
+            {
+              "question": "Q3.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "alt"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q3.3",
+          "text": "Օրական միջինում քանի՞ հատ ծխախոտ եք ծխում։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q3.3-help",
+              "text": "1 տուփ = 20 հատ։",
+              "type": "display"
+            }
+          ],
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.5.1"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "հատ"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 100
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q3.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "cur"
+              }
+            },
+            {
+              "question": "Q3.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "former"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q3.4",
+          "text": "Քանի՞ տարի առաջ եք թողել ծխելը։",
+          "required": true,
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.5.1"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "տ."
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 70
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q3.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q3-1",
+                "code": "former"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q4",
+      "text": "Ալկոհոլի օգտագործումը",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q4.1",
+          "text": "Վերջին 12 ամսում որքա՞ն հաճախ եք օգտագործել ալկոհոլ պարունակող խմիչք։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q4.1-help",
+              "text": "AUDIT-C-ի առաջին հարցը։ Ալկոհոլը սննդի ցանկից առանձնացված է, որովհետև հաճախականությունն ու մեկ ընդունման քանակը առանձին գնահատման կարիք ունեն։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "never",
+                "display": "Երբեք"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m1",
+                "display": "Ամսական մեկ անգամ կամ պակաս"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m24",
+                "display": "Ամսական 2–4 անգամ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w23",
+                "display": "Շաբաթական 2–3 անգամ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w4",
+                "display": "Շաբաթական 4 կամ ավելի անգամ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "WHO AUDIT 2001"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §8.2.4"
+            }
+          ]
+        },
+        {
+          "linkId": "Q4.2",
+          "text": "Սովորաբար մեկ օրում քանի՞ ստանդարտ բաժին եք օգտագործում։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q4.2-help",
+              "text": "Ստանդարտ բաժինը մոտ 10 գ մաքուր ալկոհոլ է՝ մոտ 250 մլ 5% գարեջուր, 100 մլ 12% գինի կամ 30 մլ 40% թունդ խմիչք։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-2",
+                "code": "d12",
+                "display": "1–2 բաժին"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-2",
+                "code": "d34",
+                "display": "3–4 բաժին"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-2",
+                "code": "d56",
+                "display": "5–6 բաժին"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-2",
+                "code": "d79",
+                "display": "7–9 բաժին"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-2",
+                "code": "d10",
+                "display": "10 և ավելի բաժին"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-2",
+                "code": "idk",
+                "display": "Չեմ հիշում"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "WHO AUDIT 2001"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "NOREON"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m1"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m24"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w23"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w4"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q4.3",
+          "text": "Որքա՞ն հաճախ եք մեկ առիթով օգտագործում 6 կամ ավելի ստանդարտ բաժին։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q4.3-help",
+              "text": "AUDIT-C-ի երրորդ հարցը։ Այս պատասխանով ամբողջանում է 0–12 միավորը։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-3",
+                "code": "never",
+                "display": "Երբեք"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-3",
+                "code": "ltm",
+                "display": "Ամսականից պակաս"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-3",
+                "code": "mon",
+                "display": "Ամսական"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-3",
+                "code": "wk",
+                "display": "Շաբաթական"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-3",
+                "code": "day",
+                "display": "Ամեն օր կամ գրեթե ամեն օր"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-3",
+                "code": "idk",
+                "display": "Չեմ հիշում"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "WHO AUDIT 2001"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m1"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m24"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w23"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w4"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q4.4",
+          "text": "Ո՞ր խմիչքն եք ամենից հաճախ օգտագործում։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q4.4-help",
+              "text": "Ստանդարտ չափաբաժինը երկրից կախված պարունակում է 8–14 գ ալկոհոլ, ուստի հաշվարկը կատարվում է մաքուր ալկոհոլի գրամով։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-4",
+                "code": "beer",
+                "display": "Գարեջուր, մոտ 5%"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-4",
+                "code": "wine",
+                "display": "Գինի, մոտ 12%"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-4",
+                "code": "spir",
+                "display": "Թունդ խմիչք, մոտ 40%"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-4",
+                "code": "mix",
+                "display": "Տարբեր խմիչքներ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-4",
+                "code": "idk",
+                "display": "Չեմ հիշում"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "NOREON"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.3.2.4.5"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m1"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m24"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w23"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w4"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q4.5",
+          "text": "Մեկ ընդունման ժամանակ սովորաբար ի՞նչ ծավալ եք խմում։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q4.5-help",
+              "text": "Մոտավոր ծավալը բավական է։ Այն ճշտում է գրամը, երբ բաժակը ստանդարտ չափի չէ։",
+              "type": "display"
+            }
+          ],
+          "type": "decimal",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "NOREON"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.3.2.4.5"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §8.2.4"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "մլ"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 3000
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m1"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "m24"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w23"
+              }
+            },
+            {
+              "question": "Q4.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q4-1",
+                "code": "w4"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        }
+      ]
+    },
+    {
+      "linkId": "Q5",
+      "text": "Զարկերակային ճնշում",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q5.1",
+          "text": "Ձեզ մոտ երբևէ հայտնաբերվե՞լ է բարձր զարկերակային ճնշում։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-1",
+                "code": "tx",
+                "display": "Այո, և ընդունում եմ ճնշման դեղեր"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-1",
+                "code": "notx",
+                "display": "Այո, բայց դեղ չեմ ընդունում"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-1",
+                "code": "no",
+                "display": "Ոչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-1",
+                "code": "idk",
+                "display": "Չգիտեմ / երբեք չեմ չափել"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Figure 10"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §5.2.3"
+            }
+          ]
+        },
+        {
+          "linkId": "Q5.2",
+          "text": "Նշեք Ձեր ճնշման վերջին չափման արդյունքը։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q5.2-help",
+              "text": "Եթե հիմա չափեք՝ ավելի ճշգրիտ կլինի։ Փորձեք 185/115՝ hypertensive emergency-ի ուղին տեսնելու համար։",
+              "type": "display"
+            },
+            {
+              "linkId": "Q5.2.sbp",
+              "text": "Վերին (SBP)",
+              "type": "integer",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+                  "valueCoding": {
+                    "display": "mmHg"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 60
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 300
+                }
+              ]
+            },
+            {
+              "linkId": "Q5.2.dbp",
+              "text": "Ստորին (DBP)",
+              "type": "integer",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+                  "valueCoding": {
+                    "display": "mmHg"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 30
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 200
+                }
+              ]
+            }
+          ],
+          "type": "group",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Figure 10"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §7.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §10.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Class I"
+            }
+          ]
+        },
+        {
+          "linkId": "Q5.3",
+          "text": "Ձեր ճնշումը շատ բարձր է։ ԱՅՍ ՊԱՀԻՆ ունե՞ք հետևյալ ախտանիշներից որևէ մեկը։",
+          "required": false,
+          "type": "open-choice",
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "head",
+                "display": "Ուժեղ գլխացավ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "vis",
+                "display": "Տեսողության խանգարում (մշուշ, կրկնատեսություն)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "chest",
+                "display": "Կրծքավանդակի ցավ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "dysp",
+                "display": "Օդի պակասի զգացում / շնչահեղձություն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "dizz",
+                "display": "Գլխապտույտ կամ թուլություն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "neuro",
+                "display": "Խոսքի կամ շարժման խանգարում, դեմքի ասիմետրիա"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "seiz",
+                "display": "Ցնցումներ կամ գիտակցության պղտորում"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q5-3",
+                "code": "none",
+                "display": "Ոչ, վերոնշյալներից ոչ մեկը"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §10.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN §7.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.sbp>=180||s.dbp>=110)",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q6",
+      "text": "Ուղեկցող հիվանդություններ",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q6.1",
+          "text": "Ունե՞ք բժշկի կողմից ախտորոշված որևէ քրոնիկ հիվանդություն։",
+          "required": false,
+          "type": "open-choice",
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "DM",
+                "display": "Շաքարային դիաբետ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "PREDM",
+                "display": "Նախաշաքարախտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "ASCVD",
+                "display": "Սրտի իշեմիկ հիվանդություն / ինֆարկտ / ստենտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "CVA",
+                "display": "Ինսուլտ կամ անցողիկ իշեմիկ նոպա"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "HF",
+                "display": "Սրտի անբավարարություն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "AF",
+                "display": "Առիթմիա / նախասրտերի ֆիբրիլյացիա"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "CKD",
+                "display": "Երիկամային քրոնիկ հիվանդություն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "DLP",
+                "display": "Բարձր խոլեստերին / դիսլիպիդեմիա"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "FH",
+                "display": "Ընտանեկան հիպերքոլեստերինեմիա"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "INFLAM",
+                "display": "Բորբոքային հիվանդություն (ռևմատոիդ արթրիտ, պսորիազ)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "OSA_DX",
+                "display": "Քնային ապնոէ (արդեն ախտորոշված)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "NAFLD",
+                "display": "Ճարպակալված լյարդ (NAFLD/MASLD)"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "MENTAL",
+                "display": "Հոգեկան առողջության խնդիր"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "none",
+                "display": "Ոչ մեկը"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.2.3.2"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2025 ESC/EAS Table 3"
+            }
+          ]
+        },
+        {
+          "linkId": "Q6.2b",
+          "text": "Քանի՞ տարի առաջ է Ձեզ ախտորոշվել շաքարային դիաբետ։",
+          "required": true,
+          "item": [
+            {
+              "linkId": "Q6.2b-help",
+              "text": "Այս թիվը որոշիչ է ռիսկի դասակարգման համար՝ 2025 ESC/EAS Table 3, <10 vs ≥10 տարի սահման։",
+              "type": "display"
+            }
+          ],
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2025 ESC/EAS Table 3"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "տ."
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 0
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 70
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q6.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "DM"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q6.2e",
+          "text": "Գիտե՞ք Ձեր վերջին գլիկոզիլացված հեմոգլոբինի (HbA1c) ցուցանիշը։",
+          "required": false,
+          "type": "decimal",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §4.8"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "%"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 3
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 20
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q6.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q6-1",
+                "code": "DM"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q7",
+      "text": "Ընտանեկան անամնեզ",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q7.1",
+          "text": "Ձեր մերձավոր ազգականների մոտ եղե՞լ են հետևյալ հիվանդությունները։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q7.1-help",
+              "text": "Ծնող, եղբայր, քույր, երեխա։",
+              "type": "display"
+            }
+          ],
+          "type": "open-choice",
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "CAD",
+                "display": "Սրտի կաթված (ինֆարկտ) կամ ստենտ/շունտավորում"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "STROKE",
+                "display": "Ինսուլտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "SCD",
+                "display": "Հանկարծամահություն 50 տարեկանից շուտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "DM",
+                "display": "Շաքարային դիաբետ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "CKD",
+                "display": "Երիկամային հիվանդություն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "FH",
+                "display": "Բարձր խոլեստերին / ընտանեկան հիպերքոլեստերինեմիա"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "HTN",
+                "display": "Բարձր ճնշում"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "none",
+                "display": "Ոչ մեկը / չգիտեմ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.3.5"
+            }
+          ]
+        },
+        {
+          "linkId": "Q7.2",
+          "text": "Մոտավորապես քանի՞ տարեկան էր Ձեր ազգականը, երբ դա տեղի ունեցավ։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q7.2-help",
+              "text": "Եթե մեկից ավելի են՝ նշեք ամենավաղ դեպքը։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-2",
+                "code": "m55",
+                "display": "Տղամարդ ազգական, 55 տարեկանից շուտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-2",
+                "code": "f65",
+                "display": "Կին ազգական, 65 տարեկանից շուտ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-2",
+                "code": "later",
+                "display": "Ավելի ուշ տարիքում"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-2",
+                "code": "idk",
+                "display": "Չգիտեմ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.3.5"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Risk modifiers"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/modifier-layer",
+              "valueBoolean": true
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q7.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "CAD"
+              }
+            },
+            {
+              "question": "Q7.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "STROKE"
+              }
+            },
+            {
+              "question": "Q7.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q7-1",
+                "code": "SCD"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        }
+      ]
+    },
+    {
+      "linkId": "Q8",
+      "text": "Քուն և սթրես",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q8.1",
+          "text": "Ինչպե՞ս կգնահատեք Ձեր քնի որակը։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q8.1-help",
+              "text": "1 = շատ վատ, 10 = գերազանց։",
+              "type": "display"
+            }
+          ],
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.9"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 1
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 10
+            }
+          ]
+        },
+        {
+          "linkId": "Q8.1a",
+          "text": "Միջինում քանի՞ ժամ եք քնում գիշերը։",
+          "required": true,
+          "type": "decimal",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.9"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "ժ"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 2
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 14
+            }
+          ]
+        },
+        {
+          "linkId": "Q8.2",
+          "text": "Քնի ընթացքում խռմփո՞ւմ եք բարձր, կամ Ձեզ ասե՞լ են, որ քնած ժամանակ շնչառությունը ընդհատվում է։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "snore",
+                "display": "Այո, բարձր խռմփում եմ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "apnoea",
+                "display": "Այո, ասել են, որ շնչառությունս ընդհատվում է"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "both",
+                "display": "Այո, երկուսն էլ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "no",
+                "display": "Ոչ / չգիտեմ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.9"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q8.1",
+              "operator": "<",
+              "answerInteger": 7
+            }
+          ]
+        },
+        {
+          "linkId": "Q8.3",
+          "text": "Օրվա ընթացքում հաճա՞խ եք զգում ուժեղ քնկոտություն կամ հոգնածություն։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q8.3-help",
+              "text": "Օրինակ՝ հեռուստացույց դիտելիս, մեքենա վարելիս կամ զրուցելիս։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-3",
+                "code": "never",
+                "display": "Երբեք կամ գրեթե երբեք"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-3",
+                "code": "some",
+                "display": "Երբեմն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-3",
+                "code": "often",
+                "display": "Հաճախ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-3",
+                "code": "daily",
+                "display": "Գրեթե ամեն օր"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.9"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q8.2",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "snore"
+              }
+            },
+            {
+              "question": "Q8.2",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "apnoea"
+              }
+            },
+            {
+              "question": "Q8.2",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "both"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q8.4a",
+          "text": "Եթե հնարավոր է, չափեք Ձեր պարանոցի շրջագիծը։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q8.4a-help",
+              "text": "STOP-BANG-ի ութ բաղադրիչից սա միակն է, որը Noreon-ը դեռ չունի — մնացած յոթը արդեն հավաքված են։",
+              "type": "display"
+            }
+          ],
+          "type": "integer",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.9"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "display": "սմ"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 25
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 70
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q8.2",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "snore"
+              }
+            },
+            {
+              "question": "Q8.2",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "apnoea"
+              }
+            },
+            {
+              "question": "Q8.2",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-2",
+                "code": "both"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q8.5",
+          "text": "Ձեր աշխատանքը կամ առօրյան սթրեսային համարո՞ւմ եք։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q8.5-help",
+              "text": "Ցուցադրվում է բոլոր ուղիներով — OSA-ն և սթրեսը հաճախ համակցվում են։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-5",
+                "code": "no",
+                "display": "Ոչ, հանգիստ եմ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-5",
+                "code": "some",
+                "display": "Երբեմն"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-5",
+                "code": "often",
+                "display": "Այո, հաճախ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q8-5",
+                "code": "always",
+                "display": "Այո, մշտապես"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.3.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 Box 2"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2024 ESC HTN Risk modifiers"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/modifier-layer",
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q9",
+      "text": "Կրծքավանդակի ցավ",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q9.1",
+          "text": "Զգո՞ւմ եք ցավ, ճնշվածություն, սեղմվածություն կամ ծանրություն կրծքավանդակում ֆիզիկական ծանրաբեռնվածության կամ սթրեսի ժամանակ։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q9.1-help",
+              "text": "Կարող է լինել սեղմող, ճնշող կամ այրող զգացողություն կրծքավանդակի կենտրոնում։ Երբեմն տարածվում է ձախ ձեռքին, պարանոցին, ծնոտին, թիկունքին կամ ստամոքսի շրջանին։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-1",
+                "code": "yes",
+                "display": "Այո"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-1",
+                "code": "no",
+                "display": "Ոչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-1",
+                "code": "unsure",
+                "display": "Համոզված չեմ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §3.1.1"
+            }
+          ]
+        },
+        {
+          "linkId": "Q9.2",
+          "text": "ԱՅՍ ՊԱՀԻՆ ունե՞ք այդ ցավը կամ ճնշվածությունը։",
+          "required": true,
+          "type": "boolean",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §3.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §4.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/red-flag",
+              "valueCode": "RF-01"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q9.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-1",
+                "code": "yes"
+              }
+            },
+            {
+              "question": "Q9.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-1",
+                "code": "unsure"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "linkId": "Q9.3",
+          "text": "Որքա՞ն հաճախ է դա լինում։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-3",
+                "code": "multi",
+                "display": "Օրական մի քանի անգամ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-3",
+                "code": "daily",
+                "display": "Ամեն օր"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-3",
+                "code": "week",
+                "display": "Շաբաթը մի քանի անգամ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-3",
+                "code": "month",
+                "display": "Ամսական մի քանի անգամ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-3",
+                "code": "rare",
+                "display": "Հազվադեպ՝ տարվա մեջ մի քանի անգամ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §4.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q9.4",
+          "text": "Վերջին 4 շաբաթվա ընթացքում այդ ցավը դարձե՞լ է ավելի հաճախակի, ավելի ուժեղ, կամ առաջանո՞ւմ է ավելի փոքր ծանրաբեռնվածությունից։",
+          "required": false,
+          "item": [
+            {
+              "linkId": "Q9.4-help",
+              "text": "Կայուն և անկայուն ստենոկարդիայի տարբերությունը հենց դինամիկան է։",
+              "type": "display"
+            }
+          ],
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-4",
+                "code": "yes",
+                "display": "Այո, վատացել է"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-4",
+                "code": "same",
+                "display": "Ոչ, նույնն է"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-4",
+                "code": "better",
+                "display": "Բարելավվել է"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §4.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q9.5",
+          "text": "Այդ ցավը երբևէ առաջանո՞ւմ է հանգստի ժամանակ կամ գիշերը՝ առանց ֆիզիկական ծանրաբեռնվածության։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-5",
+                "code": "yes",
+                "display": "Այո"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-5",
+                "code": "no",
+                "display": "Ոչ"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §4.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q9.6",
+          "text": "Սովորաբար որքա՞ն է տևում ցավը։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-6",
+                "code": "sec",
+                "display": "Մի քանի վայրկյան"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-6",
+                "code": "1_5",
+                "display": "1–5 րոպե"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-6",
+                "code": "5_15",
+                "display": "5–15 րոպե"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-6",
+                "code": "gt15",
+                "display": "15 րոպեից ավելի"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q9-6",
+                "code": "var",
+                "display": "Փոփոխական"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §4.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.cp==='yes'||s.cp==='unsure')&&s.cpnow==='no'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "Q10",
+      "text": "Առիթմիա, ուշաթափություն, օդի պակաս",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "Q10.1",
+          "text": "Զգացե՞լ եք հանկարծակի գլխապտույտ, թուլություն, օդի պակասի զգացում կամ մոտալուտ ուշագնացության վիճակ՝ սրտխփոցի հետ միաժամանակ։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-1",
+                "code": "yes",
+                "display": "Այո"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-1",
+                "code": "no",
+                "display": "Ոչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-1",
+                "code": "palponly",
+                "display": "Սրտխփոց ունեմ, բայց առանց գլխապտույտի"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.2"
+            }
+          ]
+        },
+        {
+          "linkId": "Q10.2",
+          "text": "ԱՅՍ ՊԱՀԻՆ ունե՞ք այդ գանգատները։",
+          "required": true,
+          "type": "boolean",
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "2023 ESC ACS §4.1.1"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.2"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/red-flag",
+              "valueCode": "RF-02"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "Q10.1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-1",
+                "code": "yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q10.3",
+          "text": "Երբևէ կորցրե՞լ եք գիտակցությունը (ուշաթափվել եք)։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-3",
+                "code": "exert",
+                "display": "Այո, ֆիզիկական ծանրաբեռնվածության ժամանակ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-3",
+                "code": "rest",
+                "display": "Այո, հանգստի ժամանակ կամ առանց նախազգուշացնող նշանների"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-3",
+                "code": "vaso",
+                "display": "Այո, երկար կանգնելուց / արյան տեսքից / ցավից հետո"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-3",
+                "code": "never",
+                "display": "Ոչ, երբեք"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.2"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q10.4",
+          "text": "Երբ սրտխփոց եք զգում, սրտի բաբախյունը՝",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-4",
+                "code": "fast",
+                "display": "Արագ է, բայց կանոնավոր"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-4",
+                "code": "irreg",
+                "display": "Անկանոն է, «թռչում» է"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-4",
+                "code": "strong",
+                "display": "Առանձին ուժեղ հարվածներ են"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-4",
+                "code": "idk",
+                "display": "Չեմ կարող որոշել"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.2"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "Q10.5",
+          "text": "Որքա՞ն են տևում այդ նոպաները։",
+          "required": false,
+          "type": "choice",
+          "repeats": false,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-5",
+                "code": "sec",
+                "display": "Վայրկյաններ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-5",
+                "code": "lt5",
+                "display": "5 րոպեից քիչ"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-5",
+                "code": "5_30",
+                "display": "5–30 րոպե"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://noreon.health/fhir/CodeSystem/noreon-answers#Q10-5",
+                "code": "gt30",
+                "display": "30 րոպեից ավելի"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/guideline-source",
+              "valueString": "ESC Prevention 2021 §3.4.2"
+            },
+            {
+              "url": "http://noreon.health/fhir/StructureDefinition/show-when-expression",
+              "valueExpression": {
+                "language": "text/javascript",
+                "expression": "(s.ar==='yes'&&s.arnow==='no')||s.ar==='palponly'",
+                "description": "Original simulator predicate; not expressible as FHIR enableWhen"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
