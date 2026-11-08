@@ -68,8 +68,8 @@ export function ConversationToggle({locale:l,disabled,conversation}:{locale:Pati
  phase==='transcribing'?tx(l,'Ձայնագրությունը տեքստի է վերածվում…','Turning your recording into text…','Преобразуем запись в текст…'):
  phase==='review'?tx(l,`Կուղարկվի ${seconds} վայրկյանից։ Հպեք տեքստին՝ խմբագրելու համար։`,`Sending in ${seconds} seconds. Tap your message to edit.`,`Отправка через ${seconds} сек. Нажмите на текст, чтобы изменить.`):
  phase==='paused'?tx(l,'Խմբագրեք և ուղարկեք, երբ պատրաստ լինեք։','Edit and send when you are ready.','Измените текст и отправьте, когда будете готовы.'):
- phase==='waiting'?tx(l,'Սպասում եմ Zoe-ի պատասխանին…','Waiting for Zoe’s reply…','Жду ответа Zoe…'):
- phase==='speaking'||phase==='emergency'?tx(l,'Zoe-ն խոսում է։','Zoe is speaking.','Zoe говорит.'):
+ phase==='waiting'?tx(l,'Սպասում եմ Զոյայի պատասխանին…','Waiting for Zoe’s reply…','Жду ответа Зои…'):
+ phase==='speaking'||phase==='emergency'?tx(l,'Զոյան խոսում է։','Zoe is speaking.','Зоя говорит.'):
  phase==='error'?tx(l,'Ձայնային զրույցը դադարեց։ Կարող եք գրել։','Voice conversation stopped. You can type your message.','Голосовой разговор остановлен. Вы можете написать сообщение.'):null;
  return <div className="cv2-voice"><button type="button" className="cv2-conversation" aria-pressed={active} disabled={disabled&&!active} onClick={conversation.toggle} aria-label={active?tx(l,'Ավարտել ձայնային զրույցը','End voice conversation','Завершить голосовой разговор'):tx(l,'Սկսել ձայնային զրույցը','Start voice conversation','Начать голосовой разговор')}>
   {active?<Square size={20} aria-hidden/>:<AudioLines size={22} aria-hidden/>}

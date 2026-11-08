@@ -125,9 +125,9 @@ export function buildGpReport(input:BuildInput):GpReport{
  else{hbpmNow=na('bp','HBPM',l('no home readings recorded','տնային չափումներ չեն գրանցվել'));hbpmBefore=na('bp','HBPM previous period',l('no home readings recorded','տնային չափումներ չեն գրանցվել'));}
  const visitCell=(i:number)=>{const v=visitList[i];const rs=v.readings;
   return cat(`${mean(rs.map(r=>r.systolic))}/${mean(rs.map(r=>r.diastolic))}; `,day(rs[0].measuredAt),'; ',rs.length===1?l('1 reading','1 չափում'):l(`mean of ${rs.length} readings`,`${rs.length} չափման միջին`),` [C${i+1}]`);};
- const officeNow=visitList.length?visitCell(visitList.length-1):na('bp','Office BP',l('no clinic reading recorded by a Noreon nurse','Noreon-ի բուժքույրը կլինիկական չափում չի գրանցել'));
+ const officeNow=visitList.length?visitCell(visitList.length-1):na('bp','Office BP',l('no clinic reading recorded by a Noreon nurse','Նորեոն Հելթի բուժքույրը կլինիկական չափում չի գրանցել'));
  const officeBefore=visitList.length>1?visitCell(visitList.length-2):na('bp','Office BP previous',l('no earlier clinic reading','ավելի վաղ կլինիկական չափում չկա'));
- const abpm=na('bp','ABPM',l('ABPM is not captured in Noreon','ABPM-ը Noreon-ում չի գրանցվում'));
+ const abpm=na('bp','ABPM',l('ABPM is not captured in Noreon','ABPM-ը Նորեոն Հելթում չի գրանցվում'));
  const tagOf=(r:Reading)=>{
   const t=r.kind==='clinic'?`C${visitList.findIndex(v=>v.readings.includes(r))+1}`:current?.rs.includes(r)?homeTags.at(-1):previousWindow?.rs.includes(r)?'B1':null;
   return t?` [${t}]`:'';
@@ -150,7 +150,7 @@ export function buildGpReport(input:BuildInput):GpReport{
  const redAnswer=firesEmergency({answers,observations:[]});
  s.alerts.forEach((x,i)=>sources.push(cat(`A${i+1} `,l('urgent care-team alert','շտապ ահազանգ խնամքի թիմին '),' ',dayTime(x.createdAt),` (${x.source}, ${x.ruleId}${x.redFlags?.length?`, ${x.redFlags.join(', ')}`:''}), `,x.state==='open'?l('open','բաց'):x.state==='acknowledged'?l('acknowledged ','ընդունված '):l('resolved ','լուծված '),x.state==='acknowledged'&&x.acknowledgedAt?dayTime(x.acknowledgedAt):x.state==='resolved'&&x.resolvedAt?dayTime(x.resolvedAt):'')));
  const crisis=all.find(r=>r.systolic>=THRESHOLD.crisisSystolic||r.diastolic>=THRESHOLD.crisisDiastolic);
- const gpAlert=l('GP alert: not sent; sending to an external GP is not available in Noreon.','Բժշկին ահազանգ՝ չի ուղարկվել. արտաքին բժշկին ուղարկելը Noreon-ում հասանելի չէ։');
+ const gpAlert=l('GP alert: not sent; sending to an external GP is not available in Noreon.','Բժշկին ահազանգ՝ չի ուղարկվել. արտաքին բժշկին ուղարկելը Նորեոն Հելթում հասանելի չէ։');
  let priorityLevel:PriorityLevel;let priority:L;
  if(openAlerts.length){
   const x=openAlerts[0];const i=s.alerts.indexOf(x)+1;
@@ -162,7 +162,7 @@ export function buildGpReport(input:BuildInput):GpReport{
   priority=cat(l('EMERGENCY ROUTE. Reason: urgent questionnaire rule ','ՇՏԱՊ ՈՒՂԻ։ Հիմք՝ հարցաթերթի շտապ կանոն '),rule,a?.updatedAt?cat(', ',dayTime(a.updatedAt)):'',` ${Q}`,l('. Engine guidance for the member: ','։ Շարժիչի ցուցումը անդամին՝ '),loc(CONSULTATION_WINDOW.red),'. ',gpAlert);
  }else if(crisis){
   priorityLevel='cannot-assess';
-  priority=cat(l('CANNOT ASSESS ROUTINELY. Reason: a crisis-range reading ','ՊԼԱՆԱՅԻՆ ԳՆԱՀԱՏՈՒՄ ՀՆԱՐԱՎՈՐ ՉԷ։ Հիմք՝ ճգնաժամային միջակայքի չափում '),`${crisis.systolic}/${crisis.diastolic}, `,dayTime(crisis.measuredAt),' (',kindLabel(crisis),')',tagOf(crisis),l(' has no linked symptom triage or resolution in Noreon. Arrange clinical assessment; later normal readings do not clear this hold. ',', որը Noreon-ում չունի կապված ախտանիշային գնահատում կամ լուծում։ Կազմակերպել կլինիկական գնահատում. հետագա նորմալ չափումները չեն հանում այս կասեցումը։ '),gpAlert);
+  priority=cat(l('CANNOT ASSESS ROUTINELY. Reason: a crisis-range reading ','ՊԼԱՆԱՅԻՆ ԳՆԱՀԱՏՈՒՄ ՀՆԱՐԱՎՈՐ ՉԷ։ Հիմք՝ ճգնաժամային միջակայքի չափում '),`${crisis.systolic}/${crisis.diastolic}, `,dayTime(crisis.measuredAt),' (',kindLabel(crisis),')',tagOf(crisis),l(' has no linked symptom triage or resolution in Noreon. Arrange clinical assessment; later normal readings do not clear this hold. ',', որը Նորեոն Հելթում չունի կապված ախտանիշային գնահատում կամ լուծում։ Կազմակերպել կլինիկական գնահատում. հետագա նորմալ չափումները չեն հանում այս կասեցումը։ '),gpAlert);
  }else if(!decision){
   priorityLevel='cannot-assess';
   priority=cat(l('CANNOT ASSESS. Reason: ','ԳՆԱՀԱՏԵԼ ՀՆԱՐԱՎՈՐ ՉԷ։ Հիմք՝ '),na('priority','Engine result',a?.completedAt?l('the stored questionnaire is incomplete or unreadable','պահպանված հարցաթերթը թերի է կամ անընթեռնելի'):l('the questionnaire is not completed','հարցաթերթը լրացված չէ')),'. ',gpAlert);
@@ -175,7 +175,7 @@ export function buildGpReport(input:BuildInput):GpReport{
    l('. No emergency (red) rule fired; the member sees the same consultation window. ','։ Շտապ (կարմիր) կանոն չի գործարկվել. անդամը տեսնում է նույն ժամկետը։ '),gpAlert);
  }
  const c=s.consultation;
- if(c?.decision==='required'&&!c.completedAt)priority=cat(priority,l(' Noreon doctor consultation required','  Պահանջվում է Noreon-ի բժշկի խորհրդատվություն'),c.arrangement?.holdSince?cat(l(' (hold since ',' (կասեցված է '),dayTime(c.arrangement.holdSince),')'):'',c.arrangement?.scheduledAt?cat(l('; scheduled ','. նշանակված է '),dayTime(c.arrangement.scheduledAt)):l('; not yet scheduled','. դեռ նշանակված չէ'),'.');
+ if(c?.decision==='required'&&!c.completedAt)priority=cat(priority,l(' Noreon doctor consultation required','  Պահանջվում է Նորեոն Հելթի բժշկի խորհրդատվություն'),c.arrangement?.holdSince?cat(l(' (hold since ',' (կասեցված է '),dayTime(c.arrangement.holdSince),')'):'',c.arrangement?.scheduledAt?cat(l('; scheduled ','. նշանակված է '),dayTime(c.arrangement.scheduledAt)):l('; not yet scheduled','. դեռ նշանակված չէ'),'.');
 
  // History and risk, from the member's own answers and the engine's derived values.
  const conditions=answer('q6.conditions');
@@ -193,7 +193,7 @@ export function buildGpReport(input:BuildInput):GpReport{
   l('; activity: ','. ակտիվություն՝ '),activityBand(answers)?loc(activityBand(answers)!.label):said('q2.activity'),
   l('; diet: ','. սնունդ՝ '),said('q2.diet'),
   l('; family history: ','. ընտանեկան պատմություն՝ '),said('q7.relatives'),answers['q7.relative_age']?cat(' (',said('q7.relative_age'),')'):'',' ',Q,
-  l('. Orthostatic symptoms or BP: ','։ Օրթոստատիկ ախտանիշներ կամ ԱՃ՝ '),na('history','Orthostatic assessment',l('not assessed in Noreon','Noreon-ում չի գնահատվում')),
+  l('. Orthostatic symptoms or BP: ','։ Օրթոստատիկ ախտանիշներ կամ ԱՃ՝ '),na('history','Orthostatic assessment',l('not assessed in Noreon','Նորեոն Հելթում չի գնահատվում')),
   l('. Access barriers: ','։ Հասանելիության խոչընդոտներ՝ '),na('history','Access barriers',l('not asked','չի հարցվում')),'.'
  ):na('history','History',l('the questionnaire is not completed','հարցաթերթը լրացված չէ'));
  const score=score2State(answers);
@@ -207,22 +207,22 @@ export function buildGpReport(input:BuildInput):GpReport{
  };
  const mods=modifiers(answers);
  const kidney=Array.isArray(answers['q6.conditions']?.value)&&(answers['q6.conditions']!.value as string[]).includes('kidney');
- const risk=result?cat(l('Risk category: ','Ռիսկային կատեգորիա՝ '),result.category?categoryCopy[result.category.level]:l('Not available','Հասանելի չէ'),l('. SCORE2: ','։ SCORE2՝ '),result.score2.state==='applicable'?(result.score2.percent===null?l('percentage not entered','տոկոսը մուտքագրված չէ'):`${result.score2.percent}%`):result.score2.state==='off'?join(result.score2.reasons.map(code=>score2ReasonCopy[code])):l('undecided','որոշված չէ'),l('. The percentage is entered from the ESC calculator. Noreon does not calculate it.','։ Տոկոսը մուտքագրվում է ESC-ի հաշվիչից։ Noreon-ը այն չի հաշվարկում։')):complete?cat(l(`Risk (engine ${ALGORITHM_VERSION}): `,`Ռիսկ (շարժիչ ${ALGORITHM_VERSION})՝ `),scoreText[score.code],` ${Q}. `,l('Risk percentage: ','Ռիսկի տոկոս՝ '),na('history','Risk score',l('the engine calculates no percentage without lipid observations','շարժիչը տոկոս չի հաշվարկում առանց լիպիդային տվյալների')),
+ const risk=result?cat(l('Risk category: ','Ռիսկային կատեգորիա՝ '),result.category?categoryCopy[result.category.level]:l('Not available','Հասանելի չէ'),l('. SCORE2: ','։ SCORE2՝ '),result.score2.state==='applicable'?(result.score2.percent===null?l('percentage not entered','տոկոսը մուտքագրված չէ'):`${result.score2.percent}%`):result.score2.state==='off'?join(result.score2.reasons.map(code=>score2ReasonCopy[code])):l('undecided','որոշված չէ'),l('. The percentage is entered from the ESC calculator. Noreon does not calculate it.','։ Տոկոսը մուտքագրվում է ESC-ի հաշվիչից։ Նորեոն Հելթը այն չի հաշվարկում։')):complete?cat(l(`Risk (engine ${ALGORITHM_VERSION}): `,`Ռիսկ (շարժիչ ${ALGORITHM_VERSION})՝ `),scoreText[score.code],` ${Q}. `,l('Risk percentage: ','Ռիսկի տոկոս՝ '),na('history','Risk score',l('the engine calculates no percentage without lipid observations','շարժիչը տոկոս չի հաշվարկում առանց լիպիդային տվյալների')),
   l('. Modifiers recorded: ','։ Գրանցված փոփոխիչներ՝ '),mods.length?join(mods.map(loc),l(', ',', ')):l('none','չկան'),
-  l('. Kidney or organ damage: ','։ Երիկամային կամ օրգանային վնասում՝ '),kidney?l('kidney disease reported by the patient, not confirmed in Noreon','երիկամային հիվանդություն՝ պացիենտի նշմամբ, Noreon-ում չհաստատված'):na('history','Organ damage',l('not assessed; no rule derives organ damage','չի գնահատվել. օրգանային վնասում որոշող կանոն չկա')),'.'
+  l('. Kidney or organ damage: ','։ Երիկամային կամ օրգանային վնասում՝ '),kidney?l('kidney disease reported by the patient, not confirmed in Noreon','երիկամային հիվանդություն՝ պացիենտի նշմամբ, Նորեոն Հելթում չհաստատված'):na('history','Organ damage',l('not assessed; no rule derives organ damage','չի գնահատվել. օրգանային վնասում որոշող կանոն չկա')),'.'
  ):na('history','Risk',l('the questionnaire is not completed','հարցաթերթը լրացված չէ'));
 
  // Medicines: only what a Noreon care plan records, plus the questionnaire answer.
  const plans=[...s.plans].sort((x,y)=>x.publishedAt.localeCompare(y.publishedAt));
- plans.forEach((p,i)=>sources.push(cat(`P${i+1} `,l('Noreon care plan','Noreon-ի խնամքի պլան'),p.version?` v${p.version}`:'',', ',day(p.publishedAt),p.clinician?`, ${p.clinician}`:'',p.active?l(' (current)',' (ընթացիկ)'):'')));
+ plans.forEach((p,i)=>sources.push(cat(`P${i+1} `,l('Noreon care plan','Նորեոն Հելթի խնամքի պլան'),p.version?` v${p.version}`:'',', ',day(p.publishedAt),p.clinician?`, ${p.clinician}`:'',p.active?l(' (current)',' (ընթացիկ)'):'')));
  const planTag=(id:string|null)=>{const i=plans.findIndex(p=>p.planId===id);return i<0?'':` [P${i+1}]`;};
  const activeMeds=s.medications.filter(m=>m.active);
- const medRows:Row[]=activeMeds.map(m=>[l(m.name,m.name),cat([m.dose,m.instructions].filter(Boolean).join('; ')||'',m.times?.length?`; ${m.times.map(t=>t.slice(0,5)).join(', ')}`:'',m.startDate?cat(l('; since ','. սկսած '),day(m.startDate)):''),cat(l('Noreon care plan','Noreon-ի խնամքի պլան'),planTag(m.planId),l('; adherence: ','. ընդունում՝ '),na('meds',`Adherence (${m.name})`,l('not summarised in this report','այս հաշվետվությունում ամփոփված չէ')))]);
- if(!medRows.length)medRows.push([l('Care plan medicines','Խնամքի պլանի դեղեր'),na('meds','Recorded medicines',l('no medicine is recorded in a Noreon care plan','Noreon-ի խնամքի պլանում դեղ գրանցված չէ')),l('Noreon records','Noreon-ի գրառումներ')]);
+ const medRows:Row[]=activeMeds.map(m=>[l(m.name,m.name),cat([m.dose,m.instructions].filter(Boolean).join('; ')||'',m.times?.length?`; ${m.times.map(t=>t.slice(0,5)).join(', ')}`:'',m.startDate?cat(l('; since ','. սկսած '),day(m.startDate)):''),cat(l('Noreon care plan','Նորեոն Հելթի խնամքի պլան'),planTag(m.planId),l('; adherence: ','. ընդունում՝ '),na('meds',`Adherence (${m.name})`,l('not summarised in this report','այս հաշվետվությունում ամփոփված չէ')))]);
+ if(!medRows.length)medRows.push([l('Care plan medicines','Խնամքի պլանի դեղեր'),na('meds','Recorded medicines',l('no medicine is recorded in a Noreon care plan','Նորեոն Հելթի խնամքի պլանում դեղ գրանցված չէ')),l('Noreon records','Նորեոն Հելթի գրառումներ')]);
  const treated=answers['q5.diagnosed']?.value;
  if(Q&&treated!==undefined)medRows.push([l('Blood pressure medicine','Ճնշման դեղ'),treated==='treated'?na('meds','BP medicine names and doses',l('name, dose and schedule are not captured','անունը, դեղաչափը և ռեժիմը չեն գրանցվում')):treated==='unknown'?na('meds','BP medicine use',l('the member does not know','անդամը չգիտի')):l('Not applicable','Կիրառելի չէ'),cat(l('Patient answer: ','Պացիենտի պատասխան՝ '),said('q5.diagnosed'),` ${Q}`)]);
  medRows.push([l('Other relevant medicines','Այլ կարևոր դեղեր'),na('meds','Other medicines',l('OTC, NSAID and supplement use is not asked','OTC, NSAID և հավելումների օգտագործումը չի հարցվում')),na('meds','Interactions',l('interactions are not assessed','փոխազդեցությունները չեն գնահատվում'))]);
- const medNote=cat(l('Allergies: ','Ալերգիաներ՝ '),na('meds','Allergies',l('not asked in Noreon','Noreon-ում չի հարցվում')),l('. Reconciliation: not done. Missing for decisions: ','։ Համադրում՝ չի կատարվել։ Որոշման համար բացակայում են՝ '),
+ const medNote=cat(l('Allergies: ','Ալերգիաներ՝ '),na('meds','Allergies',l('not asked in Noreon','Նորեոն Հելթում չի հարցվում')),l('. Reconciliation: not done. Missing for decisions: ','։ Համադրում՝ չի կատարվել։ Որոշման համար բացակայում են՝ '),
   l('current medicines and doses, allergies, BP target','ընթացիկ դեղերն ու դեղաչափերը, ալերգիաները, ԱՃ թիրախը'),'.');
 
  // Laboratory values exactly as received, grouped by the template's rows.
@@ -290,29 +290,29 @@ export function buildGpReport(input:BuildInput):GpReport{
  const labNote=cat(l('Interpretation: ','Մեկնաբանություն՝ '),result?l('See results assessment for risk category and LDL-C target. CKD stage, G/A category and persistence are not assessed','Ռիսկային կատեգորիան և LDL-C-ի թիրախը՝ արդյունքների գնահատման բաժնում։ ՔԵՀ փուլը, G/A դասը և կայունությունը չեն գնահատվում'):na('labs','Interpretation, G/A category, persistence',cat(POST_TEST,l('; no CKD stage, G/A category, critical-value flag or target is derived','. ՔԵՀ փուլ, G/A դաս, կրիտիկական նշան կամ թիրախ չի որոշվում'))),
   l('. Values, units and any reference ranges (ref) are as recorded by the source. Outstanding: ','։ Արժեքները, միավորները և նորմաները (ref) ըստ աղբյուրի։ Սպասվող՝ '),open.length?join(open.map(t=>cat(t.title,t.dueAt?cat(l(' due ',' մինչև '),day(t.dueAt)):l(' (no due date)',' (առանց ժամկետի)')))):l('none recorded','գրանցված չէ'),
   l('. Clinic lab documents attached: ','։ Կլինիկայի կցած լաբորատոր փաստաթղթեր՝ '),s.clinicDocuments.length?cat(String(s.clinicDocuments.length),pdfValues.length
-   ?l(' (values read by AI are listed only after the assigned doctor confirmed them; values awaiting that check are named without a value; open the PDFs in Noreon)',' (AI-ով կարդացված արժեքները ներառվում են միայն նշանակված բժշկի հաստատումից հետո. ստուգման սպասող արժեքները նշված են առանց արժեքի. բացել PDF-ները Noreon-ում)')
-   :l(' (values not extracted; open them in Noreon)',' (արժեքները չեն արտահանվել. բացել Noreon-ում)')):l('none','չկան'),'.');
+   ?l(' (values read by AI are listed only after the assigned doctor confirmed them; values awaiting that check are named without a value; open the PDFs in Noreon)',' (AI-ով կարդացված արժեքները ներառվում են միայն նշանակված բժշկի հաստատումից հետո. ստուգման սպասող արժեքները նշված են առանց արժեքի. բացել PDF-ները Նորեոն Հելթում)')
+   :l(' (values not extracted; open them in Noreon)',' (արժեքները չեն արտահանվել. բացել Նորեոն Հելթում)')):l('none','չկան'),'.');
 
- const ecg=result?l('Automated ECG interpretation unavailable. Doctor-entered findings and dates are in results assessment. Any ECG document needs visual review.','Ավտոմատ ԷՍԳ մեկնաբանությունը հասանելի չէ։ Բժշկի մուտքագրած տվյալներն ու օրերը՝ արդյունքների գնահատման բաժնում։ ԷՍԳ փաստաթուղթը պահանջում է զննում։'):cat(l('Automated ECG interpretation unavailable. ','Ավտոմատ ԷՍԳ մեկնաբանությունը հասանելի չէ։ '),na('ecg','12-lead ECG',l('no ECG method is selected or validated and Noreon stores no ECG measurements; any ECG document attached by a clinic needs GP visual review','ԷՍԳ մեթոդ ընտրված կամ վավերացված չէ, Noreon-ը ԷՍԳ չափումներ չի պահում. կլինիկայի կցած ԷՍԳ փաստաթուղթը պահանջում է բժշկի զննում')),'.');
+ const ecg=result?l('Automated ECG interpretation unavailable. Doctor-entered findings and dates are in results assessment. Any ECG document needs visual review.','Ավտոմատ ԷՍԳ մեկնաբանությունը հասանելի չէ։ Բժշկի մուտքագրած տվյալներն ու օրերը՝ արդյունքների գնահատման բաժնում։ ԷՍԳ փաստաթուղթը պահանջում է զննում։'):cat(l('Automated ECG interpretation unavailable. ','Ավտոմատ ԷՍԳ մեկնաբանությունը հասանելի չէ։ '),na('ecg','12-lead ECG',l('no ECG method is selected or validated and Noreon stores no ECG measurements; any ECG document attached by a clinic needs GP visual review','ԷՍԳ մեթոդ ընտրված կամ վավերացված չէ, Նորեոն Հելթը ԷՍԳ չափումներ չի պահում. կլինիկայի կցած ԷՍԳ փաստաթուղթը պահանջում է բժշկի զննում')),'.');
 
  // Proposals: only the engine's own next steps, its test plan and the doctor's published plan.
  const proposals:Row[]=[];
- const doctorLabel=l('Noreon doctor','Noreon-ի բժիշկ');
+ const doctorLabel=l('Noreon doctor','Նորեոն Հելթի բժիշկ');
  if(decision){
   const window=loc(consultationWindow(decision));
   const steps=needsAttention(decision).filter(f=>f.nextStep);
   if(steps.length)proposals.push([cat(window,'; ',doctorLabel),cat(l('Engine next steps (engine text): ','Շարժիչի հաջորդ քայլերը (շարժիչի տեքստ)՝ '),join(steps.slice(0,3).map(f=>{const x=loc(f.nextStep!);return cat(`${f.ruleId}: `,l(x.en.replace(/[.։]$/,''),x.hy.replace(/[.։]$/,'')));})),
-   steps.length>3?cat(l('; also ','. նաև '),steps.slice(3).map(f=>f.ruleId).join(', '),l(' (listed in Noreon)',' (Noreon-ում)')):'',` ${Q}`),na('proposals','Completion of engine next steps',l('completion is not recorded','կատարումը չի գրանցվում'))]);
+   steps.length>3?cat(l('; also ','. նաև '),steps.slice(3).map(f=>f.ruleId).join(', '),l(' (listed in Noreon)',' (Նորեոն Հելթում)')):'',` ${Q}`),na('proposals','Completion of engine next steps',l('completion is not recorded','կատարումը չի գրանցվում'))]);
   // Tests only for discussion are the doctor's judgement in the plan draft; this template's two pages list what is required.
   const plan=requiredTests(decision);
   if(plan.length)proposals.push([cat(steps.length?l('Same window','Նույն ժամկետ'):window,'; ',doctorLabel),cat(l('Engine test plan: ','Շարժիչի թեստային պլան՝ '),join(plan.map(t=>loc(t.name)),l(', ',', ')),` ${Q}`),open.length||s.tests.length?cat(l('Recorded tests: ','Գրանցված թեստեր՝ '),String(s.tests.filter(t=>t.status==='collected').length),l(' collected, ',' հավաքված, '),String(open.length),l(' ordered',' նշանակված')):na('proposals','Test completion',l('no test is recorded','թեստ գրանցված չէ'))]);
  }
  const currentPlan=plans.filter(p=>p.active).at(-1);
  if(currentPlan)proposals.push([cat(day(currentPlan.publishedAt),'; ',doctorLabel),cat(l('Published care plan: ','Հրապարակված խնամքի պլան՝ '),(currentPlan.instructions??'').slice(0,280),(currentPlan.instructions??'').length>280?'…':'',planTag(currentPlan.planId)),currentPlan.version?l(`Version ${currentPlan.version}`,`Տարբերակ ${currentPlan.version}`):l('Current','Ընթացիկ')]);
- proposals.push([l('GP','Բժիշկ'),cat((result?l('Treatment, drug classes and referrals: ','Բուժում, դեղադասեր և ուղեգրումներ՝ '):l('Treatment, drug classes, targets and referrals: ','Բուժում, դեղադասեր, թիրախներ և ուղեգրումներ՝ ')),na('proposals','Treatment proposals',cat(postTest,l('; Noreon proposes none','. Noreon-ը չի առաջարկում')))),l('GP decision','Բժշկի որոշում')]);
+ proposals.push([l('GP','Բժիշկ'),cat((result?l('Treatment, drug classes and referrals: ','Բուժում, դեղադասեր և ուղեգրումներ՝ '):l('Treatment, drug classes, targets and referrals: ','Բուժում, դեղադասեր, թիրախներ և ուղեգրումներ՝ ')),na('proposals','Treatment proposals',cat(postTest,l('; Noreon proposes none','. Նորեոն Հելթը չի առաջարկում')))),l('GP decision','Բժշկի որոշում')]);
 
  const arrangement=c?.arrangement?.scheduledAt;
- const followUp=cat(l('Next review: ','Հաջորդ այց՝ '),arrangement?cat(dayTime(arrangement),l(', Noreon doctor',', Noreon-ի բժիշկ')):decision?cat(l('not booked; engine window: ','նշանակված չէ. շարժիչի ժամկետ՝ '),loc(consultationWindow(decision))):na('followup','Next review',l('not booked','նշանակված չէ')),
+ const followUp=cat(l('Next review: ','Հաջորդ այց՝ '),arrangement?cat(dayTime(arrangement),l(', Noreon doctor',', Նորեոն Հելթի բժիշկ')):decision?cat(l('not booked; engine window: ','նշանակված չէ. շարժիչի ժամկետ՝ '),loc(consultationWindow(decision))):na('followup','Next review',l('not booked','նշանակված չէ')),
   l('. BP target: ','։ ԱՃ թիրախ՝ '),l('GP to confirm','բժիշկը պետք է հաստատի'),l('. Repeat tests: ','։ Կրկնվող թեստեր՝ '),open.length?join(open.map(t=>cat(t.title,t.dueAt?cat(' ',day(t.dueAt)):''))):l('none recorded','գրանցված չեն'),
   l('. Unacknowledged alert: ','։ Չհաստատված ահազանգ՝ '),openAlerts.filter(x=>x.state==='open').length?l(`${openAlerts.filter(x=>x.state==='open').length} open; the member is directed to call 103 when urgent`,`${openAlerts.filter(x=>x.state==='open').length} բաց. շտապ դեպքում անդամին ուղղորդում ենք զանգահարել 103`):l('none','չկա'),
   l('. New chest pain, severe breathlessness or neurological symptoms: urgent emergency assessment without waiting for a GP reply.','։ Նոր կրծքային ցավի, ծանր շնչահեղձության կամ նյարդաբանական նշանների դեպքում՝ շտապ գնահատում՝ առանց բժշկի պատասխանին սպասելու։'));
@@ -320,7 +320,7 @@ export function buildGpReport(input:BuildInput):GpReport{
  // Clinical assessment: facts only, in the template's order.
  const bpFact=current?cat(l('Home BP mean ','Տնային ԱՃ միջին '),`${mean(current.rs.map(r=>r.systolic))}/${mean(current.rs.map(r=>r.diastolic))}`,l(' mmHg over ',' մմ ս.ս., '),l(plural(current.rs.length,'reading','readings'),`${current.rs.length} չափում`),' (',dayRange(current.start,current.end),`) [${homeTags.at(-1)}]`,previousWindow?cat(l(', previously ',', նախկինում '),`${mean(previousWindow.rs.map(r=>r.systolic))}/${mean(previousWindow.rs.map(r=>r.diastolic))} [B1]`):'','.')
   :visitList.length?cat(l('Office BP ','Կլինիկական ԱՃ '),visitCell(visitList.length-1),'.')
-  :qBand&&Q?cat(l('No measured BP in Noreon; the questionnaire reading is ','Noreon-ում չափված ԱՃ չկա. հարցաթերթի արժեքը՝ '),qBand.unit?.en??'',l(' (self-reported) ',' (պացիենտի նշած) '),Q,'.'):l('No blood pressure is recorded.','Ճնշում գրանցված չէ։');
+  :qBand&&Q?cat(l('No measured BP in Noreon; the questionnaire reading is ','Նորեոն Հելթում չափված ԱՃ չկա. հարցաթերթի արժեքը՝ '),qBand.unit?.en??'',l(' (self-reported) ',' (պացիենտի նշած) '),Q,'.'):l('No blood pressure is recorded.','Ճնշում գրանցված չէ։');
  const gapFact=cat((result?l('Hypertension confirmation, kidney stage and treatment: ','ԱՀ հաստատում, երիկամային փուլ և բուժում՝ '):l('Hypertension confirmation, kidney status and treatment: ','ԱՀ հաստատում, երիկամային վիճակ և բուժում՝ ')),na('assessment','Clinical interpretation',postTest),'.',
   previous?cat(l(' Previous approved report: ',' Նախորդ հաստատված հաշվետվություն՝ '),`v${previous.version}, `,day(previous.approvedAt),l('; change summary not available.','. փոփոխությունների ամփոփում հասանելի չէ։')):l(' First report.',' Առաջին հաշվետվություն։'));
  const assessment=cat(bpFact,' ',gapFact);
@@ -330,7 +330,7 @@ export function buildGpReport(input:BuildInput):GpReport{
  const age=p?.birthDate?ageOn(p.birthDate,yerevanDate(readAt)):NaN;
  const sexField=fieldById('q1.sex')?.options?.find(o=>o.value===p?.biologicalSex);
  const patientLine=cat(l('Patient ','Պացիենտ '),p?.name?`${p.name} `:'',`(${reportRef})`,' | ',l('DOB ','Ծննդյան ամսաթիվ '),p?.birthDate?day(p.birthDate):l('not recorded','չի գրանցվել'),' | ',l('Age ','Տարիք '),Number.isFinite(age)?String(age):l('not recorded','չի գրանցվել'),' | ',l('Sex ','Սեռ '),sexField?loc(sexField.label):l('not recorded','չի գրանցվել'),' | ',l('GP ','Բժիշկ '),na('header','GP name and practice',l('not captured','չի գրանցվում')));
- const reportLine=cat(l('Generated ','Ստեղծվել է '),dayTime(readAt),' AMT UTC+4 | ',l('Data cut-off ','Տվյալների վերջնաժամկետ '),time(readAt),' | ',l('Trigger: Noreon doctor request','Առիթ՝ Noreon-ի բժշկի հարցում'));
+ const reportLine=cat(l('Generated ','Ստեղծվել է '),dayTime(readAt),' AMT UTC+4 | ',l('Data cut-off ','Տվյալների վերջնաժամկետ '),time(readAt),' | ',l('Trigger: Noreon doctor request','Առիթ՝ Նորեոն Հելթի բժշկի հարցում'));
 
  return {kind:'noreon-gp-report',templateVersion:TEMPLATE_VERSION,algorithmVersion:ALGORITHM_VERSION,memberId,sourceToken:input.token,builtAt:readAt,reportRef,nextVersion,previous,
   patientLine,reportLine,priorityLevel,priority,assessment,

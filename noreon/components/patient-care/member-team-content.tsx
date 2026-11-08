@@ -11,7 +11,7 @@ function TeamLink({open,...props}:ComponentProps<typeof RowLink>&{open?:(href:st
 }
 export function MemberTeamContent({locale:l,clinician,contact,reviewEnabled,open,onMessage,embedded=false}:{embedded?:boolean;locale:PatientLocale;clinician:string|null;contact:MemberContact;reviewEnabled:boolean;open?:(href:string)=>void;onMessage?:()=>void}) {
   // QA N-09: Telegram-only product (lead decision 18 Oct); contact goes through the care-team chat, not email.
-  const email = <CareSection title={copy(l, "Contact Noreon", "Կապվել Noreon-ի հետ", "Связаться с Noreon")}>
+  const email = <CareSection title={copy(l, "Contact Noreon", "Կապվել Նորեոն Հելթի հետ", "Связаться с Нореон Хелс")}>
     <MemberContactLine contact={contact} locale={l} onMessage={onMessage}/>
   </CareSection>;
   const teamInformation = <CareSection title={copy(l, "Care team information", "Խնամքի թիմի մասին", "О медицинской команде")}>
@@ -30,7 +30,7 @@ export function MemberTeamContent({locale:l,clinician,contact,reviewEnabled,open
     <div className="flex flex-col gap-2">{reviewEnabled&&<TeamLink open={open} href="/patient/review" icon={ClipboardList}>{copy(l,"Previous plans","Նախորդ պլանները","Предыдущие планы")}</TeamLink>}<TeamLink open={open} href="/patient/care" icon={Stethoscope}>{copy(l,"Your plan","Ձեր պլանը","Ваш план")}</TeamLink></div>
   </div>;
   return <><div className="space-y-6">
-    <header><h1 className="text-h1">{copy(l, "Contact Noreon", "Կապվել Noreon-ի հետ", "Связаться с Noreon")}</h1></header>
+    <header><h1 className="text-h1">{copy(l, "Contact Noreon", "Կապվել Նորեոն Հելթի հետ", "Связаться с Нореон Хелс")}</h1></header>
     {email}
     <aside className="space-y-3 rounded-2xl border border-border bg-surface-subtle-teal p-5">
       <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 size-5 shrink-0 text-brand-teal" aria-hidden /><p className="text-body2">{copy(l, "Only your doctor changes treatment. For urgent medical help, call 103.", "Բուժումը փոխում է միայն բժիշկը։ Շտապ օգնության համար զանգահարեք 103։", "Только ваш врач меняет лечение. Для срочной медицинской помощи звоните 103.")}</p></div>

@@ -53,7 +53,7 @@ export default async function RealReviewLayout({children}: {children: React.Reac
     badge={admin ? t('Operations', 'Գործերի կառավարում', 'Операционная работа') : t('Clinical', 'Կլինիկական','Медицинская работа')}
     sidebarHeader={<p>{admin ? t('Backoffice', 'Վարչական վահանակ', 'Административная панель') : nurse ? t('Nurse workspace', 'Բուժքրոջ աշխատատարածք','Рабочее пространство медсестры') : t('Doctor workspace', 'Բժշկի աշխատատարածք','Рабочее пространство врача')}</p>}
     nav={nav}
-    title={admin ? t('Noreon operations', 'Noreon-ի գործերի կառավարում', 'Операционная работа Noreon') : t('Clinical workspace', 'Կլինիկական աշխատատարածք','Медицинское рабочее пространство')}
+    title={admin ? t('Noreon operations', 'Նորեոն Հելթի գործերի կառավարում', 'Операционная работа Нореон Хелс') : t('Clinical workspace', 'Կլինիկական աշխատատարածք','Медицинское рабочее пространство')}
     actions={actions}
   >{identityChildren}</AppShell>;
   if(admin&&adminChatEnabled())return <AdminChatShell fallback={shell} nav={nav} actions={actions} locale={locale}>{identityChildren}</AdminChatShell>;

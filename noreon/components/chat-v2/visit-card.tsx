@@ -1,5 +1,6 @@
 "use client";
 import {ShowCurrent} from '@/components/patient/zoe-card-controls';
+import { zoeName } from '@/lib/brand';
 import {VISIT} from '@/lib/zoe-chat-actions/copy';
 import {SignInEnded} from '@/components/patient/sign-in-ended';
 import {askAdminToChangeVisit} from '@/lib/zoe-chat-actions/labs-actions';
@@ -21,11 +22,11 @@ export function SavedVisitTurn({card,locale:l,time,onCard}:{onCard?:(c:ZoeCard)=
  const current=onCard?<ShowCurrent kind="visit" locale={l} onCard={onCard}/>:null;
  const result=card.outcome.booking as {ok?:boolean;outcomeUnknown?:boolean;kind?:string};
 
- if(!result)return <DialogTurn action={say(l,VISIT.accept)} time={time}><p>{say(l,VISIT.accepted)}</p>{current}</DialogTurn>;
+ if(!result)return <DialogTurn locale={l} action={say(l,VISIT.accept)} time={time}><p>{say(l,VISIT.accepted)}</p>{current}</DialogTurn>;
  // The ordinary care-team message already says the day, time of day and note.
- if(result.kind==='visit_request')return <DialogTurn action={null} time={time}><p>{say(l,VISIT_REQUEST.sent)}</p>{current}</DialogTurn>;
- if(result.kind==='admin_change')return <DialogTurn action={say(l,LAB_VISIT.adminSaid)} time={time}><p>{say(l,LAB_VISIT.adminReply)}</p>{current}</DialogTurn>;
- return <DialogTurn action={say(l,visitCopy.said)} time={time}><p>{say(l,result.ok&&!result.outcomeUnknown?visitCopy.saved:visitCopy.failed)}</p>{current}</DialogTurn>;
+ if(result.kind==='visit_request')return <DialogTurn locale={l} action={null} time={time}><p>{say(l,VISIT_REQUEST.sent)}</p>{current}</DialogTurn>;
+ if(result.kind==='admin_change')return <DialogTurn locale={l} action={say(l,LAB_VISIT.adminSaid)} time={time}><p>{say(l,LAB_VISIT.adminReply)}</p>{current}</DialogTurn>;
+ return <DialogTurn locale={l} action={say(l,visitCopy.said)} time={time}><p>{say(l,result.ok&&!result.outcomeUnknown?visitCopy.saved:visitCopy.failed)}</p>{current}</DialogTurn>;
 }
 export function VisitCard({card,locale:l,onCard,onAct,current=false}:{current?:boolean;card:Extract<ValidCard,{kind:'visit'}>;locale:CardLocale;onCard:(c:ZoeCard)=>void;onAct:(id:string,busy:boolean)=>void}){
  const {busy,problem,save,opId}=useCardSave(card.id,l,onCard,onAct);
@@ -36,7 +37,7 @@ export function VisitCard({card,locale:l,onCard,onAct,current=false}:{current?:b
   </fieldset>}
  </LivingVisitCard>;
  if(card.state==='done')return null;
- return <article className="cv2-msg cv2-zoe" data-zoe-card="visit" data-chat-card-id={card.id} data-state="open"><p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p>
+ return <article className="cv2-msg cv2-zoe" data-zoe-card="visit" data-chat-card-id={card.id} data-state="open"><p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p>
   <section className="cv2-reading cv2-block">
    <h3>{say(l,visitCopy.title)}</h3>
    <fieldset disabled={busy} aria-busy={busy}>

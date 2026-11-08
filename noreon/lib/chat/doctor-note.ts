@@ -11,7 +11,7 @@ export function doctorNoticeText(text:string,locale:Locale):string{
 }
 
 const PLAN_NOTICE_EN='Your care plan is ready. Open Noreon to read it.';
-const PLAN_NOTICE_HY='Ձեր խնամքի ծրագիրը պատրաստ է։ Բացեք Noreon-ը՝ այն կարդալու համար։';
+const PLAN_NOTICE_HY='Ձեր խնամքի ծրագիրը պատրաստ է։ Բացեք Նորեոն Հելթը՝ այն կարդալու համար։';
 
 /** Chat presentation only. Stored notices and Telegram retain their approval label. */
 export function memberNoticeText(text:string,locale:Locale):string{

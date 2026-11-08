@@ -16,6 +16,7 @@ import { ldlObservations } from "@/lib/ldl/status";
 import { copy, stamp } from "@/components/patient-care/common";
 import { HomeJourneyStrip, HomeUnwellCard } from "@/components/patient-care/home-journey";
 import type { exerciseGuidance } from "@/lib/member-safety/contract";
+import { zoeName } from "@/lib/brand";
 
 type Props = {
   chat?: boolean;
@@ -74,7 +75,7 @@ export function MemberHome({ chat = false, locale: l, greeting, date, now, care,
   ];
   return <div className="member-home" data-member-home={chat ? undefined : true} data-member-chat-today={chat || undefined}>
     <header className="member-home-greeting">
-      {chat && <p className="member-home-label">Zoe</p>}
+      {chat && <p className="member-home-label">{zoeName(l)}</p>}
       <h1>{greeting}</h1>
       <p>{date}</p>
     </header>
@@ -89,7 +90,7 @@ export function MemberHome({ chat = false, locale: l, greeting, date, now, care,
     </section>}
     {!chat && <><HomeLink href="/patient/zoe" className="member-home-chat">
       <span className="member-home-orb" aria-hidden />
-      <span><strong>{copy(l, "Open Zoe", "Բացել Zoe-ն", "Открыть Zoe")}</strong><span className="member-home-muted">{copy(l, "AI assistant, not a doctor", "ԱԲ օգնական, ոչ բժիշկ", "ИИ-помощник, не врач")}</span></span>
+      <span><strong>{copy(l, "Open Zoe", "Բացել Զոյան", "Открыть чат с Зоей")}</strong><span className="member-home-muted">{copy(l, "AI assistant, not a doctor", "ԱԲ օգնական, ոչ բժիշկ", "ИИ-помощник, не врач")}</span></span>
       <ArrowRight aria-hidden />
     </HomeLink>
     <nav className="member-home-quick" aria-label={copy(l, "Quick actions", "Արագ գործողություններ", "Быстрые действия")}>

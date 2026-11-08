@@ -67,7 +67,7 @@ export function TelegramLinkContinue({siteKey}: {siteKey: string}) {
   });
   if (!token) return null;
   return <section className="space-y-4">
-    <h1 className="text-h1">Մուտք Noreon / Sign in to Noreon / Вход в Noreon</h1>
+    <h1 className="text-h1">Մուտք Նորեոն Հելթ / Sign in to Noreon / Вход в Нореон Хелс</h1>
     {signedInAs ? <p role="status" data-signed-in-as className="text-body2">Դուք մուտք եք գործել որպես {signedInAs}։ Բացում ենք Ձեր էջը… / You are signed in as {signedInAs}. Opening your page… / Вы вошли как {signedInAs}. Открываем вашу страницу…</p>
     : otherAccount ? <div className="space-y-4" data-other-account>
       <p role="status" className="text-body2">Այս դիտարկիչում արդեն մուտք եք գործել որպես {otherAccount}։ Այս հղումը մեկ այլ հաշվի համար է։ / You are already signed in here as {otherAccount}. This link is for a different account. / Вы уже вошли в этом браузере как {otherAccount}. Эта ссылка предназначена для другой учётной записи.</p>
@@ -89,8 +89,8 @@ export function TelegramLinkContinue({siteKey}: {siteKey: string}) {
 function IosLinkNote() {
   return <aside data-ios-link-note className="space-y-2 rounded-xl border bg-muted/40 p-4 text-body2">
     <span className="inline-block rounded-md border px-1.5 text-caption text-muted-foreground">STAGING draft / Черновик для тестовой среды</span>
-    <p lang="hy">iPhone-ում Telegram-ի հղումները բացվում են Telegram-ի ներքին դիտարկիչում կամ Safari-ում։ Այստեղ մուտք գործելը Գլխավոր էկրանի Noreon հավելվածում մուտք չի կատարում։ Եթե այնտեղ դուրս եք եկած, բացեք հավելվածը և նորից մուտք գործեք։</p>
-    <p lang="ru">На iPhone ссылки из Telegram открываются во встроенном браузере Telegram или в Safari. Вход здесь не выполняет вход в приложение Noreon на вашем домашнем экране. Если вы вышли из учётной записи в приложении, откройте его и войдите снова.</p>
+    <p lang="hy">iPhone-ում Telegram-ի հղումները բացվում են Telegram-ի ներքին դիտարկիչում կամ Safari-ում։ Այստեղ մուտք գործելը Գլխավոր էկրանի Նորեոն Հելթ հավելվածում մուտք չի կատարում։ Եթե այնտեղ դուրս եք եկած, բացեք հավելվածը և նորից մուտք գործեք։</p>
+    <p lang="ru">На iPhone ссылки из Telegram открываются во встроенном браузере Telegram или в Safari. Вход здесь не выполняет вход в приложение Нореон Хелс на вашем домашнем экране. Если вы вышли из учётной записи в приложении, откройте его и войдите снова.</p>
     <p lang="en">On iPhone, Telegram links open in Telegram&apos;s own browser or in Safari. Signing in here does not sign in the Noreon app on your Home Screen. If you are signed out there, open the app and sign in again.</p>
   </aside>;
 }

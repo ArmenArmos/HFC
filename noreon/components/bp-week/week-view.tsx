@@ -62,7 +62,7 @@ export function WeekView({ week, l, now, showDevice, record }: { week: BpWeek; l
         <section className="flex items-start gap-3 rounded-2xl border border-border/70 bg-card p-5" aria-label={copy(l, "Your monitor", "Ձեր սարքը", "Ваш тонометр")}>
           <IconTile icon={MonitorSmartphone} />
           <div className="min-w-0">
-            <p className="text-body2 font-semibold">{copy(l, "Your monitor from Noreon", "Ձեր սարքը Noreon-ից", "Ваш тонометр от Noreon")}</p>
+            <p className="text-body2 font-semibold">{copy(l, "Your monitor from Noreon", "Ձեր սարքը Նորեոն Հելթից", "Ваш тонометр от Нореон Хелс")}</p>
             <p className="mt-1 break-words text-caption text-muted-foreground">{week.device.model} · {week.device.serial}</p>
             <p className="mt-1 text-caption text-muted-foreground">{copy(l, "Enter each reading here. Automatic syncing is not available yet.", "Յուրաքանչյուր չափում մուտքագրեք այստեղ։ Ավտոմատ համաժամեցումը դեռ հասանելի չէ։", "Вводите каждое измерение здесь. Автоматическая синхронизация пока недоступна.")}</p>
           </div>

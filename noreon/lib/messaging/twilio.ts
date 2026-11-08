@@ -26,7 +26,7 @@ export function buildPlanMessage(config:TwilioConfig,value:unknown):MessageListI
  const input=inputSchema.parse(value);
  const common={statusCallback:callbackUrl(config,input.attemptId),validityPeriod:300};
  if(input.channel==='whatsapp'){if(!config.whatsappFrom||!config.whatsappHyContentSid||!config.whatsappEnContentSid)throw Error('WhatsApp unavailable');return {...common,from:config.whatsappFrom,to:`whatsapp:${input.destination}`,contentSid:clinicalLocale(input.locale)==='hy'?config.whatsappHyContentSid:config.whatsappEnContentSid};}
- return {...common,from:config.smsFrom,to:input.destination,body:pick(input.locale,{hy:`Ձեր նոր խնամքի պլանը հասանելի է։ Բացեք Noreon՝ ${config.appUrl}`,en:`Your new care plan is available. Open Noreon: ${config.appUrl}`,ru:`Ваш новый план лечения доступен. Откройте Noreon: ${config.appUrl}`})};
+ return {...common,from:config.smsFrom,to:input.destination,body:pick(input.locale,{hy:`Ձեր նոր խնամքի պլանը հասանելի է։ Բացեք Նորեոն Հելթ՝ ${config.appUrl}`,en:`Your new care plan is available. Open Noreon: ${config.appUrl}`,ru:`Ваш новый план лечения доступен. Откройте Нореон Хелс: ${config.appUrl}`})};
 }
 export type SubmissionResult={status:'accepted';reference:string;deliveryStatus:ProviderDeliveryStatus|null;errorCode:string|null}|{status:'failed'|'unknown'};
 type MessageTransport={messages:{create:(options:MessageListInstanceCreateOptions)=>Promise<{sid:string;status:string;errorCode?:number|null}>}};

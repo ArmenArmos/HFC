@@ -56,7 +56,7 @@ function MemberRow({item,locale,onOpen,onLab,onPlan}:{item:AlertItem|InboxItem|S
  return <MemberIdentityButton memberId={item.memberId} name={item.memberName} locale={locale} buttonClassName="dcv2-row" data-inbox-id={item.id} data-urgent={urgent||undefined} onClick={()=>!urgent&&(item.kind==='plan_draft'||saved)?onPlan?.(item.memberId,item.memberName,!saved):!urgent&&(item.kind==='lab_attention'||item.kind==='lab_sheet')&&item.fileId?onLab?.(item.memberId,item.fileId,item.memberName):onOpen(item.memberId,item.memberName)} onPointerDown={event=>event.preventDefault()} onMouseDown={event=>event.preventDefault()}>
   {urgent?<AlertCardLines alert={item.alert} locale={locale}/>:<span>{saved?st(locale,'Saved plan waiting for approval','Պահպանված պլանը սպասում է հաստատման','Сохранённый план ожидает утверждения'):itemSummary(item,locale)}</span>}
   {!urgent&&!saved&&item.draft?.asked&&<span className="dcv2-asked">{item.draft.asked}</span>}
-  {!urgent&&!saved&&item.draft&&<span className="dcv2-tag">{st(locale,'Zoe drafted a reply','Զոյան պատրաստել է պատասխանի նախագիծ','Zoe подготовила черновик ответа')}</span>}
+  {!urgent&&!saved&&item.draft&&<span className="dcv2-tag">{st(locale,'Zoe drafted a reply','Զոյան պատրաստել է պատասխանի նախագիծ','Зоя подготовила черновик ответа')}</span>}
   <time className="dcv2-time" dateTime={item.at}>{time(item.at,locale)}</time>
  </MemberIdentityButton>;
 }
@@ -70,7 +70,7 @@ function UrgentWindowRow({window,locale,onOpen}:{window:UrgentWindow;locale:Staf
 export function DoctorReply({reply,locale:l,collapseZoeReplies=false,doctorId,onOpen,onLab,onPlan,onUpload,busy,onAct,onCheck,closer,onWho,onChoose,onResults}:{reply:Reply;locale:StaffLocale;collapseZoeReplies?:boolean;doctorId?:string;onOpen:OpenMember;onResults?:OpenMember;onLab?:OpenLab;onPlan?:OpenPlan;onUpload?:OpenUpload;onWho?:()=>void;onChoose?:(row:{id:string;name:string})=>void}&AlertControls){
  const t=(en:string,hy:string,ru:string)=>st(l,en,hy,ru);
  if(reply.kind==='zoe-loading'||reply.kind==='zoe-cards'||reply.kind==='zoe-answer'||reply.kind==='zoe-error')return <div className="dcv2-zoe-record">
-  <p className="dcv2-zoe-label">{t(`Zoe · read from ${reply.member.memberName}'s record. The member does not see this.`,`Զոյա · կարդացվել է ${reply.member.memberName}-ի գրառումից։ Անդամը սա չի տեսնում։`,`Zoe · из записи ${reply.member.memberName}. Участник этого не видит.`)}</p>
+  <p className="dcv2-zoe-label">{t(`Zoe · read from ${reply.member.memberName}'s record. The member does not see this.`,`Զոյա · կարդացվել է ${reply.member.memberName}-ի գրառումից։ Անդամը սա չի տեսնում։`,`Зоя · из записи ${reply.member.memberName}. Участник этого не видит.`)}</p>
   <UploadIdentityChecks rows={(reply.content?.cards??reply.cards).flatMap(card=>card.identityChecks??[])} locale={l} onOpen={onLab?row=>onLab(row.memberId,row.fileId,row.memberName):undefined}/>
   <LabReviewResponse reply={reply} doctorId={doctorId} locale={l} busy={busy} onLab={onLab} collapseZoe={collapseZoeReplies}/>
  </div>;

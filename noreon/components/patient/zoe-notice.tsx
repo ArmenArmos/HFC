@@ -61,9 +61,9 @@ export function ZoeNotice({ locale: l, notice, contained = false }: { locale: Pa
           <p>
             {tx(
               l,
-              "Այս հաշվից հնարավոր չէ գրել խնամքի թիմին։ Ստուգեք, որ ձեր հեռախոսահամարը հաստատված է, կամ կապվեք Noreon-ի հետ։",
+              "Այս հաշվից հնարավոր չէ գրել խնամքի թիմին։ Ստուգեք, որ ձեր հեռախոսահամարը հաստատված է, կամ կապվեք Նորեոն Հելթի հետ։",
               "This account cannot write to the care team. Check that your phone number is confirmed, or contact Noreon.",
-              "С этой учётной записи нельзя написать медицинской команде. Убедитесь, что ваш номер телефона подтверждён, или свяжитесь с Noreon.",
+              "С этой учётной записи нельзя написать медицинской команде. Убедитесь, что ваш номер телефона подтверждён, или свяжитесь с Нореон Хелс.",
             )}
           </p>
           {!contained && <Link href={"/patient/account" as Route} className={noticeLink}>

@@ -19,7 +19,7 @@ export function ZoeChatConsent({locale:l,directAnswers=false,onResolved,shownTex
  /** V3: the card adds what is collected and who sees it, and the grant stores the hash of the text shown. */shownText?:boolean}){
  const [state,setState]=useState<'open'|'done'|'later'|'error'>('open'),[pending,start]=useTransition();
  if(state==='later')return null;
- if(state==='done')return <p role="status" className="journey-card text-body2" data-zoe-chat-consent="done">{tx(l,'Zoe-ն միացված է։ Գրեք նրան ցանկացած պահի։','Zoe is on. Write to her any time.','Zoe включена. Пишите ей в любое время.')}</p>;
+ if(state==='done')return <p role="status" className="journey-card text-body2" data-zoe-chat-consent="done">{tx(l,'Զոյան միացված է։ Գրեք նրան ցանկացած պահի։','Zoe is on. Write to her any time.','Зоя включена. Пишите ей в любое время.')}</p>;
  const c=consentLines(l,directAnswers);
  return <section aria-labelledby="zoe-chat-consent-title" data-zoe-chat-consent className="journey-card space-y-3">
   <header className="flex items-center gap-3"><IconTile icon={Bot}/><h2 id="zoe-chat-consent-title" className="text-h3">{c.title}</h2></header>

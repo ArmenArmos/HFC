@@ -14,7 +14,7 @@ function russianConcernSummary(c: DoctorConcern) {
   const med = [c.ask.medicine.name, c.ask.medicine.dose].filter(Boolean).join(" ");
   const what = c.ask.trigger === "skipped" ? `Приём ${med} в ${when} отмечен как пропущенный.` : `Приём ${med} в ${when} не отмечен.`;
   const reasons = {forgot: "забыл", side_effect: "побочный эффект", cost_or_availability: "стоимость или не удалось получить", ran_out: "лекарство закончилось", decided_to_stop: "решил прекратить приём"};
-  const why = c.ask.reason ? `Сообщил Zoe: ${reasons[c.ask.reason]}.` : "";
+  const why = c.ask.reason ? `Сообщил Зое: ${reasons[c.ask.reason]}.` : "";
   const ticks = `За последние 14 дней: принято ${c.ticks14.taken}, пропущено ${c.ticks14.skipped} (по отметкам самого участника).`;
   const ask = c.kind === "refill" ? "Просит медицинскую команду помочь пополнить запас лекарства." : "Участнику сообщили, что вы ответите.";
   return [what, why, ticks, ask].filter(Boolean).join(" ");
@@ -36,7 +36,7 @@ export function MedicineConcernsSection({ items, l }: { items: DoctorConcern[] |
   return (
     <section aria-labelledby="medicine-concerns" className="space-y-3 rounded-xl border bg-background p-4">
       <h2 id="medicine-concerns" className="flex flex-wrap items-baseline gap-2 text-h3">{t("Waiting for you: medicines", "Սպասում է ձեզ՝ դեղեր","Ждут вас: лекарства")}<span className="text-body2 font-normal text-muted-foreground">{items?.length ?? ""}</span></h2>
-      <p className="text-body2 text-muted-foreground">{t("Members who told Zoe about a side effect, stopping a medicine, or needing a refill. Zoe gave no medicine advice. Answer the member, then mark it handled.", "Անդամներ, ովքեր Զոիին հայտնել են կողմնակի ազդեցության, դեղը դադարեցնելու կամ նոր դեղի կարիքի մասին։ Զոին դեղերի վերաբերյալ խորհուրդ չի տվել։ Պատասխանեք անդամին, ապա նշեք որպես լուծված։","Участники, сообщившие Zoe о побочном эффекте, прекращении приёма или необходимости пополнить запас лекарства. Zoe не давала советов о лекарствах. Ответьте участнику, затем отметьте вопрос как решённый.")}</p>
+      <p className="text-body2 text-muted-foreground">{t("Members who told Zoe about a side effect, stopping a medicine, or needing a refill. Zoe gave no medicine advice. Answer the member, then mark it handled.", "Անդամներ, ովքեր Զոյային հայտնել են կողմնակի ազդեցության, դեղը դադարեցնելու կամ նոր դեղի կարիքի մասին։ Զոյան դեղերի վերաբերյալ խորհուրդ չի տվել։ Պատասխանեք անդամին, ապա նշեք որպես լուծված։","Участники, сообщившие Зое о побочном эффекте, прекращении приёма или необходимости пополнить запас лекарства. Зоя не давала советов о лекарствах. Ответьте участнику, затем отметьте вопрос как решённый.")}</p>
       {items === null ? <p role="alert" className="text-body2">{t("Unavailable. Reload to check.", "Անհասանելի է։ Թարմացրեք էջը՝ ստուգելու համար։","Недоступно. Обновите страницу, чтобы проверить.")}</p> : (
         <ul className="divide-y">{items.map(c => (
           <li key={c.id} className="space-y-2 py-4 first:pt-0 last:pb-0">

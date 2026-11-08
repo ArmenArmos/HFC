@@ -346,7 +346,7 @@ export function Privacy() {
 
       <p className="font-heading text-h3 md:text-h2 text-[var(--text-strong)] mt-6 max-w-3xl font-bold tracking-tight text-pretty">
         {t({
-          hy: "Noreon-ը երբեք չի կառուցի իր բիզնեսը անդամների առողջական տվյալները վաճառելու վրա։",
+          hy: "Նորեոն Հելթը երբեք չի կառուցի իր բիզնեսը անդամների առողջական տվյալները վաճառելու վրա։",
           en: "Noreon will never build its business around selling members' health information.",
         })}
       </p>
@@ -450,7 +450,7 @@ export function FinalCta() {
         <p className="text-on-inverse-muted mt-6 flex max-w-2xl items-start gap-2 text-caption text-pretty">
           <ShieldCheckIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
           {t({
-            hy: "Noreon-ի բժշկական տրամաբանությունը և խնամքի ուղիները մշակվում են առաջատար մասնագետների հետ և շարունակաբար հսկվում ու զարգացվում են նրանց հետ։",
+            hy: "Նորեոն Հելթի բժշկական տրամաբանությունը և խնամքի ուղիները մշակվում են առաջատար մասնագետների հետ և շարունակաբար հսկվում ու զարգացվում են նրանց հետ։",
             en: "Noreon's medical logic and care pathways are designed with leading specialists, and continuously monitored and developed with them.",
           })}
         </p>

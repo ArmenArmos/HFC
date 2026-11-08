@@ -6,7 +6,7 @@ type Route=Pick<Extract<NurseWorkspace,{ok:true}>,'memberName'|'canSend'|'telegr
 export function nurseConversationCopy(locale:StaffLocale,route?:Route){
  const t=(en:string,hy:string,ru:string)=>st(locale,en,hy,ru);
  const name=route?.memberName||t('This member','Այս անդամը','Этот участник');
- const appOnly=t('Your nurse replies go to the Noreon app, not to Telegram.','Ձեր՝ որպես բուժքրոջ պատասխանները հասնում են Noreon հավելված, ոչ թե Telegram։','Ваши ответы как медсестры поступают в приложение Noreon, а не в Telegram.');
+ const appOnly=t('Your nurse replies go to the Noreon app, not to Telegram.','Ձեր՝ որպես բուժքրոջ պատասխանները հասնում են Նորեոն Հելթ հավելված, ոչ թե Telegram։','Ваши ответы как медсестры поступают в приложение Нореон Хелс, а не в Telegram.');
  const opensApp=t('They see your reply only when they open the app.','Անդամը տեսնում է Ձեր պատասխանը միայն հավելվածը բացելիս։','Участник увидит ваш ответ, только когда откроет приложение.');
  const reason=route?.canSend===false
   ?t('Member app chat is switched off. You cannot send a nurse reply here.','Անդամի հավելվածի զրույցն անջատված է։ Այստեղ չեք կարող բուժքրոջ պատասխան ուղարկել։','Чат участника в приложении отключён. Здесь вы не можете отправить ответ медсестры.')

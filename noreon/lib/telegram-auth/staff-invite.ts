@@ -24,7 +24,7 @@ const pending=z.strictObject({nonce:z.string().regex(/^[A-Za-z0-9_-]{43}$/),chal
 const mac=(key:Buffer,parts:string[])=>createHmac('sha256',key).update(parts.join('\0')).digest('hex');
 const keys=()=>telegramAuthKeys(process.env.NOREON_SUPABASE_SMS_HOOK_SECRET);
 /** Fixed invitation code text; no clinical content. */
-export const staffInviteCodeText=(code:string)=>`Noreon հրավերի կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon invitation code: ${code}. Do not share it with anyone.`;
+export const staffInviteCodeText=(code:string)=>`Նորեոն Հելթ հրավերի կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon invitation code: ${code}. Do not share it with anyone.`;
 
 export type InviteCodeResult={ok:true}|{ok:false;reason:'not_proven'|'busy'|'unavailable'};
 export async function sendInviteCode(invitationId:string,generation:number,startToken:string):Promise<InviteCodeResult>{

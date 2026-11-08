@@ -103,7 +103,7 @@ function StaffZoeChatSession({conversation,role,locale,workspace=false,home=fals
  const sendInitial=useEffectEvent((question:string)=>{void ask(question,null);onInitialQuestionSent?.();});
  useEffect(()=>{if(initialQuestion&&!initialSent.current){initialSent.current=true;sendInitial(initialQuestion);}},[initialQuestion]);
  const chips=CHIPS.filter(c=>role==='doctor'||!DOCTOR_ONLY.has(c[0]));
- const queries=<div className={home?"flex flex-col":"sz-query-strip flex flex-wrap gap-2"}>{chips.map(c=><button key={c[0]} type="button" disabled={busy} onClick={()=>ask(st(locale,c[2],c[3],c[4]),c[0])} className={`${button} border bg-background disabled:opacity-50`}>{workspace&&c[0]==='summary'?t('At a glance','Մի հայացքով','Краткий обзор'):st(locale,c[1],c[3],c[4])}</button>)}{workspace&&<button type="button" disabled={busy} onClick={()=>ask(t('Why did Zoe answer the latest member message this way?','Ինչու Զոյան այսպես պատասխանեց անդամի վերջին հաղորդագրությանը','Почему Zoe так ответила на последнее сообщение участника?'),null)} className={`${button} border bg-background disabled:opacity-50`}>{t('Why did Zoe say this?','Ինչու Զոյան սա ասաց','Почему Zoe это сказала?')}</button>}</div>;
+ const queries=<div className={home?"flex flex-col":"sz-query-strip flex flex-wrap gap-2"}>{chips.map(c=><button key={c[0]} type="button" disabled={busy} onClick={()=>ask(st(locale,c[2],c[3],c[4]),c[0])} className={`${button} border bg-background disabled:opacity-50`}>{workspace&&c[0]==='summary'?t('At a glance','Մի հայացքով','Краткий обзор'):st(locale,c[1],c[3],c[4])}</button>)}{workspace&&<button type="button" disabled={busy} onClick={()=>ask(t('Why did Zoe answer the latest member message this way?','Ինչու Զոյան այսպես պատասխանեց անդամի վերջին հաղորդագրությանը','Почему Зоя так ответила на последнее сообщение участника?'),null)} className={`${button} border bg-background disabled:opacity-50`}>{t('Why did Zoe say this?','Ինչու Զոյան սա ասաց','Почему Зоя это сказала?')}</button>}</div>;
  return <div className="sz-chat space-y-4">
   {!home&&<MemberBar m={conversation.member} locale={locale}/>}
   <div className="sz-thread space-y-4" aria-live="polite" data-testid="zoe-thread">
@@ -121,12 +121,12 @@ function StaffZoeChatSession({conversation,role,locale,workspace=false,home=fals
   <div className={home?"dw-dock":"space-y-4"}>
   {home?<ChatMenuItems target="doctor-record-menu" locale={locale}><details><summary className="min-h-11 cursor-pointer px-2 py-2 text-body2">{t('Ask about saved records','Հարցնել պահպանված գրառումների մասին','Спросить о сохранённых записях')}</summary>{queries}</details></ChatMenuItems>:queries}
   <form className={home?"zk-composer dw-member-composer":"sz-composer flex gap-2"} onSubmit={e=>{e.preventDefault();void ask(text,null);}}>
-   <label htmlFor="zoe-ask" className="sr-only">{t('Ask Zoe…','Հարցրեք Զոյային…','Спросите Zoe…')}</label>
-   <textarea id="zoe-ask" value={text} onChange={e=>setText(e.target.value)} onKeyDown={role==='doctor'?submitChatOnEnter:undefined} maxLength={1000} rows={2} placeholder={t('Ask Zoe…','Հարցրեք Զոյային…','Спросите Zoe…')} className="min-h-11 w-full rounded-md border bg-background px-3 py-2 text-body2"/>
+   <label htmlFor="zoe-ask" className="sr-only">{t('Ask Zoe…','Հարցրեք Զոյային…','Спросите Зою…')}</label>
+   <textarea id="zoe-ask" value={text} onChange={e=>setText(e.target.value)} onKeyDown={role==='doctor'?submitChatOnEnter:undefined} maxLength={1000} rows={2} placeholder={t('Ask Zoe…','Հարցրեք Զոյային…','Спросите Зою…')} className="min-h-11 w-full rounded-md border bg-background px-3 py-2 text-body2"/>
    <button type="submit" aria-label={t('Ask','Հարցնել','Спросить')} disabled={busy||!text.trim()} className={home?"zk-send":`${button} bg-primary text-primary-foreground disabled:opacity-50`}>{home?<ArrowUp size={20} aria-hidden/>:t('Ask','Հարցնել','Спросить')}</button>
   </form>
   {home&&<p className="text-caption text-muted-foreground">{t('Use the arrow to send. Enter adds a line on your phone.','Ուղարկելու համար սեղմեք սլաքը։ Հեռախոսում Enter-ը նոր տող է ավելացնում։','Нажмите стрелку для отправки. Enter на телефоне добавляет строку.')}</p>}
-  {!home&&<p className="text-caption text-muted-foreground">{t('Zoe reads and explains the record. She changes nothing, and nothing here reaches the member.','Զոյան կարդում և բացատրում է գրառումը։ Նա ոչինչ չի փոխում, և այստեղից ոչինչ չի հասնում անդամին։','Zoe читает и объясняет запись. Она ничего не меняет, и ничего отсюда не доходит до участника.')}</p>}
+  {!home&&<p className="text-caption text-muted-foreground">{t('Zoe reads and explains the record. She changes nothing, and nothing here reaches the member.','Զոյան կարդում և բացատրում է գրառումը։ Նա ոչինչ չի փոխում, և այստեղից ոչինչ չի հասնում անդամին։','Зоя читает и объясняет запись. Она ничего не меняет, и ничего отсюда не доходит до участника.')}</p>}
   </div>
  </div>;
 }
@@ -134,7 +134,7 @@ function StaffZoeChatSession({conversation,role,locale,workspace=false,home=fals
 export function StaffZoePane({role,locale,conversation,refused,recent}:{role:'doctor'|'nurse';locale:L;conversation:ConversationRead|null;refused:boolean;recent:{id:string;name:string|null;birthYear:number|null;at:string}[]}){
  const t=(en:string,hy:string,ru:string)=>st(locale,en,hy,ru);
  return <div className="mx-auto max-w-3xl space-y-4">
-  <header className="space-y-1"><h1 className="text-h1">{t('Ask Zoe','Հարցնել Զոյային','Спросить Zoe')}</h1><p className="text-body2 text-muted-foreground">{t('One member at a time, from what is on the record.','Մեկ անդամ միաժամանակ, գրառման հիման վրա։','Один участник за раз, по данным записи.')}</p></header>
+  <header className="space-y-1"><h1 className="text-h1">{t('Ask Zoe','Հարցնել Զոյային','Спросить Зою')}</h1><p className="text-body2 text-muted-foreground">{t('One member at a time, from what is on the record.','Մեկ անդամ միաժամանակ, գրառման հիման վրա։','Один участник за раз, по данным записи.')}</p></header>
   {refused&&<p role="alert" className="text-body2">{staffZoeRefusal('access',locale)}</p>}
   {conversation?<StaffZoeChat conversation={conversation} role={role} locale={locale}/>:<Finder locale={locale} recent={recent}/>}
  </div>;

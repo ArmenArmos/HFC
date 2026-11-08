@@ -13,7 +13,7 @@ export function decisionText(locale:Locale,outcome:DecisionOutcome){
  case 'cancelled':return t('Cancelled.','Չեղարկված է։','Отменено.');
  case 'stale':return t('No longer valid: the details changed.','Այլևս վավեր չէ․ տվյալները փոխվել են։','Больше не действует: данные изменились.');
  case 'expired':return t('This request expired after 7 days. Send a new request.','Այս հարցման ժամկետը լրացել է 7 օր անց։ Ուղարկեք նոր հարցում։','Срок запроса истёк через 7 дней. Отправьте новый запрос.');
- case 'self_approval':return t('Another clinic admin or Noreon must approve your request.','Ձեր հարցումը պետք է հաստատի կլինիկայի մեկ այլ ադմինիստրատոր կամ Noreon-ը։','Ваш запрос должен одобрить другой администратор клиники или Noreon.');
+ case 'self_approval':return t('Another clinic admin or Noreon must approve your request.','Ձեր հարցումը պետք է հաստատի կլինիկայի մեկ այլ ադմինիստրատոր կամ Նորեոն Հելթը։','Ваш запрос должен одобрить другой администратор клиники или Нореон Хелс.');
  case 'reason_required':return t('Write a reason of 5 to 500 characters.','Գրեք 5-ից 500 նիշից բաղկացած պատճառ։','Укажите причину длиной от 5 до 500 символов.');
  case 'not_pending':return t('This request has already been decided. Reload the list.','Այս հարցման վերաբերյալ արդեն որոշում կա։ Թարմացրեք ցանկը։','По этому запросу уже принято решение. Обновите список.');
  case 'disabled':return t('Change approvals are not switched on yet.','Փոփոխությունների հաստատումը դեռ միացված չէ։','Согласование изменений пока не включено.');

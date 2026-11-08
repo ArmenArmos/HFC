@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { zoeName } from "@/lib/brand";
 import { Pill } from "lucide-react";
 import { SignInEnded } from "@/components/patient/sign-in-ended";
 import { MEDICINE_ASK_COPY, type AskReason } from "@/lib/member-medicines/ask-copy";
@@ -23,7 +24,7 @@ function rowWords(l: CardLocale, row: MedicineRow) {
   return `${row.name}: ${said}${row.stopReason ? `, ${reasonText(l, row.stopReason).toLocaleLowerCase(l)}` : ""}`;
 }
 export function SavedMedicinesTurn({ rows, locale: l, time, noTitration=false }: { rows: MedicineRow[]; locale: CardLocale; time: string;noTitration?:boolean }) {
-  return <DialogTurn action={rows.map(row => rowWords(l, row)).join("\n")} time={time}><p data-zoe-medicines-saved>{say(l, MEDICINES.reply)}</p>{rows.some(row => row.status === "course_stopped") && <p data-zoe-reminders-stopped>{say(l, MEDICINES.stoppedReply)}</p>}{noTitration&&<p data-no-titration>{say(l,NO_TITRATION)}</p>}</DialogTurn>;
+  return <DialogTurn locale={l} action={rows.map(row => rowWords(l, row)).join("\n")} time={time}><p data-zoe-medicines-saved>{say(l, MEDICINES.reply)}</p>{rows.some(row => row.status === "course_stopped") && <p data-zoe-reminders-stopped>{say(l, MEDICINES.stoppedReply)}</p>}{noTitration&&<p data-no-titration>{say(l,NO_TITRATION)}</p>}</DialogTurn>;
 }
 
 type Choice = { status: Status | null; stopReason: Reason | null; stopConfirmed: boolean };
@@ -63,7 +64,7 @@ export function MedicinesCard({ card, locale: l, onCard, onAct }: { card: Extrac
     return () => { active = false; };
   }, [card.id, onCard]);
   const frame = (body: React.ReactNode) => <article className="cv2-msg cv2-zoe" data-zoe-card="medicines" data-chat-card-id={card.id} data-state={loadState} onClick={event => event.stopPropagation()}>
-    <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+    <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
     <section className="cv2-reading cv2-block" aria-label={say(l, { en: "Your medicines", hy: "Ձեր դեղերը", ru: "Ваши лекарства" })}>
       <h3><Pill size={18} aria-hidden />{say(l, { en: "Your medicines", hy: "Ձեր դեղերը", ru: "Ваши лекарства" })}</h3>
       {body}

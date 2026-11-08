@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { zoeName } from "@/lib/brand";
 import { CheckCircle2, Info, PhoneCall, ShieldAlert, TriangleAlert } from "lucide-react";
 import { cardProblem, runCardAction } from "@/components/patient/use-bp-card";
 import { SignInEnded } from "@/components/patient/sign-in-ended";
@@ -54,7 +55,7 @@ export function FlagsTurn({ card, locale: l, time, stored, tasks, flow }: { card
     <article className="cv2-msg cv2-me" data-turn-action><p className="cv2-say">{red.text}</p><p className="cv2-time" suppressHydrationWarning>{time}</p></article>
     {!red.cleared && <ZoeEmergencyCard locale={l} request={red.requestId} initial={{ alerted: red.alerted, pending: false }} contained />}
   </>;
-  return <DialogTurn action={say(l, FLOW.allNo)} time={time}>{flow ? <><FlowZone flow={flow} locale={l} /><FlowWords flow={flow} locale={l} tasks={tasks} /></> : <p>{say(l, FLOW.thanks)}</p>}</DialogTurn>;
+  return <DialogTurn locale={l} action={say(l, FLOW.allNo)} time={time}>{flow ? <><FlowZone flow={flow} locale={l} /><FlowWords flow={flow} locale={l} tasks={tasks} /></> : <p>{say(l, FLOW.thanks)}</p>}</DialogTurn>;
 }
 
 /** One yes or no at a time. A yes shows 103 on the tap, before any IO: nothing the network does can delay it. */
@@ -82,7 +83,7 @@ export function RedFlagCard({ card, locale: l, onCard, onAct }: { card: Extract<
     });
   };
   return <article className="cv2-msg cv2-zoe" data-zoe-card="red_flags" data-chat-card-id={card.id} data-state="open" onClick={event => event.stopPropagation()}>
-    <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+    <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
     <section className="cv2-reading cv2-flags" aria-label={say(l, { en: "Safety questions", hy: "Անվտանգության հարցեր", ru: "Вопросы безопасности" })}>
       <p className="cv2-dots" role="img" aria-label={say(l, FLOW.progress(shown + 1, RED_FLAG_QUESTIONS.length))}>
         {RED_FLAG_QUESTIONS.map((q, i) => <i key={q} data-on={i <= shown ? true : undefined} />)}

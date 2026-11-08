@@ -31,7 +31,7 @@ export default async function Account({ searchParams = Promise.resolve({}) }: { 
       <div className="min-w-0"><h1 className="break-words text-h1">{profile.name}</h1><p className="mt-1 text-caption text-muted-foreground">{tx(l,"Ձեր տվյալներն ու նախընտրությունները","Your details and preferences","Ваши данные и предпочтения")}</p></div>
     </header>
     {/* Privacy and consents near the top (lead 18 Oct 16:09: the Zoe switch was hard to find). */}
-    {zoe && <div className="journey-card !p-1"><RowLink narrowIconAbove={prototype} href="#my-consents" icon={ShieldCheck} detail={tx(l,"Zoe-ն և ձեր համաձայնությունները","Zoe and your consents", "Zoe и ваши согласия")}>{tx(l,"Գաղտնիություն և համաձայնություններ","Privacy & consents","Конфиденциальность и согласия")}</RowLink></div>}
+    {zoe && <div className="journey-card !p-1"><RowLink narrowIconAbove={prototype} href="#my-consents" icon={ShieldCheck} detail={tx(l,"Զոյան և ձեր համաձայնությունները","Zoe and your consents", "Зоя и ваши согласия")}>{tx(l,"Գաղտնիություն և համաձայնություններ","Privacy & consents","Конфиденциальность и согласия")}</RowLink></div>}
     {/* Prototype Me (pair 16): one card per setting, the most used first. */}
     <LanguagePreference locale={l} revision={assessment.revision} />
     <div id="text-size" className="journey-card scroll-mt-20"><TextSizePreference locale={l} value={textSize} /></div>
@@ -69,7 +69,7 @@ export default async function Account({ searchParams = Promise.resolve({}) }: { 
     <details className="group rounded-xl border border-border/70 px-4">
       <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 py-3 text-caption font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden"><CircleDashed className="size-5 shrink-0" aria-hidden /><span className="min-w-0 flex-1">{tx(l,"Դեռ անհասանելի կարգավորումներ","Settings not available yet","Настройки пока недоступны")}</span><ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>
       <div className="divide-y">{[
-        [tx(l,"Zoe-ի կարգավորումներ","Zoe preferences","Настройки Zoe"),tx(l,"Աջակցությունն ու հանգիստ ժամերը՝ շուտով։","Coaching and quiet hours are coming soon.","Поддержка и часы тишины скоро появятся.")],
+        [tx(l,"Զոյայի կարգավորումներ","Zoe preferences","Настройки Зои"),tx(l,"Աջակցությունն ու հանգիստ ժամերը՝ շուտով։","Coaching and quiet hours are coming soon.","Поддержка и часы тишины скоро появятся.")],
         ...(zoe ? [] : [[tx(l,"Իմ համաձայնությունները","My consents","Мои согласия"),tx(l,"Լրացուցիչ կառավարումը դեռ հասանելի չէ։ Ձեր առկա ընտրությունները չեն փոխվում։","Additional controls are not available yet. Your existing choices remain in place.","Дополнительные настройки пока недоступны. Ваши текущие настройки сохраняются.")]]),
         [tx(l,"Ով կարող է տեսնել իմ տվյալները","Who can see my data","Кто может видеть мои данные"),tx(l,"Ընտանիքի հետ կիսվելը դեռ հասանելի չէ։","Family sharing is not available yet.","Доступ для семьи пока недоступен.")],
       ].map(([title,detail])=><div key={title} aria-disabled="true" className="space-y-1 py-3"><h2 className="text-body2 font-medium">{title}</h2><p className="text-caption text-muted-foreground">{detail}</p></div>)}</div>

@@ -10,7 +10,7 @@ export default async function ClinicTeamPage({searchParams}:{searchParams:Promis
  if(context.identity.capability!=='clinic_admin')redirect(`/clinic/real/bookings?clinic=${clinicId}&locale=${locale}`);
  const team=await readClinicTeam(context.rpc,clinicId);
  return <ClinicShell identity={context.identity} locale={locale} current="team">
-  <div className="space-y-2"><h1 className="text-h1">{tx(locale,'Թիմ','Team','Команда')}</h1><p className="text-body2 text-muted-foreground">{tx(locale,'Սահմանեք յուրաքանչյուրի դերը։ Նոր մարդկանց հրավիրում է Noreon-ը։','Set each person’s role. Noreon invites new people.','Укажите роль каждого сотрудника. Новых сотрудников приглашает Noreon.')}</p></div>
+  <div className="space-y-2"><h1 className="text-h1">{tx(locale,'Թիմ','Team','Команда')}</h1><p className="text-body2 text-muted-foreground">{tx(locale,'Սահմանեք յուրաքանչյուրի դերը։ Նոր մարդկանց հրավիրում է Նորեոն Հելթը։','Set each person’s role. Noreon invites new people.','Укажите роль каждого сотрудника. Новых сотрудников приглашает Нореон Хелс.')}</p></div>
   {team?<ClinicTeamList team={team} locale={locale} run={clinicTeamCommand.bind(null,clinicId,context.actorScope)}/>
   :<div role="alert" className="space-y-3 rounded-lg border bg-background p-4"><p className="text-body2">{tx(locale,'Թիմը չհաջողվեց բեռնել։','The team could not load.','Не удалось загрузить команду.')}</p><Link className="inline-flex min-h-12 items-center rounded-md border px-4 text-body2" href={`/clinic/real/team?clinic=${clinicId}&locale=${locale}`}>{tx(locale,'Փորձել կրկին','Try again','Попробовать снова')}</Link></div>}
  </ClinicShell>;

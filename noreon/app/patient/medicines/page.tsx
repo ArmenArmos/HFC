@@ -118,7 +118,7 @@ export default async function MedicinesPage() {
             {copy(l, "Reminder times and quiet hours", "Հիշեցումների ժամեր և հանգստի ժամեր", "Время напоминаний и часы тишины")}
           </RowLink>
         </section>
-        <p className="rounded-xl bg-muted p-4 text-body2">{copy(l, "Noreon never changes your medicines or doses. If you have a question about a medicine, ask your doctor, nurse or pharmacist.", "Noreon-ը երբեք չի փոխում ձեր դեղերը կամ դեղաչափերը։ Դեղի վերաբերյալ հարցի դեպքում դիմեք ձեր բժշկին, բուժքրոջը կամ դեղագործին։", "Noreon никогда не меняет ваши лекарства или дозы. Если у вас есть вопрос о лекарстве, обратитесь к вашему врачу, медсестре или фармацевту.")}</p>
+        <p className="rounded-xl bg-muted p-4 text-body2">{copy(l, "Noreon never changes your medicines or doses. If you have a question about a medicine, ask your doctor, nurse or pharmacist.", "Նորեոն Հելթը երբեք չի փոխում ձեր դեղերը կամ դեղաչափերը։ Դեղի վերաբերյալ հարցի դեպքում դիմեք ձեր բժշկին, բուժքրոջը կամ դեղագործին։", "Нореон Хелс никогда не меняет ваши лекарства или дозы. Если у вас есть вопрос о лекарстве, обратитесь к вашему врачу, медсестре или фармацевту.")}</p>
         <CareLink href="/patient/care" icon={ArrowLeft}>{copy(l, "Back to my care plan", "Վերադառնալ խնամքի պլանին", "Вернуться к моему плану лечения")}</CareLink>
       </div>
     </PatientShell>

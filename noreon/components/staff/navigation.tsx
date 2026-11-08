@@ -57,7 +57,7 @@ const LABELS = {
   "Activity log": { en: "Activity log", hy: "Գործողությունների մատյան", ru: "Журнал действий" },
   "Test accounts": { en: "Test accounts", hy: "Փորձնական հաշիվներ", ru: "Тестовые аккаунты" },
   "Today": { en: "Today", hy: "Այսօր", ru: "Сегодня" },
-  "Ask Zoe": { en: "Ask Zoe", hy: "Հարցնել Զոյային", ru: "Спросить Zoe" },
+  "Ask Zoe": { en: "Ask Zoe", hy: "Հարցնել Զոյային", ru: "Спросить Зою" },
   "Visits": { en: "Visits", hy: "Այցեր", ru: "Визиты" },
   "My members": { en: "My members", hy: "Իմ անդամները", ru: "Мои участники" },
   "Replies": { en: "Replies", hy: "Պատասխաններ", ru: "Ответы" },

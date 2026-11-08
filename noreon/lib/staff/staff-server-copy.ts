@@ -50,7 +50,7 @@ const hy:Record<string,string>={
  'Not saved: describe the finding of an abnormal result.':'Չի պահպանվել։ նկարագրեք շեղում ունեցող արդյունքի գտածոն։',
  'Not saved: enter the date, result and source.':'Չի պահպանվել։ մուտքագրեք ամսաթիվը, արդյունքը և աղբյուրը։',
  'Not published: a required laboratory result has not been received yet.':'Չի հրապարակվել։ պահանջվող լաբորատոր արդյունքը դեռ ստացված չէ։',
- 'Not published: a required test cannot be received in Noreon yet. Contact the Noreon team.':'Չի հրապարակվել։ պահանջվող հետազոտությունը դեռ չի կարող ստացվել Noreon-ում։ Կապվեք Noreon թիմի հետ։',
+ 'Not published: a required test cannot be received in Noreon yet. Contact the Noreon team.':'Չի հրապարակվել։ պահանջվող հետազոտությունը դեռ չի կարող ստացվել Նորեոն Հելթում։ Կապվեք Նորեոն Հելթ թիմի հետ։',
  'Not published: a source report is not approved yet. Approve each current source report, then publish.':'Չի հրապարակվել։ աղբյուր հաշվետվությունը դեռ հաստատված չէ։ Հաստատեք յուրաքանչյուր ընթացիկ աղբյուր հաշվետվություն, ապա հրապարակեք։',
  'Not published: record whether a consultation is required.':'Չի հրապարակվել։ նշեք՝ արդյոք խորհրդատվություն է պահանջվում։',
  'Not published: save the care plan draft after reviewing the current evidence.':'Չի հրապարակվել։ պահպանեք խնամքի պլանի սևագիրը՝ ընթացիկ տվյալները դիտելուց հետո։',
@@ -107,8 +107,8 @@ const hy:Record<string,string>={
  'Plans with several medicines are switched off. Reload the case.':'Մի քանի դեղով պլաններն անջատված են։ Վերբեռնեք դեպքը։',
  'Not published: confirm that you reviewed every medicine and dose.':'Չի հրապարակվել։ հաստատեք, որ վերանայել եք յուրաքանչյուր դեղն ու դեղաչափը։',
  'Not published: the medicines changed since you reviewed them, or a newer plan was published. Reload the case and review the medicines again.':'Չի հրապարակվել։ դեղերը փոխվել են Ձեր վերանայումից հետո, կամ հրապարակվել է ավելի նոր պլան։ Վերբեռնեք դեպքը և կրկին վերանայեք դեղերը։',
- 'Not published: plans with several medicines are switched off. Contact the Noreon team.':'Չի հրապարակվել։ մի քանի դեղով պլաններն անջատված են։ Կապվեք Noreon-ի թիմի հետ։',
- 'Not published: the current plan has several medicines and this draft cannot hold them. Contact the Noreon team.':'Չի հրապարակվել։ ընթացիկ պլանում մի քանի դեղ կա, և այս սևագիրը չի կարող դրանք պահել։ Կապվեք Noreon-ի թիմի հետ։',
+ 'Not published: plans with several medicines are switched off. Contact the Noreon team.':'Չի հրապարակվել։ մի քանի դեղով պլաններն անջատված են։ Կապվեք Նորեոն Հելթի թիմի հետ։',
+ 'Not published: the current plan has several medicines and this draft cannot hold them. Contact the Noreon team.':'Չի հրապարակվել։ ընթացիկ պլանում մի քանի դեղ կա, և այս սևագիրը չի կարող դրանք պահել։ Կապվեք Նորեոն Հելթի թիմի հետ։',
  'Add at least one time for this medicine.':'Ավելացրեք այս դեղի ընդունման առնվազն մեկ ժամ։',
  'The case details are out of date. Reload the case and save again.':'Դեպքի տվյալները հնացել են։ Վերբեռնեք դեպքը և կրկին պահպանեք։',
  'Draft saved privately. No plan is published and no notice is sent.':'Սևագիրը պահպանված է առանձին։ Պլան չի հրապարակվել, և ծանուցում չի ուղարկվել։',
@@ -165,7 +165,7 @@ const ru:Record<string,string>={
  'Not saved: describe the finding of an abnormal result.':'Не сохранено: опишите отклонение в результате.',
  'Not saved: enter the date, result and source.':'Не сохранено: укажите дату, результат и источник.',
  'Not published: a required laboratory result has not been received yet.':'Не опубликовано: необходимый результат лабораторного анализа ещё не получен.',
- 'Not published: a required test cannot be received in Noreon yet. Contact the Noreon team.':'Не опубликовано: необходимый анализ пока невозможно получить в Noreon. Свяжитесь с командой Noreon.',
+ 'Not published: a required test cannot be received in Noreon yet. Contact the Noreon team.':'Не опубликовано: необходимый анализ пока невозможно получить в Нореон Хелс. Свяжитесь с командой Нореон Хелс.',
  'Not published: a source report is not approved yet. Approve each current source report, then publish.':'Не опубликовано: исходный отчёт ещё не утверждён. Утвердите каждый текущий исходный отчёт, затем опубликуйте.',
  'Not published: record whether a consultation is required.':'Не опубликовано: укажите, требуется ли консультация.',
  'Not published: save the care plan draft after reviewing the current evidence.':'Не опубликовано: сохраните черновик плана лечения после проверки текущих данных.',
@@ -222,8 +222,8 @@ const ru:Record<string,string>={
  'Plans with several medicines are switched off. Reload the case.':'Планы с несколькими лекарствами отключены. Перезагрузите карточку.',
  'Not published: confirm that you reviewed every medicine and dose.':'Не опубликовано: подтвердите, что вы проверили каждое лекарство и дозу.',
  'Not published: the medicines changed since you reviewed them, or a newer plan was published. Reload the case and review the medicines again.':'Не опубликовано: лекарства изменились после вашей проверки или опубликован более новый план. Перезагрузите карточку и проверьте лекарства ещё раз.',
- 'Not published: plans with several medicines are switched off. Contact the Noreon team.':'Не опубликовано: планы с несколькими лекарствами отключены. Свяжитесь с командой Noreon.',
- 'Not published: the current plan has several medicines and this draft cannot hold them. Contact the Noreon team.':'Не опубликовано: в текущем плане несколько лекарств, а этот черновик не может их вместить. Свяжитесь с командой Noreon.',
+ 'Not published: plans with several medicines are switched off. Contact the Noreon team.':'Не опубликовано: планы с несколькими лекарствами отключены. Свяжитесь с командой Нореон Хелс.',
+ 'Not published: the current plan has several medicines and this draft cannot hold them. Contact the Noreon team.':'Не опубликовано: в текущем плане несколько лекарств, а этот черновик не может их вместить. Свяжитесь с командой Нореон Хелс.',
  'Add at least one time for this medicine.':'Добавьте хотя бы одно время приёма этого лекарства.',
  'The case details are out of date. Reload the case and save again.':'Данные случая устарели. Перезагрузите случай и сохраните снова.',
  'Draft saved privately. No plan is published and no notice is sent.':'Черновик сохранён без публикации. План не опубликован, уведомление не отправлено.',
@@ -237,7 +237,7 @@ const notRecordable=/^Not published: (.+) cannot be recorded in Noreon yet\. Try
 export const notRecordableMessage=(names:string)=>`Not published: ${names} cannot be recorded in Noreon yet. Trying again will not help. Ask the Noreon team.`;
 const one=(locale:StaffLocale,text:string)=>{
  const names=notRecordable.exec(text)?.[1];
- if(names)return pick(locale,{en:text,hy:`Չի հրապարակվել։ ${names}՝ դեռ հնարավոր չէ գրանցել Noreon-ում։ Կրկին փորձելը չի օգնի։ Դիմեք Noreon-ի թիմին։`,ru:`Не опубликовано: ${names} пока нельзя записать в Noreon. Повторная попытка не поможет. Обратитесь к команде Noreon.`});
+ if(names)return pick(locale,{en:text,hy:`Չի հրապարակվել։ ${names}՝ դեռ հնարավոր չէ գրանցել Նորեոն Հելթում։ Կրկին փորձելը չի օգնի։ Դիմեք Նորեոն Հելթի թիմին։`,ru:`Не опубликовано: ${names} пока нельзя записать в Нореон Хелс. Повторная попытка не поможет. Обратитесь к команде Нореон Хелс.`});
  return pick(locale,{en:text,hy:hy[text]??text,ru:ru[text]??text});
 };
 /** A result may list several messages, one per line (the draft field checks); each line is looked up on its own. */

@@ -78,10 +78,10 @@ export function wantedTools(question:string,intent:Intent|null,lastTools:readonl
 
 /** Words of the app, in the reader's language. */
 export const notices:Record<'held'|'no_answer'|'cap'|'declined'|'refused'|'stand_in'|'not_known',Record<L,string>>={
- held:{en:'Zoe\'s answer did not pass the check against the record, so it is not shown. The records below are read directly.',hy:'Զոյայի պատասխանը չի անցել գրառման ստուգումը, ուստի չի ցուցադրվում։ Ստորև գրառումները կարդացվել են ուղղակիորեն։',ru:'Ответ Zoe не прошёл проверку по записи, поэтому не показан. Записи ниже прочитаны напрямую.'},
+ held:{en:'Zoe\'s answer did not pass the check against the record, so it is not shown. The records below are read directly.',hy:'Զոյայի պատասխանը չի անցել գրառման ստուգումը, ուստի չի ցուցադրվում։ Ստորև գրառումները կարդացվել են ուղղակիորեն։',ru:'Ответ Зои не прошёл проверку по записи, поэтому не показан. Записи ниже прочитаны напрямую.'},
  not_known:{en:'What you asked is not in what I read.',hy:'Ձեր հարցրածը իմ կարդացածի մեջ չկա։',ru:'Того, о чём вы спросили, нет в прочитанном.'},
- no_answer:{en:'Zoe could not write an answer just now. The records below are read directly.',hy:'Զոյան հիմա չկարողացավ պատասխան գրել։ Ստորև գրառումները կարդացվել են ուղղակիորեն։',ru:'Zoe сейчас не смогла написать ответ. Записи ниже прочитаны напрямую.'},
- cap:{en:'Today\'s limit for Zoe is reached. The records below are read directly.',hy:'Զոյայի այսօրվա սահմանաչափը սպառվել է։ Ստորև գրառումները կարդացվել են ուղղակիորեն։',ru:'Дневной лимит Zoe исчерпан. Записи ниже прочитаны напрямую.'},
+ no_answer:{en:'Zoe could not write an answer just now. The records below are read directly.',hy:'Զոյան հիմա չկարողացավ պատասխան գրել։ Ստորև գրառումները կարդացվել են ուղղակիորեն։',ru:'Зоя сейчас не смогла написать ответ. Записи ниже прочитаны напрямую.'},
+ cap:{en:'Today\'s limit for Zoe is reached. The records below are read directly.',hy:'Զոյայի այսօրվա սահմանաչափը սպառվել է։ Ստորև գրառումները կարդացվել են ուղղակիորեն։',ru:'Дневной лимит Зои исчерпан. Записи ниже прочитаны напрямую.'},
  declined:{en:DECLINED[0],hy:DECLINED[1],ru:DECLINED[2]},
  refused:{en:'You do not have access to this member now.',hy:'Այս պահին այս անդամի տվյալներին հասանելիություն չունեք։',ru:'Сейчас у вас нет доступа к этому участнику.'},
  stand_in:{en:'Test stand-in: no model was called.',hy:'Փորձնական փոխարինող. մոդել չի կանչվել։',ru:'Тестовая подмена: модель не вызывалась.'},

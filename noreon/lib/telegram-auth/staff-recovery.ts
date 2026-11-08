@@ -27,8 +27,8 @@ const keys=()=>telegramAuthKeys(process.env.NOREON_SUPABASE_SMS_HOOK_SECRET);
 const deliver=(address:string,text:string)=>createTelegramAdapter({config:outboundConfig()!,http:telegramHttpsPort}).deliverText(Object.freeze({address,text})).catch(()=>null);
 
 /** Fixed texts; no clinical content. */
-export const recoveryLinkText=(url:string)=>`Noreon՝ գաղտնաբառի վերականգնում։ Նոր գաղտնաբառ սահմանելու համար բացեք այս հղումը (գործում է 24 ժամ)՝\n${url}\nԵթե դուք չեք խնդրել, դիմեք ձեր ադմինիստրատորին։\n\nNoreon password reset. Open this link to set a new password (it works for 24 hours):\n${url}\nIf you did not ask for this, contact your administrator.`;
-export const recoveryCodeText=(code:string)=>`Noreon գաղտնաբառի վերականգնման կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon password reset code: ${code}. Do not share it with anyone.`;
+export const recoveryLinkText=(url:string)=>`Նորեոն Հելթ՝ գաղտնաբառի վերականգնում։ Նոր գաղտնաբառ սահմանելու համար բացեք այս հղումը (գործում է 24 ժամ)՝\n${url}\nԵթե դուք չեք խնդրել, դիմեք ձեր ադմինիստրատորին։\n\nNoreon password reset. Open this link to set a new password (it works for 24 hours):\n${url}\nIf you did not ask for this, contact your administrator.`;
+export const recoveryCodeText=(code:string)=>`Նորեոն Հելթ գաղտնաբառի վերականգնման կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon password reset code: ${code}. Do not share it with anyone.`;
 
 export type RecoveryIssueResult={ok:true}|{ok:false;reason:'self'|'admin_target'|'recent_binding'|'not_found'|'not_enrolled'|'rate_limited'|'unavailable'};
 /** Admin: create the reset and send its link to the account's chat. The link is never returned. */

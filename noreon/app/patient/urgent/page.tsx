@@ -68,9 +68,9 @@ export default async function Urgent({ searchParams }: { searchParams?: Promise<
             : status.alerted
             ? tx(
                 l,
-                "Մենք տեղեկացրել ենք Noreon-ի խնամքի թիմին այս պատասխանի մասին։ Շտապ օգնությունը այս ծառայության միջոցով չի կանչվել։",
+                "Մենք տեղեկացրել ենք Նորեոն Հելթի խնամքի թիմին այս պատասխանի մասին։ Շտապ օգնությունը այս ծառայության միջոցով չի կանչվել։",
                 "We have told the Noreon care team about this answer. Emergency services have not been called through this service.",
-                "Мы сообщили медицинской команде Noreon об этом ответе. Через этот сервис скорая помощь не была вызвана.",
+                "Мы сообщили медицинской команде Нореон Хелс об этом ответе. Через этот сервис скорая помощь не была вызвана.",
               )
             : tx(
                 l,

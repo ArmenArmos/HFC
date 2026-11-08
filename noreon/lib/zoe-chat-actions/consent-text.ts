@@ -8,15 +8,15 @@ import {tx,type PatientLocale} from '@/lib/patient/copy';
  */
 export function consentLines(l:PatientLocale,directAnswers:boolean){
  return {
-  title:tx(l,'Zoe-ն անջատված է ձեզ համար','Zoe is off for you','Zoe для вас выключена'),
+  title:tx(l,'Զոյան անջատված է ձեզ համար','Zoe is off for you','Зоя для вас выключена'),
   lead:tx(l,'Միացրեք նրան, որպեսզի նա կարողանա զրուցել ձեզ հետ և օգնել ձեր խնամքի թիմին։','Turn her on so she can chat with you and help your care team.','Включите её, чтобы она могла общаться с вами и помогать вашей медицинской команде.'),
   statement:zoeStatement(clinicalLocale(l),directAnswers),
   either:tx(l,'Ձեր հաղորդագրությունները ամեն դեպքում հասնում են ձեր խնամքի թիմին։','Your messages reach your care team either way.','Ваши сообщения в любом случае поступают вашей медицинской команде.'),
   moreTitle:tx(l,'Ինչ ենք հավաքում, ով է տեսնում','What we collect, who sees it','Что мы собираем и кто это видит'),
   more:[
    tx(l,'Ինչ ենք հավաքում՝ ձեր հաղորդագրությունները, պատասխանները, չափումները և դեղերը, որոնք նշում եք։','What we collect: your messages, your answers, your readings and the medicines you tell us about.','Что мы собираем: ваши сообщения, ответы, измерения и лекарства, которые вы указываете.'),
-   tx(l,'Ով է տեսնում՝ Zoe-ն և ձեր խնամքի թիմը՝ ձեր բժիշկը և բուժքույրը։','Who sees it: Zoe and your care team, meaning your doctor and nurse.','Кто это видит: Zoe и ваша медицинская команда, то есть ваш врач и медсестра.'),
-   tx(l,'Zoe-ն բժիշկ չէ և ախտորոշում չի դնում։','Zoe is not a doctor and does not diagnose.','Zoe не врач и не ставит диагнозы.'),
+   tx(l,'Ով է տեսնում՝ Զոյան և ձեր խնամքի թիմը՝ ձեր բժիշկը և բուժքույրը։','Who sees it: Zoe and your care team, meaning your doctor and nurse.','Кто это видит: Зоя и ваша медицинская команда, то есть ваш врач и медсестра.'),
+   tx(l,'Զոյան բժիշկ չէ և ախտորոշում չի դնում։','Zoe is not a doctor and does not diagnose.','Зоя не врач и не ставит диагнозы.'),
   ],
  };
 }

@@ -60,7 +60,7 @@ const ENDING:Record<IntakeEnding,{en:string;hy:string}>={
  red_flag:{en:'Stopped for a red flag: member shown the 103 urgent path',hy:'Դադարեցվել է կարմիր դրոշի պատճառով. անդամին ցույց է տրվել 103 շտապ ուղին'},
  expired:{en:'Member stopped replying (12 hours)',hy:'Անդամը դադարել է պատասխանել (12 ժամ)'},
  about_someone_else:{en:'Member said the symptom is someone else’s',hy:'Անդամն ասել է, որ ախտանիշը ուրիշինն է'},turn_limit:{en:'Question limit reached',hy:'Հարցերի սահմանաչափը լրացել է'},
- partial:{en:'Partially answered: Zoe could not continue the questions',hy:'Մասամբ է պատասխանել. Զոեն չկարողացավ շարունակել հարցերը'},
+ partial:{en:'Partially answered: Zoe could not continue the questions',hy:'Մասամբ է պատասխանել. Զոյան չկարողացավ շարունակել հարցերը'},
 };
 const HIT:Record<string,{en:string;hy:string}>={
  thunderclap:{en:'Sudden, worst-ever headache',hy:'Հանկարծակի, կյանքում ամենաուժեղ գլխացավ'},weakness_numbness:{en:'Weakness or numbness',hy:'Թուլություն կամ թմրածություն'},
@@ -72,7 +72,7 @@ const HIT:Record<string,{en:string;hy:string}>={
  bp_crisis_reading:{en:'Stored reading 180/110 or more in the last 24 hours, with a symptom',hy:'Վերջին 24 ժամում 180/110 կամ ավելի գրանցված ճնշում՝ ախտանիշի հետ'},
  right_now:{en:'Happening right now',hy:'Հենց հիմա է'},at_rest_now:{en:'Short of breath right now at rest',hy:'Հենց հիմա հանգստի ժամանակ շնչարգելություն'},
  urgent_words:{en:'Urgent words (the urgent word list)',hy:'Շտապ բառեր (շտապ բառացանկ)'},
- model_suspected:{en:'Zoe’s model suspected an emergency (not cleared by any rule)',hy:'Zoe-ի մոդելը կասկածել է շտապ վիճակ'},
+ model_suspected:{en:'Zoe’s model suspected an emergency (not cleared by any rule)',hy:'Զոյայի մոդելը կասկածել է շտապ վիճակ'},
 };
 const SOURCE:Record<string,{en:string;hy:string}>={text:{en:'member’s words',hy:'անդամի խոսքեր'},reading:{en:'stored reading',hy:'գրանցված չափում'},answer:{en:'answer',hy:'պատասխան'},model:{en:'model',hy:'մոդել'}};
 

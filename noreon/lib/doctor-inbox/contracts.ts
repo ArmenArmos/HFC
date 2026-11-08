@@ -82,7 +82,7 @@ export const aiLabel=(a:InboxItem['ai'],l:L)=>({none:t(l,'No AI','Առանց AI'
 const checkpointName=(k:string|undefined,l:L)=>k==='week4_review'?t(l,'Week 4 review','4-րդ շաբաթի վերանայում','Обзор на 4-й неделе'):k==='month3'?t(l,'Month 3 review','3-րդ ամսվա վերանայում','Обзор на 3-м месяце'):k==='month6'?t(l,'Month 6 review','6-րդ ամսվա վերանայում','Обзор на 6-м месяце'):t(l,'Programme review','Ծրագրի վերանայում','Обзор программы');
 const judgementLine=(l:L,overdue:boolean)=>overdue
  ?t(l,'Question that needs your judgement, waiting more than 24 hours','Հարց, որը պահանջում է ձեր որոշումը, սպասում է ավելի քան 24 ժամ','Вопрос требует вашего решения и ожидает более 24 часов')
- :t(l,'Question that needs your judgement: Zoe drafted a reply that defers to you','Հարց, որը պահանջում է ձեր որոշումը։ Զոյան պատրաստել է պատասխան, որը թողնում է որոշումը ձեզ','Вопрос требует вашего решения: Zoe подготовила ответ, оставляющий решение за вами');
+ :t(l,'Question that needs your judgement: Zoe drafted a reply that defers to you','Հարց, որը պահանջում է ձեր որոշումը։ Զոյան պատրաստել է պատասխան, որը թողնում է որոշումը ձեզ','Вопрос требует вашего решения: Зоя подготовила ответ, оставляющий решение за вами');
 /** One line saying what happened, from codes and counts only. */
 export function itemSummary(i:InboxItem,l:L):string{
  switch(i.kind){

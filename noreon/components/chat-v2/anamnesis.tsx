@@ -1,5 +1,6 @@
 "use client";
 import { Fragment, useEffect, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { zoeName } from "@/lib/brand";
 import { useRouter } from "next/navigation";
 import { QuestionField } from "@/components/patient/question-field";
 import { useQuestionnaire } from "@/components/patient/use-questionnaire";
@@ -114,7 +115,7 @@ export function Anamnesis({ initial, locale, emergencyCard, onTurn, onAction, th
   // A restored offer precedes its first saved answer. No second persistence path for health data.
   const offerAt = [firstAnswerAt, savedLater || undefined, openedAt].filter(at => at !== undefined).sort()[0];
   if (!initial.completedAt) turns.push({ key: "offer", at: offerAt, node: <article className="cv2-msg cv2-zoe">
-      <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+      <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(locale)}</p>
       <p className="cv2-say">{tx(locale, "Կցանկանա՞ք հիմա պատասխանել առողջության մասին մի քանի հարցի։", "Would you like to answer a few health questions now?", "Хотите сейчас ответить на несколько вопросов о здоровье?")}</p>
       {mode === "offer" && savedLater !== null && !urgent && <div className="cv2-question-actions">
         <button type="button" onClick={() => choose(yes, "active")}>{yes}</button>
@@ -126,7 +127,7 @@ export function Anamnesis({ initial, locale, emergencyCard, onTurn, onAction, th
   for (const question of history) {
     const at = questionnaireEntries(question.id, answers).map(entry => answers[entry.fieldId].answeredAt).sort().at(-1)!;
     turns.push({ key: `answer-${question.id}`, at, node: <Fragment key={question.id}>
-      <article className="cv2-msg cv2-zoe"><p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p><p className="cv2-say">{localized(question.label, locale)}</p></article>
+      <article className="cv2-msg cv2-zoe"><p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(locale)}</p><p className="cv2-say">{localized(question.label, locale)}</p></article>
       <article className="cv2-msg cv2-me" data-answer-id={question.id}><p className="cv2-say">{answerText(question, answers, locale)}</p></article>
     </Fragment> });
   }
@@ -140,7 +141,7 @@ export function Anamnesis({ initial, locale, emergencyCard, onTurn, onAction, th
     </div> : mode === "complete" ? <article className="cv2-msg cv2-zoe"><p className="cv2-say" role="status">{tx(locale, "Ձեր հարցաշարն ավարտված է։", "Your questionnaire is complete.", "Ваша анкета завершена.")}</p></article>
       : mode === "paused" ? <article className="cv2-msg cv2-zoe"><p className="cv2-say">{tx(locale, "Կարող եք շարունակել ձեր հարցերն այստեղ։", "You can continue your questions here.", "Вы можете продолжить отвечать на вопросы здесь.")}</p><div className="cv2-question-actions"><button type="button" onClick={() => choose(resume, "active")}>{resume}</button></div></article>
       : mode === "active" && savedLater !== null ? <article className="cv2-msg cv2-zoe" data-question-id={field.id}>
-        <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+        <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(locale)}</p>
         {showProgress && <div className="cv2-progress" role="progressbar" aria-label={say(locale, ANAMNESIS.progress)} aria-valuemin={0} aria-valuemax={10} aria-valuenow={field.topic.index - 1}><i style={{ width: `${(field.topic.index - 1) * 10}%` }} /></div>}
         <p className="cv2-time">{tx(locale, `Բաժին ${field.topic.index}՝ 10-ից`, `Section ${field.topic.index} of 10`, `Раздел ${field.topic.index} из 10`)}</p>
         {field.topic.index === 2 && questionInSection === 1 && <p className="cv2-time">{tx(locale, "Ձեր տվյալները բաժին 1-ն էին։ Յուրաքանչյուր բաժին կարող է ներառել մի քանի հարց։", "Your profile was section 1. Each section may include several questions.", "Ваш профиль был первым разделом. В каждом разделе может быть несколько вопросов.")}</p>}

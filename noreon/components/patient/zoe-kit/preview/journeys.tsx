@@ -445,7 +445,7 @@ const states: Journey = {
             { state: "next", title: t(x.l, c("Ստուգում 8 շաբաթից", "Check-up at 8 weeks", "Проверка через 8 недель")), detail: t(x.l, c("Արյան անալիզ և ճնշման շաբաթ", "Blood test and a BP week", "Анализ крови и неделя давления")) },
           ]} />
           <EmergencyCard locale={x.l} focus={false}
-            body={t(x.l, c("Ցույց է տրվում միայն այն ժամանակ, երբ Zoe-ի անվտանգության ստուգումները բացում են շտապ ուղին։ Այստեղ՝ որպես նմուշ։", "Shown only when Zoe's safety checks open the urgent route. Here as a sample.", "Показывается только когда проверки безопасности Zoe открывают экстренный маршрут. Здесь как образец."))} />
+            body={t(x.l, c("Ցույց է տրվում միայն այն ժամանակ, երբ Զոյայի անվտանգության ստուգումները բացում են շտապ ուղին։ Այստեղ՝ որպես նմուշ։", "Shown only when Zoe's safety checks open the urgent route. Here as a sample.", "Показывается только когда проверки безопасности Зои открывают экстренный маршрут. Здесь как образец."))} />
         </>
       ),
       next: () => null,

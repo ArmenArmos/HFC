@@ -10,7 +10,7 @@ export type Block=
  |{type:'pagebreak'};
 
 const titles={
- title:l('Noreon hypertension report for primary care','Noreon հիպերտենզիայի հաշվետվություն առաջնային օղակի բժշկի համար'),
+ title:l('Noreon hypertension report for primary care','Նորեոն Հելթ հիպերտենզիայի հաշվետվություն առաջնային օղակի բժշկի համար'),
  priority:l('Priority and immediate action','Առաջնահերթություն և անհապաղ գործողություն'),
  assessment:l('Clinical assessment for GP review','Բժշկի վերանայմանը ներկայացվող գնահատում'),
  bp:l('Blood pressure and control','Զարկերակային ճնշում և վերահսկում'),
@@ -35,7 +35,7 @@ const DISCLAIMER=l('AI proposals support GP judgement and are not a prescription
 /** The header status line. "AI prepared | Not clinically reviewed" stays until a doctor approves. */
 export function statusLine(approval:GpApproval|null):L{
  return approval
-  ?cat(l('AI prepared | Reviewed by Noreon doctor ','Պատրաստված է AI-ի միջոցով | Վերանայվել է Noreon-ի բժշկի կողմից՝ '),approval.approvedByName,', ',dayTime(approval.approvedAt),l(' | Adult pathway; pregnancy status not recorded',' | Չափահասների ուղի. հղիության կարգավիճակը չի գրանցվել'))
+  ?cat(l('AI prepared | Reviewed by Noreon doctor ','Պատրաստված է AI-ի միջոցով | Վերանայվել է Նորեոն Հելթի բժշկի կողմից՝ '),approval.approvedByName,', ',dayTime(approval.approvedAt),l(' | Adult pathway; pregnancy status not recorded',' | Չափահասների ուղի. հղիության կարգավիճակը չի գրանցվել'))
   :l('AI prepared | Not clinically reviewed | Adult pathway; pregnancy status not recorded','Պատրաստված է AI-ի միջոցով | Բժշկի կողմից չի վերանայվել | Չափահասների ուղի. հղիության կարգավիճակը չի գրանցվել');
 }
 export function reportId(report:GpReport,approval:GpApproval|null){
@@ -52,7 +52,7 @@ const table=(head:L[],rows:Row[],w:readonly number[],lang:Lang):Block=>({type:'t
 export function languageBlocks(report:GpReport,approval:GpApproval|null,lang:Lang):Block[]{
  const id=reportId(report,approval);
  const reviewed=approval?cat(l('Reviewed by ','Վերանայվել է՝ '),approval.approvedByName,', ',dayTime(approval.approvedAt)):l('AI prepared and not clinically reviewed','AI ամփոփում՝ առանց բժշկի վերանայման');
- const signoff=cat(l('GP receipt: not sent | Clinical review: ','Ստացվել է բժշկի կողմից՝ չի ուղարկվել | Վերանայում՝ '),approval?cat(dayTime(approval.approvedAt),', ',approval.approvedByName,l(' (Noreon doctor)',' (Noreon-ի բժիշկ)')):l('pending','սպասվում է'),l(' | Plan accepted or modified: not recorded | Patient informed: not recorded.',' | Պլան՝ չի գրանցվել | Պացիենտը տեղեկացված է՝ չի գրանցվել։'));
+ const signoff=cat(l('GP receipt: not sent | Clinical review: ','Ստացվել է բժշկի կողմից՝ չի ուղարկվել | Վերանայում՝ '),approval?cat(dayTime(approval.approvedAt),', ',approval.approvedByName,l(' (Noreon doctor)',' (Նորեոն Հելթի բժիշկ)')):l('pending','սպասվում է'),l(' | Plan accepted or modified: not recorded | Patient informed: not recorded.',' | Պլան՝ չի գրանցվել | Պացիենտը տեղեկացված է՝ չի գրանցվել։'));
  return [
   {type:'title',text:t(titles.title,lang)},
   {type:'meta',text:t(statusLine(approval),lang)},

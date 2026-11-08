@@ -40,20 +40,20 @@ export function MemberHelpContent({locale:l,contact,signedIn=true,signingUp=fals
             </CareLink>
           )}
         </CareSection>
-        <CareSection title={copy(l,"Contact Noreon","Կապվել Noreon-ի հետ", "Связаться с Noreon")}>
+        <CareSection title={copy(l,"Contact Noreon","Կապվել Նորեոն Հելթի հետ", "Связаться с Нореон Хелс")}>
           <MemberContactLine contact={contact} locale={l} signedIn={signedIn} onMessage={onMessage} embedded={embedded} />
           {signedIn
             ? <SupportLink open={open} href="/patient/team?section=contact" icon={Stethoscope}>{copy(l,"Care team information","Խնամքի թիմի մասին", "О медицинской команде")}</SupportLink>
             : <CareLink href={`/patient?locale=${l}`}>{signingUp ? copy(l,"Back to sign-up","Վերադառնալ գրանցմանը", "Вернуться к регистрации") : copy(l,"Back to sign in","Վերադառնալ մուտքին", "Вернуться ко входу")}</CareLink>}
         </CareSection>
         {signedIn && (
-          <CareSection id={open?undefined:"about-zoe"} title={copy(l, "About Zoe", "Zoe-ի մասին", "О Zoe")}>
+          <CareSection id={open?undefined:"about-zoe"} title={copy(l, "About Zoe", "Զոյայի մասին", "О Зое")}>
             {/* Moved from the Zoe screen (Khikar, 18 Oct 22:57). Staging draft copy for Armen/Tatevik sign-off. */}
             <p className="max-w-2xl text-body2" data-zoe-about>
               {copy(
                 l,
                 "Zoe is an AI assistant, not a doctor, and she is still learning. For health questions, your doctor answers. Zoe explains; only your doctor changes treatment.",
-                "Zoe-ն ԱԲ օգնական է, ոչ բժիշկ, և դեռ սովորում է։ Առողջության հարցերին պատասխանում է ձեր բժիշկը։ Zoe-ն բացատրում է, իսկ բուժումը փոխում է միայն ձեր բժիշկը։", "Zoe является ИИ-помощником, а не врачом, и ещё учится. На вопросы о здоровье отвечает ваш врач. Zoe объясняет, а лечение меняет только ваш врач.",
+                "Զոյան ԱԲ օգնական է, ոչ բժիշկ, և դեռ սովորում է։ Առողջության հարցերին պատասխանում է ձեր բժիշկը։ Զոյան բացատրում է, իսկ բուժումը փոխում է միայն ձեր բժիշկը։", "Зоя является ИИ-помощником, а не врачом, и ещё учится. На вопросы о здоровье отвечает ваш врач. Зоя объясняет, а лечение меняет только ваш врач.",
               )}
             </p>
             <div className="divide-y rounded-xl border">

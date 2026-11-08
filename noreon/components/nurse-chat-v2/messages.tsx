@@ -57,7 +57,7 @@ export function NurseReply({reply,locale:l,nurseName,onMember,onChoose,onMeasure
  const t=(en:string,hy:string,ru:string)=>st(l,en,hy,ru);
  switch(reply.kind){
   case 'zoe-loading':case 'zoe-cards':case 'zoe-answer':case 'zoe-error':return <div data-nurse-zoe-reply>
-   <p className="cv2-time">{t(`Zoe · read from ${reply.member.memberName}'s record. The member does not see this.`,`Զոյա · կարդացվել է ${reply.member.memberName}-ի գրառումից։ Անդամը սա չի տեսնում։`,`Zoe · из записи ${reply.member.memberName}. Участник этого не видит.`)}</p>
+   <p className="cv2-time">{t(`Zoe · read from ${reply.member.memberName}'s record. The member does not see this.`,`Զոյա · կարդացվել է ${reply.member.memberName}-ի գրառումից։ Անդամը սա չի տեսնում։`,`Зоя · из записи ${reply.member.memberName}. Участник этого не видит.`)}</p>
    <StaffZoeResponse member={{id:reply.member.memberId,name:reply.member.memberName}} content={reply.content??null} cards={reply.cards} error={reply.error??null} loading={reply.kind==='zoe-loading'||reply.kind==='zoe-cards'} locale={l} memberRef={memberRef(reply.member.memberId)} inline/>
   </div>;
   case 'question-choice':return <MemberDisambiguationCard rows={reply.rows} locale={l} busy={memberHeld} used={reply.used} className="ncv2-choice" onChoose={row=>onChoose?.(row)}/>;

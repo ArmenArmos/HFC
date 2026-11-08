@@ -23,7 +23,7 @@ export default async function PatientEntry({ searchParams }: { searchParams?: Pr
       <p className="text-caption text-brand-teal">Noreon</p>
       <h1 className="text-h1">{tx(locale,"Գրանցումը՝ շուտով","Registration opens soon", "Регистрация скоро откроется")}</h1>
       <p className="text-body1">{tx(locale,"Հեռախոսահամարի հաստատումը նախապատրաստվում է։ Գրանցումը դեռ բաց չէ։","Phone verification is being prepared. Registration is not open yet.", "Подтверждение номера телефона готовится. Регистрация пока не открыта.")}</p>
-      <a className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-body2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" href="mailto:info@noreon.health">{tx(locale,"Կապվել Noreon-ի հետ","Contact Noreon", "Связаться с Noreon")}</a>
+      <a className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-body2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" href="mailto:info@noreon.health">{tx(locale,"Կապվել Նորեոն Հելթի հետ","Contact Noreon", "Связаться с Нореон Хелс")}</a>
     </main>
   );
   return <PhoneEntry initialLocale={locale} delivery={phoneCodePolicy(process.env)?.delivery ?? "sms"} siteKey={captchaSiteKey()} next={next} linkExpired={params?.link === "expired"} />;

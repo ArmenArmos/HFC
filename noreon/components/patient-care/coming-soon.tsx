@@ -35,7 +35,7 @@ export function ZoeCard({ locale: l }: { locale: PatientLocale }) {
         <span className="journey-orb" aria-hidden />
         <div className="flex-1">
           <h2>
-            {copy(l, "Zoe, your care assistant", "Zoe՝ ձեր խնամքի օգնականը", "Zoe, ваш помощник по вопросам лечения")}
+            {copy(l, "Zoe, your care assistant", "Զոյա՝ ձեր խնամքի օգնականը", "Зоя, ваш помощник по вопросам лечения")}
           </h2>
           <ComingSoon locale={l} />
         </div>
@@ -44,11 +44,11 @@ export function ZoeCard({ locale: l }: { locale: PatientLocale }) {
         {copy(
           l,
           "A place for everyday questions, reminders and simple explanations of your approved plan. Zoe is not available yet.",
-          "Առօրյա հարցերի, հիշեցումների և հաստատված պլանի պարզ բացատրությունների համար։ Zoe-ն դեռ հասանելի չէ։", "Место для повседневных вопросов, напоминаний и простых объяснений вашего утверждённого плана. Zoe пока недоступна.",
+          "Առօրյա հարցերի, հիշեցումների և հաստատված պլանի պարզ բացատրությունների համար։ Զոյան դեռ հասանելի չէ։", "Место для повседневных вопросов, напоминаний и простых объяснений вашего утверждённого плана. Зоя пока недоступна.",
         )}
       </p>
       <button disabled className="journey-disabled">
-        {copy(l, "Ask Zoe", "Հարցնել Zoe-ին", "Спросить Zoe")}
+        {copy(l, "Ask Zoe", "Հարցնել Զոյային", "Спросить Зою")}
       </button>
     </section>
   );

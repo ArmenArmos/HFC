@@ -19,7 +19,7 @@ export function MedicinesAdherencePanel({ read, reasons = [], locale, now }: { r
             <thead><tr className="border-b text-caption text-muted-foreground">
               <th scope="col" className="py-2 pr-3">{t("Medicine", "Դեղ", "Лекарство")}</th><th scope="col" className="py-2 pr-3">{t("Source", "Աղբյուր", "Источник")}</th>
               <th scope="col" className="py-2 pr-3">{t("Times", "Ժամեր", "Время")}</th><th scope="col" className="py-2 pr-3 text-right">{t("Taken", "Ընդունված", "Принято")}</th>
-              <th scope="col" className="py-2 pr-3 text-right">{t("Skipped", "Բաց թողնված", "Пропущено")}</th><th scope="col" className="py-2 pr-3 text-right">{t("No report", "Չնշված", "Нет отметки")}</th><th scope="col" className="py-2">{t("Reasons given to Zoe", "Զոիին տրված պատճառներ", "Причины, сообщённые Zoe")}</th>
+              <th scope="col" className="py-2 pr-3 text-right">{t("Skipped", "Բաց թողնված", "Пропущено")}</th><th scope="col" className="py-2 pr-3 text-right">{t("No report", "Չնշված", "Нет отметки")}</th><th scope="col" className="py-2">{t("Reasons given to Zoe", "Զոյային տրված պատճառներ", "Причины, сообщённые Зое")}</th>
             </tr></thead>
             <tbody className="divide-y">
               {rows.map(m => {

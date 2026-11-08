@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { zoeName } from "@/lib/brand";
 import { BpPhotoInput } from "@/components/patient/bp-photo-input";
 import { HeartPulse, Mic } from "lucide-react";
 import { BP_ROWS, useBpCard, type ReadingFormCard } from "@/components/patient/use-bp-card";
@@ -21,7 +22,7 @@ export function SavedReading({ card, reading, said, locale: l, time, tasks }: { 
   const week = card.kind === "bp" ? card.snapshot.week : null;
   const flow = flowOf(card);
   const entrySource=reading.entrySource??(reading.photoConfirmed?'patient_photo_confirmed':card.kind==='bp'&&card.snapshot.typed?.entrySource==='patient_voice_confirmed'?'patient_voice_confirmed':'patient_text_entry');
-  return <DialogTurn action={said ? null : bpText(l, {...reading,entrySource})} time={time}>
+  return <DialogTurn locale={l} action={said ? null : bpText(l, {...reading,entrySource})} time={time}>
     {entrySource==='patient_text_entry'&&<p data-bp-provenance>{unverifiedBpLabel(l)}</p>}
     {week && <p className="cv2-reading-week">{say(l, BP.week(week.day, week.days, week.slot === "evening"))}. {say(l, BP.weekProgress(Math.min(week.saved + 1, week.expected), week.expected))}</p>}
     {flow ? <><FlowZone flow={flow} locale={l} /><FlowWords flow={flow} locale={l} tasks={tasks} /></> : <>
@@ -74,7 +75,7 @@ export function ReadingCard({ card, locale: l, focus, canFocus, superseded, onCa
   if (superseded && card.state === "open" && untouched && !error && !photoBusy) return null;
   // Inside the anamnesis a button click follows to the end. Here that would take the member away from a field that needs fixing.
   return <article className="cv2-msg cv2-zoe" data-zoe-card={card.kind} data-chat-card-id={card.id} data-state={card.state === "done" ? "done" : "open"} onClick={event => event.stopPropagation()}>
-    <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+    <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
     <section className="cv2-reading" aria-label={say(l, {en:"Blood pressure reading",hy:"Ճնշման չափում",ru:"Измерение давления"})}>
       <h3>{typed?.entrySource === "patient_voice_confirmed" ? <Mic size={18} role="img" aria-label={say(l, {en:"From your recording",hy:"Ձեր ձայնագրությունից",ru:"Из вашей записи"})} /> : <HeartPulse size={18} aria-hidden />}{repeat ? say(l, FLOW.enterSecond) : say(l, {en:"Enter your reading",hy:"Մուտքագրեք ձեր չափումը",ru:"Введите ваше измерение"})}</h3>
       {typed&&typed.entrySource!=="patient_voice_confirmed"&&<p data-bp-provenance>{unverifiedBpLabel(l)}</p>}

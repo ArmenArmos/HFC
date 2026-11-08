@@ -119,9 +119,9 @@ export function staffRecordReader(client:Rpc,locale:L,now:Date){
      const p=zoeRunsSchema.safeParse(r.data);
      if(r.error||!p.success)throw Error('Zoe replies unavailable');
      runs=p.data.runs;
-    }catch(e){if(e instanceof AccessLost||(e as {code?:string})?.code==='42501')throw new AccessLost();missing.push(st(locale,'Zoe replies could not be read','Zoe-ի պատասխանները չհաջողվեց կարդալ','Не удалось прочитать ответы Zoe'));}
+    }catch(e){if(e instanceof AccessLost||(e as {code?:string})?.code==='42501')throw new AccessLost();missing.push(st(locale,'Zoe replies could not be read','Զոյայի պատասխանները չհաջողվեց կարդալ','Не удалось прочитать ответы Зои'));}
     // The existing RPC is bounded to five runs, which can include runs without a reply.
-    if(runs.length>=5&&runs.filter(r=>r.answer?.trim()).length<4)missing.push(st(locale,'Only replies in the recent Zoe runs read are available. Earlier replies were not read.','Հասանելի են միայն կարդացված վերջին Zoe գործարկումների պատասխանները։ Ավելի վաղ պատասխանները չեն կարդացվել։','Доступны только ответы из прочитанных последних запусков Zoe. Более ранние ответы не прочитаны.'));
+    if(runs.length>=5&&runs.filter(r=>r.answer?.trim()).length<4)missing.push(st(locale,'Only replies in the recent Zoe runs read are available. Earlier replies were not read.','Հասանելի են միայն կարդացված վերջին Զոյա գործարկումների պատասխանները։ Ավելի վաղ պատասխանները չեն կարդացվել։','Доступны только ответы из прочитанных последних запусков Зои. Более ранние ответы не прочитаны.'));
     const r=messagesResult(workspace&&'messages'in workspace?workspace.messages:[],c,workspace&&'nurseReplies'in workspace?workspace.nurseReplies:[],runs);
     return {...r,missing,state:missing.length&&r.state==='none'?'unavailable':r.state};}
    case 'zoe_why':return readZoeWhyTool(client,c);

@@ -29,13 +29,13 @@ export async function readZoeWhyTool(client:Rpc|null,c:WhyContext):Promise<ToolR
   if(!latest)return empty('none');
   const view=await readZoeWhy(client as unknown as SupabaseClient<Database>,latest.id);
   if(!view||view.run.memberId!==c.memberId||view.run.id!==latest.id)return empty('not_permitted');
-  if(!view.why)return {...empty(view.status==='missing'?'none':'unavailable'),missing:[t('The latest Zoe run has no readable saved why. No explanation was reconstructed.','Զոյայի վերջին գործարկման պատճառի ընթեռնելի գրառում չկա։ Բացատրությունը չի վերակառուցվել։','Для последнего запуска Zoe нет читаемой записи причин. Объяснение не воссоздавалось.')]};
+  if(!view.why)return {...empty(view.status==='missing'?'none':'unavailable'),missing:[t('The latest Zoe run has no readable saved why. No explanation was reconstructed.','Զոյայի վերջին գործարկման պատճառի ընթեռնելի գրառում չկա։ Բացատրությունը չի վերակառուցվել։','Для последнего запуска Зои нет читаемой записи причин. Объяснение не воссоздавалось.')]};
   const w=view.why,href=`/staff/real/conversations/${c.memberId}`;
   const date=/^\d{4}-\d{2}-\d{2}/.test(w.at)?w.at.slice(0,10):null;
   const facts:Fact[]=[],quotes:Quote[]=[];
   const add=(label:string,value:string,on=date)=>facts.push({id:`zoe_why.${facts.length+1}`,label:staffDisplayText(label,c.locale).slice(0,200),value:staffDisplayText(value,c.locale).slice(0,500),date:on,mark:null,href,analyte:null});
   const quote=(text:string)=>quotes.push({id:`zoe_why.${quotes.length+1}`,text:staffDisplayText(text,c.locale,true).slice(0,1200),date,flagged:classifyScope(text).injection});
-  add(t('Latest saved Zoe run','Զոյայի վերջին պահպանված գործարկումը','Последний сохранённый запуск Zoe'),`${view.run.id}, ${t('message','հաղորդագրություն','сообщение')} ${view.run.messageSeq??'?'}`);
+  add(t('Latest saved Zoe run','Զոյայի վերջին պահպանված գործարկումը','Последний сохранённый запуск Зои'),`${view.run.id}, ${t('message','հաղորդագրություն','сообщение')} ${view.run.messageSeq??'?'}`);
   add(t('Saved outcome and reason','Պահպանված արդյունք և պատճառ','Сохранённый исход и причина'),`${view.run.outcome??w.reply.outcome}: ${view.run.reason??w.reply.reason}`);
   add(t('Saved urgency, not a new assessment','Պահպանված հրատապություն, նոր գնահատում չէ','Сохранённая срочность, не новая оценка'),w.level.final??t('not recorded','գրանցված չէ','не записана'));
   add(t('Saved doctor suggestion','Բժշկին դիմելու պահպանված առաջարկ','Сохранённое предложение обратиться к врачу'),`${w.doctor.suggested?'yes':'no'}: ${w.doctor.how}, ${w.doctor.reason??'unknown'}`);

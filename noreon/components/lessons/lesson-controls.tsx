@@ -43,10 +43,10 @@ export function LessonOfferCard({ lessonId, title, draft, locale: l, staffPrevie
   const [pending, start] = useTransition();
   if (hidden) return null;
   return (
-    <aside className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3" data-zoe-lesson-offer={lessonId} aria-label={copy(l, "A lesson from Zoe", "Դաս Zoe-ից", "Урок от Zoe")}>
+    <aside className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3" data-zoe-lesson-offer={lessonId} aria-label={copy(l, "A lesson from Zoe", "Դաս Զոյայից", "Урок от Зои")}>
       <BookOpen className="size-5 shrink-0 text-brand-navy" aria-hidden />
       <div className="min-w-0 flex-1 basis-48">
-        <p className="text-caption text-muted-foreground">{copy(l, "Zoe suggests a one-minute lesson", "Zoe-ն առաջարկում է մեկ րոպեանոց դաս", "Zoe предлагает урок на одну минуту")}</p>
+        <p className="text-caption text-muted-foreground">{copy(l, "Zoe suggests a one-minute lesson", "Զոյան առաջարկում է մեկ րոպեանոց դաս", "Зоя предлагает урок на одну минуту")}</p>
         <p className="break-words text-body2 font-semibold">{title}{staffPreview && draft && <> <DraftBadge locale={l} /></>}</p>
       </div>
       <Link href={`/patient/learn/${lessonId}` as Route} className="inline-flex min-h-11 items-center rounded-lg border border-primary bg-primary px-4 text-body2 font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">

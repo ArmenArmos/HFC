@@ -39,7 +39,7 @@ export function DoctorChatV2({locale,doctorId,doctorName,telegram,voiceAvailable
  const summaryRead=useRef<Promise<PanelResponse>|null>(null),announced=useRef(new Set<string>());
  const [replyLanguages,setReplyLanguages]=useState(()=>new Map<string,StaffLocale>());
  const t=(en:string,hy:string,ru:string)=>st(l,en,hy,ru);
- const searchHint=t('Ask Zoe, or find a member by name, phone ending or date of birth','Հարցրեք Զոյային կամ գտեք անդամին անունով, հեռախոսի վերջին նիշերով կամ ծննդյան ամսաթվով','Спросите Zoe или найдите участника по имени, последним цифрам телефона или дате рождения');
+ const searchHint=t('Ask Zoe, or find a member by name, phone ending or date of birth','Հարցրեք Զոյային կամ գտեք անդամին անունով, հեռախոսի վերջին նիշերով կամ ծննդյան ամսաթվով','Спросите Зою или найдите участника по имени, последним цифрам телефона или дате рождения');
  useChatViewport(true);
  const {threadRef,contentRef,unread,newest}=useThreadScroll(messages.map(m=>`${m.id}:${m.kind==='reply'?m.reply.kind:m.kind}`).join('|')+panelState+String(memberIds));
  useLayoutEffect(()=>{const field=input.current;if(!field)return;field.style.height='auto';field.style.height=`${Math.min(field.scrollHeight,parseFloat(getComputedStyle(field).lineHeight)*5)}px`;},[text]);

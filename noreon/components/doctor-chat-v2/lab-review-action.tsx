@@ -13,7 +13,7 @@ import type {AnswerContent,Fact,ToolResult} from '@/lib/staff-zoe/contracts';
 
 const labFacts=(reply:{cards:ToolResult[];content?:AnswerContent})=>reply.content?[...reply.content.say.flatMap(line=>line.facts),...reply.content.cards.flatMap(card=>card.facts)]:reply.cards.flatMap(card=>card.facts);
 
-export const labValuesChanged=(locale:StaffLocale)=>st(locale,'Lab values changed. Ask Zoe again for the current record.','Լաբորատոր արժեքները փոխվել են։ Ընթացիկ գրառման համար կրկին հարցրեք Զոյային։','Лабораторные значения изменились. Спросите Zoe ещё раз, чтобы прочитать актуальную запись.');
+export const labValuesChanged=(locale:StaffLocale)=>st(locale,'Lab values changed. Ask Zoe again for the current record.','Լաբորատոր արժեքները փոխվել են։ Ընթացիկ գրառման համար կրկին հարցրեք Զոյային։','Лабораторные значения изменились. Спросите Зою ещё раз, чтобы прочитать актуальную запись.');
 
 export function unreviewedLabFiles(reply:{cards:ToolResult[];content?:AnswerContent},memberId:string){
  const facts=labFacts(reply);

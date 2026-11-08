@@ -158,7 +158,7 @@ export function ZoeChat({
     if (card && thread) thread.scrollTop += card.getBoundingClientRect().top - thread.getBoundingClientRect().top;
   }, [chatOnly, cardKey]);
 
-  const zoeLabel = tx(l, "Zoe · ԱԲ օգնական, ոչ բժիշկ", "Zoe · AI assistant, not a doctor", "Zoe · ИИ-помощник, не врач");
+  const zoeLabel = tx(l, "Զոյա · ԱԲ օգնական, ոչ բժիշկ", "Zoe · AI assistant, not a doctor", "Зоя · ИИ-помощник, не врач");
   const Dock = chatOnly ? ChatDock : Fragment;
   return (
     <div data-member-chat-thread={chatOnly || undefined} className={kit ? "zk zk-chat space-y-4" : "space-y-4"} data-zoe-kit={kit || undefined} onClickCapture={event => {
@@ -182,7 +182,7 @@ export function ZoeChat({
             <div className="max-w-[85%] space-y-1 rounded-2xl rounded-bl-md border bg-surface-subtle-teal px-4 py-3">
               <p className="text-caption font-semibold text-muted-foreground">{zoeLabel}</p>
               <p className="text-body2">
-                {chatOnly ? tx(l, `Բարև${memberName ? `, ${memberName}` : ""}։ Ես Zoe-ն եմ՝ ձեր ԱԲ օգնականը․ կօգնեմ հետևել ձեր խնամքի քայլերին և կապվել թիմի հետ։`, `Hello${memberName ? `, ${memberName}` : ""}. I’m Zoe, your AI assistant. I help you follow your care and reach your team.`, `Здравствуйте${memberName ? `, ${memberName}` : ""}. Я Zoe, ваш ИИ-помощник. Я помогу следить за вашим планом и связаться с командой.`) : tx(
+                {chatOnly ? tx(l, `Բարև${memberName ? `, ${memberName}` : ""}։ Ես Զոյան եմ՝ ձեր ԱԲ օգնականը․ կօգնեմ հետևել ձեր խնամքի քայլերին և կապվել թիմի հետ։`, `Hello${memberName ? `, ${memberName}` : ""}. I’m Zoe, your AI assistant. I help you follow your care and reach your team.`, `Здравствуйте${memberName ? `, ${memberName}` : ""}. Я Зоя, ваш ИИ-помощник. Я помогу следить за вашим планом и связаться с командой.`) : tx(
                   l,
                   "Գրեք ձեր խնամքի թիմին այստեղ։ Առողջության հարցերին պատասխանում է ձեր բժիշկը։ Telegram-ում գրածը նույնպես երևում է այստեղ։",
                   "Write to your care team here. Your doctor answers health questions. What you write in Telegram shows here too.",
@@ -242,7 +242,7 @@ export function ZoeChat({
             <div key={item.key} className="flex justify-start" data-zoe-bubble="pending-zoe">
               <div className="max-w-[85%] space-y-1 rounded-2xl rounded-bl-md border bg-surface-subtle-teal px-4 py-3">
                 <p className="text-caption font-semibold text-muted-foreground">{zoeLabel}</p>
-                <p className="text-body2 text-muted-foreground">{tx(l, "Zoe-ն պատասխան է գրում", "Zoe is writing a reply", "Zoe пишет ответ")}</p>
+                <p className="text-body2 text-muted-foreground">{tx(l, "Զոյան պատասխան է գրում", "Zoe is writing a reply", "Зоя пишет ответ")}</p>
               </div>
             </div>
           ) : item.kind === "answer" ? (
@@ -316,7 +316,7 @@ export function ZoeChat({
           {(opening.state === "failed" || opening.state === "rate_limited") && (
             <button type="button" className={noticeLink} onClick={() => openCard(opening.kind, opening.seq, opening.requestId)}>{say(l, COMMON.retry)}</button>
           )}
-          {opening.kind === "side_effect" && <Link href="/patient/team?section=contact" className={noticeLink}>{tx(l, "Կապվել Noreon-ի հետ", "Contact Noreon", "Связаться с Noreon")}</Link>}
+          {opening.kind === "side_effect" && <Link href="/patient/team?section=contact" className={noticeLink}>{tx(l, "Կապվել Նորեոն Հելթի հետ", "Contact Noreon", "Связаться с Нореон Хелс")}</Link>}
         </p>
       )}
       </section>
@@ -358,10 +358,10 @@ export function ZoeChat({
       >
         {writingDoctor && <p className="flex flex-wrap items-center gap-2 text-caption" data-zoe-doctor-mode>
           {tx(l, "Գրում եք ձեր բժշկին", "Writing to your doctor", "Вы пишете вашему врачу")}
-          <button type="button" className={noticeLink} onClick={() => setWritingDoctor(false)}>{tx(l, "Փոխարենը գրել Zoe-ին", "Write to Zoe instead", "Написать Zoe вместо врача")}</button>
+          <button type="button" className={noticeLink} onClick={() => setWritingDoctor(false)}>{tx(l, "Փոխարենը գրել Զոյային", "Write to Zoe instead", "Написать Зое вместо врача")}</button>
         </p>}
         <label htmlFor="zoe-chat-message" className="sr-only">
-          {writingDoctor ? tx(l, "Հաղորդագրություն ձեր բժշկին", "Message to your doctor", "Сообщение вашему врачу") : tx(l, "Հաղորդագրություն Zoe-ին", "Message to Zoe", "Сообщение Zoe")}
+          {writingDoctor ? tx(l, "Հաղորդագրություն ձեր բժշկին", "Message to your doctor", "Сообщение вашему врачу") : tx(l, "Հաղորդագրություն Զոյային", "Message to Zoe", "Сообщение Зое")}
         </label>
         <ComposerWaiting locale={l} />
         <div className="flex flex-wrap items-end gap-2">
@@ -373,7 +373,7 @@ export function ZoeChat({
             maxLength={ZOE_CHAT_MAX}
             value={text}
             enterKeyHint="enter"
-            placeholder={writingDoctor ? tx(l, "Գրեք ձեր բժշկին…", "Write to your doctor…", "Напишите вашему врачу…") : chatOnly ? tx(l,"Հարցրեք Zoe-ին…", "Ask Zoe…", "Спросите Zoe…") : tx(l, "Գրեք Zoe-ին…", "Write to Zoe…", "Напишите Zoe…")}
+            placeholder={writingDoctor ? tx(l, "Գրեք ձեր բժշկին…", "Write to your doctor…", "Напишите вашему врачу…") : chatOnly ? tx(l,"Հարցրեք Զոյային…", "Ask Zoe…", "Спросите Зою…") : tx(l, "Գրեք Զոյային…", "Write to Zoe…", "Напишите Зое…")}
             onChange={(e) => {
               setText(e.target.value);
               if (notice) setNotice(null);

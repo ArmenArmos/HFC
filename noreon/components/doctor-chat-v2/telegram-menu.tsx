@@ -29,6 +29,6 @@ export function DoctorTelegramMenu({locale:l,connected:initial,onConnectionChang
     <button type="button" disabled={busy} onClick={()=>{setStep('idle');setError('');}}>{t('Cancel','Չեղարկել','Отмена')}</button>
    </form>}
   {error&&<p role="alert">{error}</p>}
-  {connected&&<p role="status">{t('Connected to Noreon','Կապված է Noreon-ին','Подключено к Noreon')}</p>}
+  {connected&&<p role="status">{t('Connected to Noreon','Կապված է Նորեոն Հելթին','Подключено к Нореон Хелс')}</p>}
  </section>;
 }

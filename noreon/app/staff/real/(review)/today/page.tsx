@@ -46,7 +46,7 @@ const notices:Record<string,[string,string,string]>={
 };
 const unavailableName:Record<string,[string,string,string]>={care_alerts:['care alerts','խնամքի ահազանգեր','оповещения'],urgent_windows:['urgent conversations','շտապ զրույցներ','срочные разговоры'],lab:['lab values','լաբորատոր արժեքներ','лабораторные показатели'],programme:['programme reviews','ծրագրի վերանայումներ','проверки программы'],
  plan:['care plan drafts','պլանի նախագծեր','черновики плана лечения'],replies:['replies','պատասխաններ','ответы'],intake:['symptom questions','ախտանիշների հարցեր','вопросы о симптомах'],
- zoe_answered:['answers by Zoe','Զոյայի պատասխաններ','ответы Zoe'],first_notes:['first notes','առաջին գրառումներ','первые сообщения'],nurse_activity:['nurse replies','բուժքրոջ պատասխաններ','ответы медсестры']};
+ zoe_answered:['answers by Zoe','Զոյայի պատասխաններ','ответы Зои'],first_notes:['first notes','առաջին գրառումներ','первые сообщения'],nurse_activity:['nurse replies','բուժքրոջ պատասխաններ','ответы медсестры']};
 const button='inline-flex min-h-11 items-center rounded-md px-4 text-body2 font-medium focus-visible:outline-2 focus-visible:outline-ring';
 
 function Sources({item,l}:{item:{sources:{type:string;ref:string;page?:number|null}[]};l:L}){
@@ -81,7 +81,7 @@ function DraftBlock({item,l}:{item:InboxItem;l:L}){
  const quotes=item.sources.filter(s=>s.type==='plan_item');
  return <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
   {d.asked&&<p className="text-caption text-muted-foreground">{t('Member asked','Անդամը հարցրել է','Участник спросил')}: <span className="text-foreground">{d.asked}</span></p>}
-  <p className="text-caption font-medium">{d.author==='staff'?t('Your saved revision, not sent','Ձեր պահպանված տարբերակը, չի ուղարկվել','Ваша сохранённая версия, не отправлена'):t('Draft prepared by Zoe (AI), not sent','Նախագիծը պատրաստել է Զոյան (AI), չի ուղարկվել','Черновик подготовлен Zoe (ИИ), не отправлен')}</p>
+  <p className="text-caption font-medium">{d.author==='staff'?t('Your saved revision, not sent','Ձեր պահպանված տարբերակը, չի ուղարկվել','Ваша сохранённая версия, не отправлена'):t('Draft prepared by Zoe (AI), not sent','Նախագիծը պատրաստել է Զոյան (AI), չի ուղարկվել','Черновик подготовлен Зоей (ИИ), не отправлен')}</p>
   <p className="whitespace-pre-wrap break-words text-body2 leading-relaxed">{d.body}</p>
   {d.structured&&<p className="text-caption text-muted-foreground">{quotes.length
    ?t(`Quotes your published plan word for word: ${quotes.map(q=>`${q.ref} (${quoteKind[q.rule??'']?.[0]??''})`).join(', ')}.`,`Բառացի մեջբերում է ձեր հրապարակված պլանից՝ ${quotes.map(q=>`${q.ref} (${quoteKind[q.rule??'']?.[1]??''})`).join(',')}։`,`Дословные цитаты из вашего опубликованного плана лечения: ${quotes.map(q=>`${q.ref} (${quoteKind[q.rule??'']?.[2]??''})`).join(', ')}.`)

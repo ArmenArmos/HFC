@@ -95,7 +95,7 @@ const W={
  noRetests:['No re-test booked.','Կրկնակի անալիզ նշանակված չէ։','Повторный анализ не назначен.'],
  rs_scheduled:['Booked, request not sent yet','Նշանակված է, հայտը դեռ չի ուղարկվել','Назначен, заявка ещё не отправлена'],
  rs_requested:['Home-visit request in the admin queue','Տնային այցի հայտը ադմինի հերթում է','Заявка на выезд в очереди администратора'],
- rs_fenced:['Waiting: the member has another open visit or cannot have a request yet; the admin is told and Noreon retries','Սպասում է. անդամն ունի այլ բաց այց կամ դեռ չի կարող հայտ ունենալ. ադմինը տեղեկացված է, Noreon-ը կփորձի կրկին','Ожидание: у участника другой открытый визит или заявка пока невозможна; администратор уведомлён, Noreon повторит попытку'],
+ rs_fenced:['Waiting: the member has another open visit or cannot have a request yet; the admin is told and Noreon retries','Սպասում է. անդամն ունի այլ բաց այց կամ դեռ չի կարող հայտ ունենալ. ադմինը տեղեկացված է, Նորեոն Հելթը կփորձի կրկին','Ожидание: у участника другой открытый визит или заявка пока невозможна; администратор уведомлён, Нореон Хелс повторит попытку'],
  rs_done:['Result received','Արդյունքը ստացված է','Результат получен'],rs_cancelled:['Cancelled','Չեղարկված','Отменён'],rs_superseded:['Replaced by a newer change','Փոխարինվել է ավելի նոր փոփոխությամբ','Заменён более новым изменением'],
  overdueTag:['Overdue','Ժամկետանց','Просрочен'],cancelRetest:['No re-test needed','Կրկնակի անալիզ պետք չէ','Повторный анализ не нужен'],
  responses:['Response checks','Արձագանքի ստուգումներ','Проверки ответа'],

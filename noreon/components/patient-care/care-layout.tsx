@@ -279,5 +279,5 @@ export function CareAppointments({
   );
 }
 export function CareAvailability({ locale: l }: { locale: PatientLocale }) {
-  return <p className="flex items-start gap-2 text-caption text-muted-foreground"><Info className="mt-0.5 size-4 shrink-0" aria-hidden />{copy(l, "Programme timeline, targets and Zoe’s explanation are not available yet. Only your doctor changes treatment.", "Ծրագրի ժամանակացույցը, թիրախներն ու Zoe-ի բացատրությունը դեռ հասանելի չեն։ Բուժումը փոխում է միայն բժիշկը։", "Расписание программы, цели и объяснения Zoe пока недоступны. Только ваш врач меняет лечение.")}</p>;
+  return <p className="flex items-start gap-2 text-caption text-muted-foreground"><Info className="mt-0.5 size-4 shrink-0" aria-hidden />{copy(l, "Programme timeline, targets and Zoe’s explanation are not available yet. Only your doctor changes treatment.", "Ծրագրի ժամանակացույցը, թիրախներն ու Զոյայի բացատրությունը դեռ հասանելի չեն։ Բուժումը փոխում է միայն բժիշկը։", "Расписание программы, цели и объяснения Зои пока недоступны. Только ваш врач меняет лечение.")}</p>;
 }

@@ -5,6 +5,7 @@ import { Dock } from "../dock";
 import { t, type KitLocale, type Line } from "../copy";
 import { Conversation } from "./conversation";
 import { JOURNEYS } from "./journeys";
+import { zoeName } from "@/lib/brand";
 
 const c = (hy: string, en: string, ru: string): Line => ({ hy, en, ru });
 const COPY = {
@@ -39,7 +40,7 @@ export function ZoeKitPreview({ initialLocale, initialJourney, initialSize }: { 
           <header className="flex items-center gap-3 py-2">
             <span className="journey-orb !size-10" aria-hidden />
             <div className="min-w-0 flex-1">
-              <h1 className="text-h3">Zoe</h1>
+              <h1 className="text-h3">{zoeName(l)}</h1>
               <p className="text-caption text-muted-foreground">{t(l, COPY.preview)}</p>
             </div>
           </header>

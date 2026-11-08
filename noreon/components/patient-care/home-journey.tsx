@@ -115,7 +115,7 @@ export function HomeZoeCard({ locale: l }: { locale: PatientLocale }) {
           </p>
         </div>
       </div>
-      <CareLink href="/patient/zoe">{copy(l, "Open Zoe", "Բացել Zoe-ն", "Открыть Zoe")}</CareLink>
+      <CareLink href="/patient/zoe">{copy(l, "Open Zoe", "Բացել Զոյան", "Открыть чат с Зоей")}</CareLink>
     </section>
   );
 }

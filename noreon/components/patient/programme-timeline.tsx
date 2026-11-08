@@ -5,6 +5,7 @@ import { currentStage } from "@/lib/programme/stages";
 import type { CheckinResult } from "@/lib/programme/schema";
 import { CareLink } from "@/components/patient-care/common";
 import { ProgrammeCheckin } from "./programme-checkin";
+import { zoeName } from "@/lib/brand";
 
 // Stage data remains bilingual; keep its Russian UI transcription at this boundary.
 const STAGE_RU: Record<string, string> = {
@@ -154,7 +155,7 @@ export function ProgrammeTimeline({
     { actor: "you", text: { en: "Answer the questions, book your tests and record your readings.", hy: "Պատասխանում եք հարցերին, գրանցվում հետազոտությունների և գրանցում ձեր չափումները։", ru: "Вы отвечаете на вопросы, записываетесь на анализы и вносите измерения." } },
     { actor: "nurse", text: { en: "Takes your samples and helps with practical things.", hy: "Վերցնում է նմուշները և օգնում գործնական հարցերում։", ru: "Берёт образцы для анализов и помогает с организационными вопросами." } },
     { actor: "doctor", text: { en: "Looks at your results and decides your plan.", hy: "Դիտում է ձեր արդյունքները և որոշում ձեր ծրագիրը։", ru: "Изучает ваши результаты и определяет план лечения." } },
-    { actor: "zoe", text: { en: "Explains your next step in plain words. Zoe never decides about treatment.", hy: "Պարզ բառերով բացատրում է ձեր հաջորդ քայլը։ Zoe-ն երբեք չի որոշում բուժման մասին։", ru: "Объясняет ваш следующий шаг простыми словами. Zoe никогда не принимает решения о лечении." } },
+    { actor: "zoe", text: { en: "Explains your next step in plain words. Zoe never decides about treatment.", hy: "Պարզ բառերով բացատրում է ձեր հաջորդ քայլը։ Զոյան երբեք չի որոշում բուժման մասին։", ru: "Объясняет ваш следующий шаг простыми словами. Зоя никогда не принимает решения о лечении." } },
   ];
   return (
     <section aria-labelledby="programme-timeline-title" className="flex scroll-mt-24 flex-col gap-4" data-programme-timeline>
@@ -172,7 +173,7 @@ export function ProgrammeTimeline({
         <dl className="journey-roles">
           {roles.map((r) => (
             <div key={r.actor}>
-              <dt>{r.actor === "zoe" ? <span className="journey-actor" data-actor="zoe">Zoe</span> : <ActorChip actor={r.actor} l={l} />}</dt>
+              <dt>{r.actor === "zoe" ? <span className="journey-actor" data-actor="zoe">{zoeName(l)}</span> : <ActorChip actor={r.actor} l={l} />}</dt>
               <dd className="text-body2 text-muted-foreground">{t(r.text)}</dd>
             </div>
           ))}

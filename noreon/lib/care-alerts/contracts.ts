@@ -46,7 +46,7 @@ const t=(l:L,en:string,hy:string,ru:string)=>pick(l,{en,hy,ru});
 export const closingAsLabel=(name:string,l:L,outcome?:string)=>t(l,`Closing as ${name}`,`Փակվում է ${name}-ի անունով`,`Закрывается от имени: ${name}`)+(outcome?` · ${outcome}`:'');
 export const sourceLabel=(s:AlertSource,l:L)=>({
  questionnaire:t(l,'Questionnaire answer','Հարցաշարի պատասխան','Ответ в анкете'),message:t(l,'Member message','Անդամի հաղորդագրություն','Сообщение участника'),
- lab:t(l,'Lab result','Լաբորատոր արդյունք','Результат анализа'),zoe:t(l,'Zoe conversation','Զրույց Zoe-ի հետ','Разговор с Zoe'),
+ lab:t(l,'Lab result','Լաբորատոր արդյունք','Результат анализа'),zoe:t(l,'Zoe conversation','Զրույց Զոյայի հետ','Разговор с Зоей'),
  reading:t(l,'Saved blood pressure reading','Պահված ճնշման չափում','Сохранённое измерение давления'),
 }[s]);
 /** Why it was raised, in words. Red flag ids stay as the clinical team's identifiers (staff only). */
@@ -62,9 +62,9 @@ export function alertReason(a:Pick<CareAlert,'reason'|'redFlags'>,l:L){
   // Some urgent words carry no red flag id (self-harm, poisoning, severe bleeding): the plain sentence, no empty brackets.
   case 'urgent_words_matched':return t(l,`Message matched the urgent word list${flags?` (${flags})`:''}`,`Հաղորդագրությունը համընկավ շտապ բառացանկի հետ${flags?` (${flags})`:''}`,`Сообщение совпало со списком срочных слов${flags?` (${flags})`:''}`);
   // FB-01: every urgent route in Zoe raises an alert; a refusal of 103 or self-harm keeps its own reason.
-  case 'zoe_urgent_route':return t(l,`Zoe told the member to call 103 (${flags || 'urgent words'})`,`Zoe-ն անդամին ասել է զանգահարել 103 (${flags || 'շտապ բառեր'})`,`Zoe рекомендовала участнику позвонить 103 (${flags || 'срочные слова'})`);
-  case 'zoe_refused_103':return t(l,'Member refused to call 103 after Zoe\'s urgent advice','Անդամը հրաժարվել է զանգահարել 103 Zoe-ի շտապ խորհրդից հետո','Участник отказался звонить 103 после срочной рекомендации Zoe');
-  case 'zoe_self_harm':return t(l,'Member wrote about self-harm or suicide. Zoe gave the crisis text and 103','Անդամը գրել է ինքնավնասման կամ ինքնասպանության մասին։ Zoe-ն տվել է ճգնաժամային տեքստը և 103','Участник написал о самоповреждении или суициде. Zoe отправила кризисный текст и номер 103');
+  case 'zoe_urgent_route':return t(l,`Zoe told the member to call 103 (${flags || 'urgent words'})`,`Զոյան անդամին ասել է զանգահարել 103 (${flags || 'շտապ բառեր'})`,`Зоя рекомендовала участнику позвонить 103 (${flags || 'срочные слова'})`);
+  case 'zoe_refused_103':return t(l,'Member refused to call 103 after Zoe\'s urgent advice','Անդամը հրաժարվել է զանգահարել 103 Զոյայի շտապ խորհրդից հետո','Участник отказался звонить 103 после срочной рекомендации Зои');
+  case 'zoe_self_harm':return t(l,'Member wrote about self-harm or suicide. Zoe gave the crisis text and 103','Անդամը գրել է ինքնավնասման կամ ինքնասպանության մասին։ Զոյան տվել է ճգնաժամային տեքստը և 103','Участник написал о самоповреждении или суициде. Зоя отправила кризисный текст и номер 103');
   case 'lab_result_critical':return t(l,'Lab result flagged critical','Լաբորատոր արդյունքը նշված է որպես կրիտիկական','Результат анализа отмечен как критический');
   case 'no_assigned_doctor_admins_alerted':return t(l,'No assigned doctor; admins alerted','Նշանակված բժիշկ չկա, ծանուցվել են ադմինները','Врач не назначен; администраторы уведомлены');
   default:return a.reason.replaceAll(/[_.:-]+/g,' ');

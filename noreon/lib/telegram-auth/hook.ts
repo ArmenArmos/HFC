@@ -40,7 +40,7 @@ export function unsealCode(keys:TelegramAuthKeys,requestId:string,sealed:string)
 }
 
 /** Fixed sign-in code text; carries no clinical content. */
-export const telegramCodeText=(code:string)=>`Ձեր Noreon կոդը՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nYour Noreon code is ${code}. Do not share it with anyone.`;
+export const telegramCodeText=(code:string)=>`Ձեր Նորեոն Հելթ կոդը՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nYour Noreon code is ${code}. Do not share it with anyone.`;
 
 const claimSchema=z.union([
  z.object({ok:z.literal(true),replay:z.literal(false),requestId:z.uuid(),address:z.string().regex(/^[1-9][0-9]{0,15}$/),route:z.enum(['binding','proof'])}),

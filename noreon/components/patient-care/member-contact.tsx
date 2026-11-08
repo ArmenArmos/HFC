@@ -11,7 +11,7 @@ export function MemberContactLine({ contact, locale: l, signedIn = true, onMessa
     : !signedIn
     ? copy(l, "Sign in to write to your care team. For urgent medical help, call 103.", "Մուտք գործեք՝ ձեր խնամքի թիմին գրելու համար։ Շտապ բժշկական օգնության համար զանգահարեք 103։", "Войдите, чтобы написать вашей медицинской команде. Для срочной медицинской помощи звоните 103.")
     : contact.mode === "chat"
-      ? copy(l, "Write to your care team in the Zoe chat. For urgent medical help, call 103.", "Գրեք ձեր խնամքի թիմին Zoe-ի զրույցում։ Շտապ բժշկական օգնության համար զանգահարեք 103։", "Напишите вашей медицинской команде в чате Zoe. Для срочной медицинской помощи звоните 103.")
+      ? copy(l, "Write to your care team in the Zoe chat. For urgent medical help, call 103.", "Գրեք ձեր խնամքի թիմին Զոյայի զրույցում։ Շտապ բժշկական օգնության համար զանգահարեք 103։", "Напишите вашей медицинской команде в чате Зои. Для срочной медицинской помощи звоните 103.")
       : contact.mode === "none"
         ? copy(l, "Messaging your care team in the app is not switched on yet. For urgent medical help, call 103.", "Հավելվածում խնամքի թիմին գրելը դեռ միացված չէ։ Շտապ բժշկական օգնության համար զանգահարեք 103։", "Переписка с вашей медицинской командой в приложении пока не включена. Для срочной медицинской помощи звоните 103.")
         : copy(l, "Write to your care team on Telegram. For urgent medical help, call 103.", "Գրեք ձեր խնամքի թիմին Telegram-ով։ Շտապ բժշկական օգնության համար զանգահարեք 103։", "Напишите вашей медицинской команде в Telegram. Для срочной медицинской помощи звоните 103.");

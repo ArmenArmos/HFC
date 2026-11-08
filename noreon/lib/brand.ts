@@ -54,3 +54,10 @@ export function zoeName(locale: Locale): string {
 export function noreonName(locale: Locale): string {
   return NOREON[locale] ?? NOREON.hy;
 }
+
+/**
+ * One line for model system prompts (English): how Zoe writes her own name and the service's name in
+ * each reply language. Models otherwise transliterate «Zoe» ad hoc («Զոի», «Զոե», "Zoe-ն").
+ */
+export const BRAND_NAMES_PROMPT_RULE =
+  `Names: in Armenian replies write your name as «${ZOE_HY.base}» (declined ${ZOE_HY.definite}, ${ZOE_HY.genitive}, ${ZOE_HY.dative}, ${ZOE_HY.ablative}, ${ZOE_HY.instrumental}) and the service as «${NOREON_HY.base}» (${NOREON_HY.genitive}, ${NOREON_HY.dative}); in Russian replies write «${ZOE.ru}» and «${NOREON.ru}»; in English write ${ZOE.en} and ${NOREON.en}. Never write these names in Latin letters inside Armenian or Russian text.`;

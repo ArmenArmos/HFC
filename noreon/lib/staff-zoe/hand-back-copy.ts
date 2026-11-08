@@ -5,7 +5,7 @@ export function handBackCopy(key:'confirm'|'inactive'|'changed'|'off'|'unknown'|
  switch(key){
   case 'access':return notDone('access',l);
   case 'invalid':return notDone('invalid-action',l);
-  case 'confirm':return t('Zoe will answer again and a hand-back notice will be queued for this member.','Զոյան կրկին կպատասխանի, և այս անդամի համար վերադարձի ծանուցումը կտեղադրվի հերթում։','Zoe снова будет отвечать, а уведомление о передаче будет поставлено в очередь для этого участника.');
+  case 'confirm':return t('Zoe will answer again and a hand-back notice will be queued for this member.','Զոյան կրկին կպատասխանի, և այս անդամի համար վերադարձի ծանուցումը կտեղադրվի հերթում։','Зоя снова будет отвечать, а уведомление о передаче будет поставлено в очередь для этого участника.');
   case 'inactive':return notDone('hand-back-inactive',l);
   case 'changed':return notDone('hand-back-changed',l);
   case 'off':return notDone('hand-back-off',l);

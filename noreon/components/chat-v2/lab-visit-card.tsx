@@ -1,5 +1,6 @@
 "use client";
 import {useState} from 'react';
+import { zoeName } from '@/lib/brand';
 import {isTextUsableInLocale,memberInstruction} from '@/lib/text-language';
 import {ClipboardList} from 'lucide-react';
 import {answerLabCard} from '@/lib/zoe-chat-actions/labs-actions';
@@ -12,7 +13,7 @@ import {useCardSave} from './use-card-save';
 type LabCard=Extract<ValidCard,{kind:'prep'|'fasting'}>;
 export function SavedLabTurn({card,locale:l,time}:{card:LabCard;locale:CardLocale;time:string}){
  const answer=(card.outcome[card.kind] as {answer:string}).answer;
- return <DialogTurn action={say(l,answer==='read'?LAB_VISIT.readSaid:answer==='ate'?LAB_VISIT.ateSaid:LAB_VISIT.fastingSaid)} time={time}>
+ return <DialogTurn locale={l} action={say(l,answer==='read'?LAB_VISIT.readSaid:answer==='ate'?LAB_VISIT.ateSaid:LAB_VISIT.fastingSaid)} time={time}>
   <p data-fasting-warning={answer==='ate'||undefined}>{say(l,answer==='read'?LAB_VISIT.readReply:answer==='ate'?LAB_VISIT.warning:LAB_VISIT.fastingReply)}</p>
   {answer==='read'&&<p className="cv2-preparation">{memberInstruction(card.snapshot.preparation,l)}</p>}
  </DialogTurn>;
@@ -25,7 +26,7 @@ export function LabVisitCard({card,locale:l,onCard,onAct}:{card:LabCard;locale:C
  if(card.state==='done')return null;
  const answer=(value:'read'|'fasting'|'ate')=>save(()=>answerLabCard({cardId:card.id,opId,answer:value}));
  return <article className="cv2-msg cv2-zoe" data-zoe-card={card.kind} data-chat-card-id={card.id} data-state="open">
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p>
   <section className="cv2-reading cv2-block"><h3><ClipboardList size={18} aria-hidden/>{say(l,card.kind==='prep'?LAB_VISIT.prep:LAB_VISIT.fasting)}</h3>
    <p>{memberInstruction(card.snapshot.location,l)}</p>
    {!usable&&<p className="cv2-preparation">{memberInstruction(card.snapshot.preparation,l)}</p>}

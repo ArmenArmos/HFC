@@ -561,7 +561,7 @@ export const TEST_CATALOGUE: PlannedTest[] = [
       en: "Summary at the end of the seventh day",
       ru: "Сводка в конце седьмого дня",
     },
-    location: { hy: "Տանը՝ Noreon-ի տրամադրած ապարատով", en: "At home, with a device Noreon provides", ru: "Дома, с прибором, который предоставляет Noreon" },
+    location: { hy: "Տանը՝ Նորեոն Հելթի տրամադրած ապարատով", en: "At home, with a device Noreon provides", ru: "Дома, с прибором, который предоставляет Нореон Хелс" },
     catalogueRef: "HBPM 7-օրյա արձանագրություն",
     // Questionnaire Q5.2 (140–179/90–109) and DT P186–187 (reading unknown).
     // The booking path and the results page both read it from here.

@@ -11,9 +11,9 @@ import { Button } from "@/components/ui/button";
  */
 export function QuestionnaireIntro({ locale: l, onStart }: { locale: PatientLocale; onStart?: () => void }) {
   const rows: [string, string][] = [
-    [tx(l, "Ով է դրանք օգտագործում", "Who uses them", "Кто их использует"), tx(l, "Noreon-ի խնամքի թիմը", "Your Noreon care team", "Ваша медицинская команда Noreon")],
+    [tx(l, "Ով է դրանք օգտագործում", "Who uses them", "Кто их использует"), tx(l, "Նորեոն Հելթի խնամքի թիմը", "Your Noreon care team", "Ваша медицинская команда Нореон Хелс")],
     [tx(l, "Ինչ են դրանք որոշում", "What they decide", "Что они определяют"), tx(l, "Որ հետազոտություններն են ձեզ պետք, և որքան շուտ", "Which tests you need, and how soon", "Какие анализы вам нужны и как скоро")],
-    [tx(l, "Բժշկական խորհուրդ Zoe-ից", "Medical advice from Zoe", "Медицинские рекомендации от Zoe"), tx(l, "Ոչ։ Որոշում է բժիշկը։", "No. A doctor decides.", "Нет. Решение принимает врач.")],
+    [tx(l, "Բժշկական խորհուրդ Զոյայից", "Medical advice from Zoe", "Медицинские рекомендации от Зои"), tx(l, "Ոչ։ Որոշում է բժիշկը։", "No. A doctor decides.", "Нет. Решение принимает врач.")],
   ];
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-4">

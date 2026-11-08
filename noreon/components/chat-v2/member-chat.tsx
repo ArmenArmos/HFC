@@ -1,5 +1,6 @@
 "use client";
 import {ReportedBpLabel} from "./reported-bp-label";
+import { zoeName } from "@/lib/brand";
 import {CARD_REPLY_LOST} from '@/lib/zoe-chat-actions/thread-events';
 import {NextStepCard,NextStepTurn,ReviewCard} from './next-step-card';
 import {ResultsMessageCard,JourneyRecordCard,JourneyRecordTurn} from './results-message-card';
@@ -113,9 +114,9 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
     }
     if (entry.type === "turn") {
       const key = `turn-${entry.card.id}-${entry.item}`, time = stamp(entry.at, l);
-      if(entry.card.kind==="review")return <DialogTurn key={key} action={say(l,NEXT_STEP.review)} time={time}><p>{say(l,NEXT_STEP.reviewSent)}</p></DialogTurn>;
+      if(entry.card.kind==="review")return <DialogTurn locale={l} key={key} action={say(l,NEXT_STEP.review)} time={time}><p>{say(l,NEXT_STEP.reviewSent)}</p></DialogTurn>;
       if(entry.card.kind==="next_step"||entry.card.kind==="tests_needed")return <NextStepTurn key={key} card={entry.card} locale={l} time={time}/>;
-      if(entry.card.kind==="message"){const sent=entry.card.outcome[entry.item] as {urgent?:boolean};return <DialogTurn key={key} action={null} time={time}><p>{say(l,sent.urgent?MESSAGE.urgent:MESSAGE.sent)}</p></DialogTurn>;}
+      if(entry.card.kind==="message"){const sent=entry.card.outcome[entry.item] as {urgent?:boolean};return <DialogTurn locale={l} key={key} action={null} time={time}><p>{say(l,sent.urgent?MESSAGE.urgent:MESSAGE.sent)}</p></DialogTurn>;}
       if(entry.card.kind==='plan'&&entry.item==='everyday:result')return <JourneyRecordTurn key={key} card={entry.card} locale={l} time={time} onCard={onCard}/>;
       if (entry.card.kind === "ask") return <DoseReasonTurn key={key} card={entry.card} locale={l} time={time}/>;
       if (entry.card.kind === "sams") {const red=redOutcome(entry.card);return <SamsTurn key={key} card={entry.card} locale={l} time={time} tasks={tasks} stored={!!red&&messages.some(m=>m.requestId===red.requestId)}/>;}
@@ -132,7 +133,7 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
       if (entry.card.kind === "symptom_gate") return <SavedGateTurn key={key} card={entry.card} locale={l} time={time} onQuestions={onQuestions} />;
       if (entry.card.kind === "visit") {
         const transition=visitTransitions(entry.card).find(t=>t.item===entry.item);
-        if(entry.card.snapshot.living)return transition?<DialogTurn key={key} action={null} time={time}><p>{say(l,LIVING_VISIT[transition.status])}</p><button type="button" className="cv2-link" onClick={()=>window.dispatchEvent(new CustomEvent(FOCUS_CHAT_CARD,{detail:entry.card.id}))}>{say(l,LIVING_VISIT.open)}</button></DialogTurn>:null;
+        if(entry.card.snapshot.living)return transition?<DialogTurn locale={l} key={key} action={null} time={time}><p>{say(l,LIVING_VISIT[transition.status])}</p><button type="button" className="cv2-link" onClick={()=>window.dispatchEvent(new CustomEvent(FOCUS_CHAT_CARD,{detail:entry.card.id}))}>{say(l,LIVING_VISIT.open)}</button></DialogTurn>:null;
         return <SavedVisitTurn onCard={journeyEnabled?onCard:undefined} key={key} card={entry.card} locale={l} time={time} />;
       }
       if (entry.card.kind === "document") return <SavedDocumentTurn key={key} card={entry.card} locale={l} time={time} />;
@@ -142,7 +143,7 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
     }
     if (entry.type === "card") {
       if (!entry.card.valid) return <article key={entry.card.id} className="cv2-msg cv2-zoe" data-zoe-card={entry.card.kind} data-state="unavailable">
-        <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+        <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
         <p className="cv2-reading" role="status">{say(l, COMMON.unreadable)}</p>
       </article>;
       if(entry.card.kind==="review")return <ReviewCard onMessage={onMessage} key={entry.card.id} card={entry.card} locale={l} onCard={onCard} onAct={onAct}/>;
@@ -189,8 +190,8 @@ const Messages = memo(function Messages({ entries, whole = entries, locale: l, e
     const emergency = member ? emergencies[item.requestId ?? item.key] : null;
     return <Fragment key={item.key}>
       <article className={`cv2-msg ${member ? "cv2-me" : "cv2-zoe"} ${doctor ? "cv2-doctor" : ""}`} data-message-key={item.key} data-notice={item.kind === "notice" ? item.key.slice(1) : undefined} data-closed={item.kind === "notice" && item.closed ? true : undefined}>
-        {!member && <p className="cv2-from">{!doctor && !nurse && <i className="cv2-orb" aria-hidden />}{doctor ? memberStaffName(item.doctorName) ?? tx(l, "Ձեր բժիշկը", "Your doctor", "Ваш врач") : nurse ? `${memberStaffName(item.senderName) ? `${memberStaffName(item.senderName)} · ` : ""}${tx(l, "Բուժքույր", "Nurse", "Медсестра")}` : "Zoe"}</p>}
-        {item.kind === "pending" ? <p className="cv2-typing" role="status" aria-label={tx(l, "Zoe-ն պատասխան է գրում", "Zoe is writing a reply", "Zoe пишет ответ")}><i /><i /><i /></p>
+        {!member && <p className="cv2-from">{!doctor && !nurse && <i className="cv2-orb" aria-hidden />}{doctor ? memberStaffName(item.doctorName) ?? tx(l, "Ձեր բժիշկը", "Your doctor", "Ваш врач") : nurse ? `${memberStaffName(item.senderName) ? `${memberStaffName(item.senderName)} · ` : ""}${tx(l, "Բուժքույր", "Nurse", "Медсестра")}` : zoeName(l)}</p>}
+        {item.kind === "pending" ? <p className="cv2-typing" role="status" aria-label={tx(l, "Զոյան պատասխան է գրում", "Zoe is writing a reply", "Зоя пишет ответ")}><i /><i /><i /></p>
           : <p className="cv2-say">{item.kind === "ack" ? tx(l, "Ուղարկված է ձեր խնամքի թիմին։", "Sent to your care team.", "Отправлено вашей медицинской команде.") : text}</p>}
         {(member||item.kind==="answer"||item.kind==="notice")&&<ReportedBpLabel text={item.text} locale={l} reported={member?undefined:messages.map(m=>m.text)}/>}
         {(item.kind === "answer" || item.kind === "notice") && <Speaker text={text!} locale={l} />}
@@ -332,7 +333,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
       <Call103 size="pill" className="cv2-help" label={tx(l, "Զանգահարել 103", "Call 103", "Позвонить 103")}><Phone size={14} aria-hidden />103</Call103>
       <button type="button" className="cv2-avatar" onClick={() => setMenu(true)} aria-label={tx(l, "Բացել մենյուն", "Open menu", "Открыть меню")}><span>{initials || "N"}</span></button>
     </header>
-    <div className="cv2-greet"><h2>Zoe</h2><p>{tx(l, "ԱԲ օգնական, ոչ բժիշկ", "AI assistant, not a doctor", "ИИ-помощник, не врач")}</p></div>
+    <div className="cv2-greet"><h2>{zoeName(l)}</h2><p>{tx(l, "ԱԲ օգնական, ոչ բժիշկ", "AI assistant, not a doctor", "ИИ-помощник, не врач")}</p></div>
     <section className="cv2-thread" ref={threadRef} role="log" aria-live="polite" aria-label={tx(l, "Զրույց", "Conversation", "Переписка")} data-zoe-thread tabIndex={0}>
       <div className="cv2-messages" ref={contentRef}>
         {!items.length && !shown.length && <article className="cv2-msg cv2-zoe"><p className="cv2-say cv2-welcome">{tx(l, `Բարև, ${memberName}։ Ինչպե՞ս կարող եմ օգնել այսօր։`, `Hello, ${memberName}. How can I help today?`, `Здравствуйте, ${memberName}. Чем я могу помочь сегодня?`)}</p></article>}
@@ -367,7 +368,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
         {!initial && <p role="status">{tx(l, "Զրույցը հիմա հասանելի չէ։ Փորձեք ավելի ուշ։", "Chat is unavailable right now. Try again later.", "Чат сейчас недоступен. Попробуйте позже.")}</p>}
         {/* A failed next-step read says so once: the status block above is the one line, so the journey sentence stays out when it would repeat it. */}
         {assessment?.completedAt && nextStepLine && !(onboarding && consentClear && quiet && !locked && cards.nextStepStatus==='unavailable') && <article className="cv2-msg cv2-zoe" role="status" data-journey-stage={nextStepLine.stage ?? "unavailable"}>
-          <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+          <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
           <p className="cv2-say">{nextStepLine.text[l]}</p>
           {nextStepLine.href && nextStepLine.stage !== "plan_confirmed" && nextStepLine.stage !== "waiting" && <a className="cv2-next-link" href={nextStepLine.href}>
             {nextStepLine.stage === null ? tx(l, "Բացել իմ գլխավոր էջը", "Go to my home page", "Перейти на мою главную страницу") : tx(l, "Տեսնել իմ հաջորդ քայլը", "See my next step", "Посмотреть мой следующий шаг")}
@@ -390,7 +391,7 @@ function ChatSession({ locale, memberName, revision, initial, voice, cards: init
         {onboarding && <ZoeAttach locale={l} camera disabled={!initial || !consentClear || !quiet} onSaved={(_name, _duplicate, id) => { if (!id) return; newest(); void openDocumentCard({documentId:id,requestId:id}).then(r => { if (r.card) onCard(r.card); else setNotice("unavailable"); }).catch(() => setNotice("unavailable")); }} />}
         <textarea ref={input} rows={1} autoComplete="off" value={text} maxLength={ZOE_CHAT_MAX} disabled={!initial || locked || voiceBusy}
           aria-label={tx(l, "Ձեր հաղորդագրությունը", "Your message", "Ваше сообщение")}
-          placeholder={locked ? say(l, FLOW.composerLocked) : tx(l, "Հարցրեք Zoe-ին…", "Ask Zoe…", "Спросите Zoe…")}
+          placeholder={locked ? say(l, FLOW.composerLocked) : tx(l, "Հարցրեք Զոյային…", "Ask Zoe…", "Спросите Зою…")}
           onPointerDown={()=>conversation.edit()}
           onChange={event => { conversation.edit(); setText(event.target.value); if (notice) setNotice(null); }}
           onKeyDown={event => {

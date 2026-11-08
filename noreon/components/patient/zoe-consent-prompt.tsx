@@ -18,7 +18,7 @@ export function ZoeConsentPrompt({locale:l,directAnswers=false}:{locale:PatientL
  if(state==='later')return null;
  if(state==='done')return <p role="status" className="journey-card text-body2">{tx(l,'Պատրաստ է։ Ձեր ընտրությունը պահպանված է։','Done. Your choice is saved.','Готово. Ваш выбор сохранён.')}</p>;
  return <section aria-labelledby="zoe-consent-prompt-title" data-zoe-consent-prompt className="journey-card space-y-4">
-  <header className="flex items-center gap-3"><IconTile icon={Bot}/><h2 id="zoe-consent-prompt-title" className="text-h3">{tx(l,'Ծանոթացեք Zoe-ին','Meet Zoe','Познакомьтесь с Zoe')}</h2></header>
+  <header className="flex items-center gap-3"><IconTile icon={Bot}/><h2 id="zoe-consent-prompt-title" className="text-h3">{tx(l,'Ծանոթացեք Զոյային','Meet Zoe','Познакомьтесь с Зоей')}</h2></header>
   <p className="text-body2">{zoeStatement(clinicalLocale(l),directAnswers)}</p>
   {state==='error'&&<p role="alert" className="text-body2 text-destructive">{tx(l,'Չհաջողվեց պահպանել։ Փորձեք նորից։','We could not save your choice. Try again.','Не удалось сохранить ваш выбор. Попробуйте снова.')}</p>}
   <div className="flex flex-wrap gap-3">

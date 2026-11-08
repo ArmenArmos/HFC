@@ -23,7 +23,7 @@ export function bpWeekMessage(l: PatientLocale, r: BpWeekResult | null | undefin
     case "not-open": return copy(l, "This week is no longer open.", "Այս շաբաթն այլևս բաց չէ։", "Эта неделя уже закрыта.");
     case "conflict": return copy(l, "This reading was already saved with different values. Check your week.", "Այս չափումն արդեն պահված է այլ արժեքներով։ Ստուգեք ձեր շաբաթը։", "Это измерение уже сохранено с другими значениями. Проверьте вашу неделю.");
     case "disabled": return copy(l, "The 7-day week is not available right now.", "7-օրյա շաբաթն այս պահին հասանելի չէ։", "Программа измерений на 7 дней сейчас недоступна.");
-    case "busy": return copy(l, "Noreon is busy. Try again in a moment.", "Noreon-ը զբաղված է։ Մի փոքր ուշ կրկին փորձեք։", "Noreon сейчас занят. Попробуйте чуть позже.");
+    case "busy": return copy(l, "Noreon is busy. Try again in a moment.", "Նորեոն Հելթը զբաղված է։ Մի փոքր ուշ կրկին փորձեք։", "Нореон Хелс сейчас занят. Попробуйте чуть позже.");
     case "invalid": return copy(l, "Check the details and try again.", "Ստուգեք տվյալները և կրկին փորձեք։", "Проверьте данные и попробуйте снова.");
     default: return copy(l, "We couldn’t save. Try again.", "Չհաջողվեց պահել։ Կրկին փորձեք։", "Не удалось сохранить. Попробуйте снова.");
   }

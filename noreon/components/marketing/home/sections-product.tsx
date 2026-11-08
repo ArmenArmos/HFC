@@ -324,9 +324,9 @@ export function Zoe() {
         <div className="min-w-0">
           <Heading
             inverse
-            eyebrow={{ hy: "08 · Ծանոթացեք Զոյի հետ", en: "08 · Meet Zoe" }}
+            eyebrow={{ hy: "08 · Ծանոթացեք Զոյայի հետ", en: "08 · Meet Zoe" }}
             title={{
-              hy: "Ծանոթացեք Զոյի հետ։ Ձեր ԱԲ առողջության մարզիչը բժշկական այցերի միջև։",
+              hy: "Ծանոթացեք Զոյայի հետ։ Ձեր ԱԲ առողջության մարզիչը բժշկական այցերի միջև։",
               en: "Meet Zoe. Your AI health coach between medical visits.",
             }}
             lead={{

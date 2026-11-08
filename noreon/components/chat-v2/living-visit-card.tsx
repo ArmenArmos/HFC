@@ -1,4 +1,5 @@
 import type {ValidCard} from '@/lib/zoe-chat-actions/registry';
+import { zoeName } from '@/lib/brand';
 import {LIVING_VISIT,VISIT_STEPS} from '@/lib/zoe-chat-actions/living-visit';
 import {say,VISIT,type CardLocale} from '@/lib/zoe-chat-actions/copy';
 import {formatMemberDate} from '@/lib/patient/date-format';
@@ -9,7 +10,7 @@ export function LivingVisitCard({card,locale:l,children}:{card:Extract<ValidCard
  const proposal=card.snapshot.available?card.snapshot.proposal:null;
  const current=VISIT_STEPS.indexOf(visit.status);
  return <article className="cv2-msg cv2-zoe" data-zoe-card="visit" data-chat-card-id={card.id} data-state={visit.status} tabIndex={-1}>
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p>
   <section className="cv2-reading cv2-block">
    <h3>{say(l,LIVING_VISIT.title)}</h3>
    <p role="status">{say(l,!card.snapshot.available?LIVING_VISIT.unavailable:proposal?VISIT.pending:LIVING_VISIT[visit.status])}</p>

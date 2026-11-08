@@ -1,5 +1,6 @@
 "use client";
 import {useRef,useState,useTransition} from 'react';
+import { zoeName } from '@/lib/brand';
 import {FileText} from 'lucide-react';
 import {saveDocumentDetailsFromCard} from '@/lib/zoe-chat-actions/labs-actions';
 import {DOC_TYPES,type DocumentTile,type SavedDocument} from '@/lib/zoe-chat-actions/labs-contract';
@@ -23,7 +24,7 @@ function Tile({document:d,locale:l,saved}:{document:DocumentTile;locale:CardLoca
 }
 export function SavedDocumentTurn({card,locale:l,time}:{card:Extract<ValidCard,{kind:'document'}>;locale:CardLocale;time:string}){
  const saved=card.outcome.document as SavedDocument;
- return <DialogTurn action={say(l,LABS.saved)} time={time}>
+ return <DialogTurn locale={l} action={say(l,LABS.saved)} time={time}>
   <p>{say(l,LABS.thanks)}</p>{card.snapshot.document&&<Tile document={card.snapshot.document} saved={saved} locale={l}/>}
  </DialogTurn>;
 }
@@ -50,7 +51,7 @@ export function DocumentCard({card,locale:l,onCard,onAct}:{card:Extract<ValidCar
   });
  };
  return <article className="cv2-msg cv2-zoe" data-zoe-card="document" data-chat-card-id={card.id} data-state="open">
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p>
   <section className="cv2-reading cv2-block" aria-label={say(l,LABS.document)}>
    <h3>{say(l,LABS.document)}</h3>
    {!d?<p role="status">{say(l,LABS.empty)}</p>:<>

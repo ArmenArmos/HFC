@@ -49,7 +49,7 @@ export function ClinicTelegramInvitations({clinicId, invitations, requestId, loc
   const [state, invite, inviting] = useActionState(inviteClinicUser, initial);
   return <section className="space-y-4 rounded-xl border p-4" aria-labelledby="clinic-telegram-invite">
     <h2 id="clinic-telegram-invite" className="text-h3">{t('Invite a new clinic user by Telegram', 'Հրավիրել կլինիկայի նոր օգտատիրոջ Telegram-ով', 'Пригласить нового сотрудника клиники через Telegram')}</h2>
-    <p className="text-body2 text-muted-foreground">{t('For someone without a Noreon account. No email is sent: you pass on one link.', 'Noreon հաշիվ չունեցողի համար։ Էլ. նամակ չի ուղարկվում. դուք փոխանցում եք մեկ հղում։', 'Для человека без аккаунта Noreon. Письмо не отправляется: вы передаёте одну ссылку.')}</p>
+    <p className="text-body2 text-muted-foreground">{t('For someone without a Noreon account. No email is sent: you pass on one link.', 'Նորեոն Հելթ հաշիվ չունեցողի համար։ Էլ. նամակ չի ուղարկվում. դուք փոխանցում եք մեկ հղում։', 'Для человека без аккаунта Нореон Хелс. Письмо не отправляется: вы передаёте одну ссылку.')}</p>
     <form action={invite} className="space-y-3">
       <input type="hidden" name="clinicId" value={clinicId}/><input type="hidden" name="requestId" value={requestId}/><input type="hidden" name="locale" value={locale}/>
       <label className="block text-caption">{t('Name', 'Անուն', 'Имя')}<input name="name" required maxLength={180} className={inputClass}/></label>

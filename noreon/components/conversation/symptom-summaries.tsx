@@ -7,17 +7,17 @@ import {st} from '@/lib/staff/staff-locale-copy';
 import {staffDisplayText,staffRuleLabel} from '@/lib/staff/display-text';
 
 const STATE:Record<SymptomIntakeView['state'],{label:[string,string,string];tone:'neutral'|'due'|'complete'|'attention'}>={
- active:{label:['Zoe is still asking','Zoe-ն դեռ հարցեր է տալիս','Zoe ещё задаёт вопросы'],tone:'neutral'},completed:{label:['Summary ready','Ամփոփումը պատրաստ է','Сводка готова'],tone:'due'},stopped:{label:['Member stopped, summary ready','Անդամը դադարեցրել է, ամփոփումը պատրաստ է','Участник остановился, сводка готова'],tone:'due'},
+ active:{label:['Zoe is still asking','Զոյան դեռ հարցեր է տալիս','Зоя ещё задаёт вопросы'],tone:'neutral'},completed:{label:['Summary ready','Ամփոփումը պատրաստ է','Сводка готова'],tone:'due'},stopped:{label:['Member stopped, summary ready','Անդամը դադարեցրել է, ամփոփումը պատրաստ է','Участник остановился, сводка готова'],tone:'due'},
  escalated:{label:['Urgent: 103 path shown','Շտապ. ցուցադրվել է 103 ուղին','Срочно: показана рекомендация звонить 103'],tone:'attention'},expired:{label:['Member stopped replying','Անդամը դադարել է պատասխանել','Участник перестал отвечать'],tone:'due'},
 };
 
 /** Staff presentation only. Stored symptom summaries and the shared member formatter are unchanged. */
 export function SymptomSummaries({intakes,paused=false,locale='en'}:{intakes:SymptomIntakeView[]|null;paused?:boolean;locale?:Locale}){
  const t=(en:string,hy:string,ru:string)=>st(locale,en,hy,ru);
- const title=t('Symptom summaries from Zoe','Ախտանիշների ամփոփումներ Zoe-ից','Сводки симптомов от Zoe');
- if(intakes===null)return <CareSection title={title}><p className="text-body2">{t('Zoe’s symptom summaries could not be loaded. The member’s messages below are unaffected.','Չհաջողվեց բեռնել Zoe-ի ախտանիշների ամփոփումները։ Ստորև անդամի հաղորդագրությունները հասանելի են։','Не удалось загрузить сводки симптомов Zoe. Сообщения участника ниже доступны.')}</p></CareSection>;
+ const title=t('Symptom summaries from Zoe','Ախտանիշների ամփոփումներ Զոյայից','Сводки симптомов от Зои');
+ if(intakes===null)return <CareSection title={title}><p className="text-body2">{t('Zoe’s symptom summaries could not be loaded. The member’s messages below are unaffected.','Չհաջողվեց բեռնել Զոյայի ախտանիշների ամփոփումները։ Ստորև անդամի հաղորդագրությունները հասանելի են։','Не удалось загрузить сводки симптомов Зои. Сообщения участника ниже доступны.')}</p></CareSection>;
  if(!intakes.length)return null;
- return <CareSection title={title} detail={t('Zoe asked the questions of a symptom sheet and wrote down the member’s answers in their own words. She gave no advice. The member was told their care team will contact them.','Zoe-ն տվել է ախտանիշների թերթիկի հարցերը և գրանցել անդամի պատասխանները նրա բառերով։ Խորհուրդ չի տվել։ Անդամին ասվել է, որ խնամքի թիմը կապ կհաստատի նրա հետ։','Zoe задала вопросы из листа симптомов и записала ответы словами участника. Она не давала советов. Участнику сообщили, что с ним свяжется команда по уходу.')}>
+ return <CareSection title={title} detail={t('Zoe asked the questions of a symptom sheet and wrote down the member’s answers in their own words. She gave no advice. The member was told their care team will contact them.','Զոյան տվել է ախտանիշների թերթիկի հարցերը և գրանցել անդամի պատասխանները նրա բառերով։ Խորհուրդ չի տվել։ Անդամին ասվել է, որ խնամքի թիմը կապ կհաստատի նրա հետ։','Зоя задала вопросы из листа симптомов и записала ответы словами участника. Она не давала советов. Участнику сообщили, что с ним свяжется команда по уходу.')}>
   <ol className="space-y-5">{intakes.map(i=>{
    const lines=i.summary?summaryLines(i.summary,clinicalLocale(locale)):[];
    const [head,...rest]=lines;

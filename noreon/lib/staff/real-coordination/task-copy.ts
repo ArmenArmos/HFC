@@ -12,7 +12,7 @@ const systemTitles={
   'От врача':['From the doctor','Բժշկից','От врача'],
  },
  zoe_side_effect:{
-  'Mild side effect from Zoe':['Mild side effect from Zoe','Թեթև կողմնակի ազդեցություն՝ Զոյայից','Лёгкий побочный эффект от Zoe'],
+  'Mild side effect from Zoe':['Mild side effect from Zoe','Թեթև կողմնակի ազդեցություն՝ Զոյայից','Лёгкий побочный эффект от Зои'],
   'Side effect reported: ankle swelling':['Side effect reported: ankle swelling','Հաղորդվել է կողմնակի ազդեցություն՝ կոճերի այտուց','Сообщён побочный эффект: отёк лодыжек'],
   'Side effect reported: dizziness':['Side effect reported: dizziness','Հաղորդվել է կողմնակի ազդեցություն՝ գլխապտույտ','Сообщён побочный эффект: головокружение'],
   'Side effect reported: nausea':['Side effect reported: nausea','Հաղորդվել է կողմնակի ազդեցություն՝ սրտխառնոց','Сообщён побочный эффект: тошнота'],

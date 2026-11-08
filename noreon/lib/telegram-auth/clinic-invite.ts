@@ -27,7 +27,7 @@ export type ClinicInvitation=z.infer<typeof invitationSchema>;
 const rpcResult=z.union([z.object({ok:z.literal(true),invitation:invitationSchema}),z.object({ok:z.literal(false),code:z.string()})]);
 
 /** Fixed invitation code text; no clinical content. */
-export const clinicInviteCodeText=(code:string)=>`Noreon կլինիկայի հրավերի կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon clinic invitation code: ${code}. Do not share it with anyone.`;
+export const clinicInviteCodeText=(code:string)=>`Նորեոն Հելթ կլինիկայի հրավերի կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon clinic invitation code: ${code}. Do not share it with anyone.`;
 
 type AdminRpc=Pick<SupabaseClient<Database>,'rpc'>;
 export type ClinicInviteIssue={ok:true;url:string;invitation:ClinicInvitation}|{ok:false;reason:'invalid'|'email_in_use'|'clinic_unavailable'|'changed'|'accepted'|'unavailable'};

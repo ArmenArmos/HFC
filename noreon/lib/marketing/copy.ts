@@ -2,10 +2,10 @@ import type { LocalizedHyEn } from "@/lib/clinical/types";
 
 /** Chrome copy for the public site. Armenian is authoritative; `en` falls back to `hy`. */
 export const COPY = {
-  "marketing.home": { hy: "Noreon, գլխավոր", en: "Noreon, home" },
+  "marketing.home": { hy: "Նորեոն Հելթ, գլխավոր", en: "Noreon, home" },
   "nav.menu": { hy: "Մենյու", en: "Menu" },
   "marketing.disclaimer": {
-    hy: "Noreon-ը բժշկական սարք չէ և բժշկական խորհրդատվություն չի տրամադրում։",
+    hy: "Նորեոն Հելթը բժշկական սարք չէ և բժշկական խորհրդատվություն չի տրամադրում։",
     en: "Noreon is not a medical device and does not provide medical advice.",
   },
   "marketing.account": { hy: "Հաշիվ", en: "Account" },

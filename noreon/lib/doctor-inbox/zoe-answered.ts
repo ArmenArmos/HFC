@@ -16,17 +16,17 @@ export const zoeAnsweredListSchema=z.object({ok:z.literal(true),items:z.array(zo
 
 type L=Locale;
 const t=(l:L,en:string,hy:string,ru:string)=>pick(l,{en,hy,ru});
-export const zoeAnsweredTitle=(l:L)=>t(l,'Answered by Zoe','Պատասխանել է Զոյան','Zoe ответила');
+export const zoeAnsweredTitle=(l:L)=>t(l,'Answered by Zoe','Պատասխանել է Զոյան','Зоя ответила');
 export const zoeAnsweredIntro=(l:L)=>t(l,
  'Zoe answered these members fully and nothing needed you: no urgent sign, nothing sent to you, and the member did not ask for you. Read what Zoe said, then mark it reviewed, or reopen it to reply yourself.',
- 'Զոյան ամբողջությամբ պատասխանել է այս անդամներին, և ձեր միջամտությունը պետք չէր՝ շտապ նշան չկա, ձեզ ոչինչ չի ուղարկվել, անդամը ձեզ չի խնդրել։ Կարդացեք Զոյայի պատասխանը, ապա նշեք որպես դիտված կամ վերաբացեք՝ ինքներդ պատասխանելու համար։','Zoe полностью ответила этим участникам, и ваше вмешательство не требовалось: срочных признаков нет, вам ничего не передано, участник не просил вашего участия. Прочитайте ответ Zoe и отметьте его как просмотренный или откройте разговор снова, чтобы ответить самостоятельно.');
-export const zoeAnsweredEmpty=(l:L)=>t(l,'Nothing answered by Zoe is waiting for your review.','Զոյայի պատասխաններից ոչինչ չի սպասում ձեր դիտմանը։','Нет ответов Zoe, ожидающих вашего просмотра.');
+ 'Զոյան ամբողջությամբ պատասխանել է այս անդամներին, և ձեր միջամտությունը պետք չէր՝ շտապ նշան չկա, ձեզ ոչինչ չի ուղարկվել, անդամը ձեզ չի խնդրել։ Կարդացեք Զոյայի պատասխանը, ապա նշեք որպես դիտված կամ վերաբացեք՝ ինքներդ պատասխանելու համար։','Зоя полностью ответила этим участникам, и ваше вмешательство не требовалось: срочных признаков нет, вам ничего не передано, участник не просил вашего участия. Прочитайте ответ Зои и отметьте его как просмотренный или откройте разговор снова, чтобы ответить самостоятельно.');
+export const zoeAnsweredEmpty=(l:L)=>t(l,'Nothing answered by Zoe is waiting for your review.','Զոյայի պատասխաններից ոչինչ չի սպասում ձեր դիտմանը։','Нет ответов Зои, ожидающих вашего просмотра.');
 export const urgencyLabel=(u:ZoeAnsweredItem['urgency'],l:L)=>({none:t(l,'not urgent','ոչ շտապ','не срочно'),self_monitoring:t(l,'self-care and monitoring','ինքնախնամք և հսկողություն','самопомощь и наблюдение'),
  planned:t(l,'next planned visit','հաջորդ պլանային այց','следующий плановый визит'),doctor_soon:t(l,'doctor in the coming days','բժիշկ առաջիկա օրերին','врач в ближайшие дни')}[u]);
 /** One line from codes and counts only. */
 export function zoeAnsweredSummary(i:ZoeAnsweredItem,l:L){
  return [i.unanswered===1?t(l,'1 message','1 հաղորդագրություն','1 сообщение'):t(l,`${i.unanswered} messages`,`${i.unanswered} հաղորդագրություն`,`Сообщений: ${i.unanswered}`),
-  `${t(l,'Zoe\'s urgency','Զոյայի գնահատած շտապությունը','Срочность по оценке Zoe')}: ${urgencyLabel(i.urgency,l)}`,
+  `${t(l,'Zoe\'s urgency','Զոյայի գնահատած շտապությունը','Срочность по оценке Зои')}: ${urgencyLabel(i.urgency,l)}`,
   ...(i.declined?[t(l,'the member said no to sending it to you','անդամը հրաժարվել է այն ձեզ ուղարկելուց','участник отказался передавать это вам')]:[])].join(' · ');
 }
 

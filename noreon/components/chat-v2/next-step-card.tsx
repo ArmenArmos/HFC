@@ -1,5 +1,6 @@
 'use client';
 import {memberInstruction} from '@/lib/text-language';
+import { zoeName } from '@/lib/brand';
 import {TestPrices} from '@/components/pilot-commerce/member-pricing';
 import {followNextStep} from '@/lib/zoe-chat-actions/next-step-actions';
 import {NEXT_STEP} from '@/lib/zoe-chat-actions/next-step-copy';
@@ -12,7 +13,7 @@ import {DialogTurn} from './dialog-turn';
 type StepCard=Extract<ValidCard,{kind:'next_step'|'tests_needed'}>;
 type Props={card:StepCard;locale:CardLocale;onCard:(c:ZoeCard)=>void;onAct:(id:string,on:boolean)=>void;onMessage:()=>void;disabled?:boolean};
 export function NextStepTurn({card,locale:l,time}:{card:StepCard;locale:CardLocale;time:string}){
- return <DialogTurn action={say(l,card.kind==='next_step'?card.snapshot.button:NEXT_STEP.book)} time={time}><p>{say(l,NEXT_STEP.saved)}</p></DialogTurn>;
+ return <DialogTurn locale={l} action={say(l,card.kind==='next_step'?card.snapshot.button:NEXT_STEP.book)} time={time}><p>{say(l,NEXT_STEP.saved)}</p></DialogTurn>;
 }
 export function NextStepCard({card,locale:l,onCard,onAct,onMessage,disabled=false}:Props){
  const {busy,problem,save}=useCardSave(card.id,l,onCard,onAct);
@@ -25,7 +26,7 @@ export function NextStepCard({card,locale:l,onCard,onAct,onMessage,disabled=fals
  const canOpen=step?!!step.target:!!tests?.available&&!!visitTests.length;
  const follow=()=>save(()=>followNextStep({cardId:card.id}));
  return <article className="cv2-msg cv2-zoe" data-next-step-block data-zoe-card={card.kind} data-chat-card-id={card.id} data-state={busy?'loading':problem?'error':disabled?'disabled':!canOpen?'waiting':'open'}>
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p>
   <section className="cv2-reading cv2-block" aria-busy={busy}>
    <h3>{say(l,step?.title??NEXT_STEP.tests)}</h3>
    {step&&<><p>{memberInstruction(say(l,step.detail),l)}</p>{step.doctorInLoop&&<p data-template="DOCTOR_IN_LOOP">{say(l,NEXT_STEP.doctor)}</p>}</>}
@@ -41,7 +42,7 @@ export function ReviewCard({card,locale:l,onCard,onAct,onMessage}:{card:Extract<
  const {busy,problem,save}=useCardSave(card.id,l,onCard,onAct);
  if(card.state==='done')return null;
  const follow=()=>save(()=>requestReviewFromCard({cardId:card.id}));
- return <article className="cv2-msg cv2-zoe" data-next-step-block data-zoe-card="review" data-chat-card-id={card.id}><p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p><section className="cv2-reading cv2-block" aria-busy={busy}><h3>{say(l,NEXT_STEP.review)}</h3>{(!problem||problem==='signed_out')&&<button type="button" className="cv2-reading-save" disabled={busy} onClick={follow}>{say(l,busy?ONBOARDING.working:NEXT_STEP.review)}</button>}{problem==='signed_out'?<SignInEnded locale={l}/>:problem&&<FollowRecovery locale={l} disabled={busy} onRetry={follow} onMessage={onMessage}/>}</section></article>;
+ return <article className="cv2-msg cv2-zoe" data-next-step-block data-zoe-card="review" data-chat-card-id={card.id}><p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p><section className="cv2-reading cv2-block" aria-busy={busy}><h3>{say(l,NEXT_STEP.review)}</h3>{(!problem||problem==='signed_out')&&<button type="button" className="cv2-reading-save" disabled={busy} onClick={follow}>{say(l,busy?ONBOARDING.working:NEXT_STEP.review)}</button>}{problem==='signed_out'?<SignInEnded locale={l}/>:problem&&<FollowRecovery locale={l} disabled={busy} onRetry={follow} onMessage={onMessage}/>}</section></article>;
 }
 
 function FollowRecovery({locale:l,disabled,onRetry,onMessage}:{locale:CardLocale;disabled:boolean;onRetry:()=>void;onMessage:()=>void}){

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
+import { zoeName } from '@/lib/brand';
 import { tx, type PatientLocale } from '@/lib/patient/copy';
 import { registerMemberPush, subscribeMemberPush } from '@/lib/member-push/client';
 
@@ -51,11 +52,11 @@ export function MemberPushPrompt({ locale: l, publicKey, quiet = false }: { loca
   }
   if (mode === 'hidden' || quiet) return null;
   return <article className="cv2-msg cv2-zoe cv2-push" data-member-push>
-    <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+    <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
     <div className="cv2-say">
       <p>{mode === 'install'
-        ? tx(l, 'Թարմացումների մասին ծանուցումներ ստանալու համար Safari-ի «Կիսվել» մենյուից ընտրեք «Ավելացնել գլխավոր էկրանին», ապա բացեք Noreon-ը այնտեղից։', 'To receive updates, open Safari’s Share menu, choose Add to Home Screen, then open Noreon from there.', 'Чтобы получать уведомления, в меню «Поделиться» Safari выберите «На экран Домой», затем откройте Noreon оттуда.')
-        : tx(l, 'Ցանկանո՞ւմ եք ծանուցում ստանալ, երբ ձեր խնամքի թիմից թարմացում կա։ Ծանուցման մեջ առողջական տվյալներ չեն ցուցադրվի։', 'Would you like a notification when your care team has an update? Your health details will stay inside Noreon.', 'Хотите получать уведомления об обновлениях от вашей медицинской команды? Данные о здоровье останутся внутри Noreon.')}</p>
+        ? tx(l, 'Թարմացումների մասին ծանուցումներ ստանալու համար Safari-ի «Կիսվել» մենյուից ընտրեք «Ավելացնել գլխավոր էկրանին», ապա բացեք Նորեոն Հելթը այնտեղից։', 'To receive updates, open Safari’s Share menu, choose Add to Home Screen, then open Noreon from there.', 'Чтобы получать уведомления, в меню «Поделиться» Safari выберите «На экран Домой», затем откройте Нореон Хелс оттуда.')
+        : tx(l, 'Ցանկանո՞ւմ եք ծանուցում ստանալ, երբ ձեր խնամքի թիմից թարմացում կա։ Ծանուցման մեջ առողջական տվյալներ չեն ցուցադրվի։', 'Would you like a notification when your care team has an update? Your health details will stay inside Noreon.', 'Хотите получать уведомления об обновлениях от вашей медицинской команды? Данные о здоровье останутся внутри Нореон Хелс.')}</p>
       {mode === 'ask' && <button type="button" disabled={busy} onClick={() => void enable()}>{tx(l, 'Միացնել ծանուցումները', 'Turn on notifications', 'Включить уведомления')}</button>}
       <button type="button" disabled={busy} onClick={dismiss}>{tx(l, 'Ոչ հիմա', 'Not now', 'Не сейчас')}</button>
       {failed && <p role="status">{tx(l, 'Չհաջողվեց միացնել ծանուցումները։ Փորձեք ավելի ուշ։', 'Could not turn on notifications. Try again later.', 'Не удалось включить уведомления. Попробуйте позже.')}</p>}

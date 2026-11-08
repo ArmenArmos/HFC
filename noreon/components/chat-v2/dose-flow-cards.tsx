@@ -1,5 +1,6 @@
 "use client";
 import {useRef,useState,useTransition} from 'react';
+import { zoeName } from '@/lib/brand';
 import {answerSamsFromCard,answerV3DoseReason} from '@/lib/zoe-chat-actions/dose-actions';
 import {BARRIER,noTitrationCopy} from '@/lib/zoe-chat-actions/dose-copy';
 import {DOSE_REASONS,SAMS_QUESTIONS,evaluateSams,nextSamsQuestion,samsAnswers,type DoseReason} from '@/lib/zoe-chat-actions/dose-flow';
@@ -27,7 +28,7 @@ export function DoseReasonCard({card,locale:l,onCard,onAct}:Props&{card:Extract<
   });
  };
  return <article className="cv2-msg cv2-zoe" data-zoe-card="ask" data-chat-card-id={card.id} data-state={busy?'loading':error?'error':'open'} aria-busy={busy}>
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
   <section className="cv2-reading"><h3>{say(l,BARRIER.title)}</h3><p>{card.snapshot.name}</p>
    {forgot?<><p>{say(l,BARRIER.noDouble)}</p><p>{say(l,BARRIER.move)}</p><div className="cv2-flag-actions"><button type="button" disabled={busy} onClick={()=>answer('forgot')}>{say(l,BARRIER.keep)}</button><button type="button" disabled={busy} onClick={()=>answer('forgot',true)}>{say(l,BARRIER.later)}</button></div></>:<div className="cv2-seg">{DOSE_REASONS.map(reason=><button key={reason} type="button" data-dose-reason={reason} disabled={busy||card.state==='done'} onClick={()=>reason==='forgot'?setForgot(true):answer(reason)}>{say(l,BARRIER[reason])}</button>)}</div>}
    {error==='signed_out'?<SignInEnded locale={l}/>:error&&<p role="alert">{error}</p>}
@@ -37,16 +38,16 @@ export function DoseReasonCard({card,locale:l,onCard,onAct}:Props&{card:Extract<
 export function DoseReasonTurn({card,locale:l,time}:{card:Extract<ValidCard,{kind:'ask'}>;locale:CardLocale;time:string}){
  const value=card.outcome.answer as {reason:DoseReason;later:boolean};
  const reply=value.reason==='forgot'?value.later?BARRIER.moved:BARRIER.noDouble:value.reason==='values_normal'?BARRIER.normal:value.reason==='side_effect_or_fear'?BARRIER.questions:BARRIER.logistics;
- return <DialogTurn action={say(l,BARRIER[value.reason])} time={time}><p>{say(l,reply)}</p>{value.reason==='forgot'&&value.later&&<p>{say(l,BARRIER.noDouble)}</p>}</DialogTurn>;
+ return <DialogTurn locale={l} action={say(l,BARRIER[value.reason])} time={time}><p>{say(l,reply)}</p>{value.reason==='forgot'&&value.later&&<p>{say(l,BARRIER.noDouble)}</p>}</DialogTurn>;
 }
 export function SamsTurn({card,locale:l,time,stored,tasks}:{card:ZoeCard;locale:CardLocale;time:string;stored:boolean;tasks?:ZoeCards['tasks']}){
  const a=samsAnswers(card),flow=flowOf(card);
  const mandatory=(flow?.mandatoryTemplateId??evaluateSams(a).mandatoryTemplateId)==='NO_TITRATION';
  if(redOutcome(card))return <>
   <FlagsTurn card={card} locale={l} time={time} stored={stored} tasks={tasks} flow={flow}/>
-  {mandatory&&<DialogTurn action={null} time={time}><p>{say(l,noTitrationCopy(flow??failedFlow()))}</p></DialogTurn>}
+  {mandatory&&<DialogTurn locale={l} action={null} time={time}><p>{say(l,noTitrationCopy(flow??failedFlow()))}</p></DialogTurn>}
  </>;
- return <DialogTurn action={SAMS_QUESTIONS.filter(q=>a[q]!==undefined).map(q=>`${say(l,BARRIER[q])} ${say(l,a[q]?FLOW.yes:FLOW.no)}`).join('\n')} time={time}>
+ return <DialogTurn locale={l} action={SAMS_QUESTIONS.filter(q=>a[q]!==undefined).map(q=>`${say(l,BARRIER[q])} ${say(l,a[q]?FLOW.yes:FLOW.no)}`).join('\n')} time={time}>
   {flow?.sentTo?<><FlowZone flow={flow} locale={l}/><FlowWords flow={flow} locale={l} tasks={tasks}/></>:<p>{say(l,BARRIER.checked)}</p>}
   {mandatory&&<p>{say(l,noTitrationCopy(flow??failedFlow()))}</p>}
  </DialogTurn>;
@@ -69,7 +70,7 @@ export function SamsCard({card,locale:l,onCard,onAct}:Props&{card:Extract<ValidC
   });
  };
  return <article className="cv2-msg cv2-zoe" data-zoe-card="sams" data-chat-card-id={card.id} data-state={busy?'loading':error?'error':'open'} aria-busy={busy}>
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p><section className="cv2-reading cv2-flags" aria-label={say(l,BARRIER.safety)}>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p><section className="cv2-reading cv2-flags" aria-label={say(l,BARRIER.safety)}>
    <p>{SAMS_QUESTIONS.indexOf(question)+1} / {SAMS_QUESTIONS.length}</p><h3 tabIndex={-1}>{say(l,BARRIER[question])}</h3>
    <div className="cv2-flag-actions"><button type="button" data-sams-answer="yes" disabled={busy||card.state==='done'} onClick={()=>answer(true)}>{say(l,FLOW.yes)}</button><button type="button" data-sams-answer="no" disabled={busy||card.state==='done'} onClick={()=>answer(false)}>{say(l,FLOW.no)}</button></div>
    {error==='signed_out'?<SignInEnded locale={l}/>:error&&<p role="alert">{error}</p>}

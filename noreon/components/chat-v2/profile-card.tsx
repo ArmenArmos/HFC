@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState, useTransition } from "react";
+import { zoeName } from "@/lib/brand";
 import { MessageCircle } from "lucide-react";
 import { SignInEnded } from "@/components/patient/sign-in-ended";
 import { saveProfileFromCard } from "@/lib/zoe-chat-actions/onboarding-actions";
@@ -15,7 +16,7 @@ const clock = (time: string) => time.replace(/^0/, "");
 export const profileWords = (l: CardLocale, v: SavedProfile) => say(l, PROFILE.said(say(l, v.channel === "voice" ? PROFILE.voice : PROFILE.text), clock(v.wake), clock(v.sleep))) + (v.caregiver ? `, ${say(l, PROFILE.caregiverSaid)}` : "");
 
 export function SavedProfileTurn({ saved, locale: l, time, onMedicines }: { saved: SavedProfile; locale: CardLocale; time: string; onMedicines?: (() => void) | null }) {
-  return <DialogTurn action={profileWords(l, saved)} time={time}>
+  return <DialogTurn locale={l} action={profileWords(l, saved)} time={time}>
     <p data-zoe-profile-saved>{say(l, PROFILE.reply)}</p>
     {onMedicines && <button type="button" className="cv2-link" onClick={onMedicines}>{say(l, MEDICINES.offer)}</button>}
   </DialogTurn>;
@@ -61,7 +62,7 @@ export function ProfileCard({ card, locale: l, onCard, onAct }: { card: Extract<
     });
   };
   return <article className="cv2-msg cv2-zoe" data-zoe-card="profile" data-chat-card-id={card.id} data-state="open" onClick={event => event.stopPropagation()}>
-    <p className="cv2-from"><i className="cv2-orb" aria-hidden />Zoe</p>
+    <p className="cv2-from"><i className="cv2-orb" aria-hidden />{zoeName(l)}</p>
     <section className="cv2-reading cv2-block" aria-label={say(l, PROFILE.channel)}>
       <h3><MessageCircle size={18} aria-hidden />{say(l, { en: "How should we reach you?", hy: "Ինչպե՞ս կապվենք ձեզ հետ", ru: "Как с вами связаться?" })}</h3>
       <p>{say(l, PROFILE.lead)}</p>

@@ -34,7 +34,7 @@ export const CHIP:Record<CardKind,L>={
  side_effect:c('Հայտնել կողմնակի ազդեցության մասին','Report a side effect','Сообщить о побочном эффекте'),
  message:c('Գրել խնամքի թիմին','Message my care team','Написать медицинской команде'),
  ldl:c('Իմ ՑԽԼ նպատակը','My LDL goal','Моя цель по ЛПНП'),
- ask:c('Zoe-ն արագ հարց ունի','Zoe has a quick question','У Zoe есть короткий вопрос'),
+ ask:c('Զոյան արագ հարց ունի','Zoe has a quick question','У Зои есть короткий вопрос'),
  menu:c('Ինչ կարող եմ անել','What I can do','Что я могу сделать'),
  repeat:c('Կրկնել չափումը','Repeat the reading','Повторить измерение'),
  red_flags:c('Անվտանգության հարցեր','Safety questions','Вопросы безопасности'),
@@ -55,7 +55,7 @@ export const TITLE:Record<CardKind,L>={
  side_effect:c('Ի՞նչ եք նկատում','What are you noticing?','Что вы замечаете?'),
  message:c('Գրել ձեր խնամքի թիմին','Message your care team','Написать вашей медицинской команде'),
  ldl:c('Ձեր ՑԽԼ խոլեստերինի նպատակը','Your LDL cholesterol goal','Ваша цель по холестерину ЛПНП'),
- ask:c('Zoe-ն արագ հարց ունի','Zoe has a quick question','У Zoe есть короткий вопрос'),
+ ask:c('Զոյան արագ հարց ունի','Zoe has a quick question','У Зои есть короткий вопрос'),
  menu:c('Ի՞նչ կցանկանայիք անել','What would you like to do?','Что вы хотите сделать?'),
  repeat:c('Կրկնենք չափումը','Let’s repeat the reading','Повторим измерение'),
  red_flags:c('Մի քանի հարց անվտանգության համար','A few safety questions','Несколько вопросов для безопасности'),
@@ -63,7 +63,7 @@ export const TITLE:Record<CardKind,L>={
 
 export const COMMON={
  quickActions:c('Արագ գործողություններ','Quick actions','Быстрые действия'),
- card:c('Zoe-ի քարտ','Zoe card','Карточка Zoe'),
+ card:c('Զոյայի քարտ','Zoe card','Карточка Зои'),
  asShown:(t:string)=>c(`Ցույց է տրված ${t}-ի դրությամբ`,`As shown at ${t}`,`Данные на ${t}`),
  seeCurrent:c('Տեսնել ներկա վիճակը','See current','Посмотреть текущие данные'),
  showCurrent:c('Թարմացնել','Refresh','Обновить'),
@@ -104,16 +104,16 @@ export const DOSE={
 
 /** Telegram has no form: a side effect is chosen, and anything else is simply typed, and Zoe reads it first. */
 export const TG_WRITE={
- message:c('Գրեք այստեղ, թե ինչ եք ուզում, որ ձեր խնամքի թիմն իմանա։ Zoe-ն առաջինը կկարդա այն։','Write here what you want your care team to know. Zoe reads it first.','Напишите здесь, что должна знать ваша медицинская команда. Zoe прочитает это первой.'),
+ message:c('Գրեք այստեղ, թե ինչ եք ուզում, որ ձեր խնամքի թիմն իմանա։ Զոյան առաջինը կկարդա այն։','Write here what you want your care team to know. Zoe reads it first.','Напишите здесь, что должна знать ваша медицинская команда. Зоя прочитает это первой.'),
  other:c('Գրեք այստեղ, թե ինչ եք նկատում։','Write here what you are noticing.','Напишите здесь, что вы замечаете.'),
  sent:c('Ուղարկված է։','Sent.','Отправлено.'),
 };
-export const NOTICE={redo:c('Խմբագրված կամ փոխանցված հաղորդագրությունները չեմ կարդում։ Խնդրում եմ գրել այն որպես նոր հաղորդագրություն։','I do not read edited or forwarded messages. Please send it as a new message.','Я не читаю изменённые или пересланные сообщения. Пожалуйста, отправьте его новым сообщением.'),answer:c('Պատասխանել Zoe-ին','Answer Zoe','Ответить Zoe')};
+export const NOTICE={redo:c('Խմբագրված կամ փոխանցված հաղորդագրությունները չեմ կարդում։ Խնդրում եմ գրել այն որպես նոր հաղորդագրություն։','I do not read edited or forwarded messages. Please send it as a new message.','Я не читаю изменённые или пересланные сообщения. Пожалуйста, отправьте его новым сообщением.'),answer:c('Պատասխանել Զոյային','Answer Zoe','Ответить Зое')};
 
 /** Lines only Telegram needs: a button press has no page to fall back on. */
 export const TELEGRAM={
- notLinked:c('Այս զրույցն այլևս կապված չէ ձեր Noreon հաշվին։','This chat is no longer connected to your Noreon account.','Этот чат больше не связан с вашим аккаунтом Noreon.'),
- expired:c('Այս կոճակն այլևս չի գործում։ Կրկին գրեք Zoe-ին այստեղ։','This button no longer works. Write to Zoe here again.','Эта кнопка больше не работает. Снова напишите Zoe здесь.'),
+ notLinked:c('Այս զրույցն այլևս կապված չէ ձեր Նորեոն Հելթ հաշվին։','This chat is no longer connected to your Noreon account.','Этот чат больше не связан с вашим аккаунтом Нореон Хелс.'),
+ expired:c('Այս կոճակն այլևս չի գործում։ Կրկին գրեք Զոյային այստեղ։','This button no longer works. Write to Zoe here again.','Эта кнопка больше не работает. Снова напишите Зое здесь.'),
  unavailable:c('Սա հիմա հասանելի չէ։','This is not available right now.','Сейчас это недоступно.'),
 };
 
@@ -137,7 +137,7 @@ export const BP={
  done:c('Պահված է։','Saved.','Сохранено.'),
  // The BP form's line (components/patient/measurement-form.tsx).
  noNotify:c('Այս փուլում չափումը պահպանվում է պատմության մեջ։ Այն բժշկին ավտոմատ ծանուցում չի ուղարկում։','At this stage, the reading is saved in your history. It does not automatically notify a doctor.','На этом этапе измерение сохраняется в вашей истории. Врач не получает автоматическое уведомление.'),
- worried:c('Եթե այս չափումը ձեզ անհանգստացնում է, գրեք Zoe-ին այստեղ։','If this reading worries you, write to Zoe here.','Если это измерение вас беспокоит, напишите Zoe здесь.'),
+ worried:c('Եթե այս չափումը ձեզ անհանգստացնում է, գրեք Զոյային այստեղ։','If this reading worries you, write to Zoe here.','Если это измерение вас беспокоит, напишите Зое здесь.'),
 };
 
 /**
@@ -234,7 +234,7 @@ export const VISIT={
  yes:c('Այո, ընդունել','Yes, accept it','Да, принять'),
  accepted:c('Ընդունված է։ Ցույց տվեք ներկա վիճակը՝ նոր ժամը տեսնելու համար։','Accepted. Show current to see the new time.','Принято. Покажите текущие данные, чтобы увидеть новое время.'),
  // Choosing a day needs a grid: that stays a screen, and Telegram says so without a link.
- changeInApp:c('Այցը ամրագրել կամ փոխել կարող եք Noreon հավելվածում։','To book or change a visit, use the Noreon app.','Записаться на визит или изменить его можно в приложении Noreon.'),
+ changeInApp:c('Այցը ամրագրել կամ փոխել կարող եք Նորեոն Հելթ հավելվածում։','To book or change a visit, use the Noreon app.','Записаться на визит или изменить его можно в приложении Нореон Хелс.'),
  change:c('Փոխել կամ չեղարկել','Change or cancel','Изменить или отменить'),
 };
 
@@ -306,7 +306,7 @@ export const LDL={
  dueBody:e('Your cholesterol blood test is still to do. Our team will call you to find a time.','Ձեր խոլեստերինի արյան անալիզը դեռ հանձնված չէ։ Մեր թիմը կզանգի ձեզ՝ հարմար ժամ գտնելու համար։','Анализ крови на холестерин ещё не сдан. Наша команда позвонит вам, чтобы выбрать время.'),
  window:(from:string,to:string)=>e(`Next LDL test: between ${from} and ${to}`,`Հաջորդ ՑԽԼ անալիզը՝ ${from}-ից ${to} ընկած ժամանակահատվածում`,`Следующий анализ на ЛПНП: с ${from} по ${to}`),
  windowBody:e('A nurse can take the blood sample at home. Our team will call you to arrange it.','Բուժքույրը կարող է արյան նմուշը վերցնել տանը։ Մեր թիմը կզանգի ձեզ՝ այն կազմակերպելու համար։','Медсестра может взять кровь на дому. Наша команда позвонит вам, чтобы договориться.'),
- prepInApp:e('The full preparation is in the Noreon app.','Ամբողջական պատրաստվելու կարգը Noreon հավելվածում է։','Полная подготовка в приложении Noreon.'),
+ prepInApp:e('The full preparation is in the Noreon app.','Ամբողջական պատրաստվելու կարգը Նորեոն Հելթ հավելվածում է։','Полная подготовка в приложении Нореон Хелс.'),
  notStarted:e('Your doctor has not started an LDL goal for you.','Ձեր բժիշկը դեռ ՑԽԼ նպատակ չի սահմանել։','Ваш врач пока не начал ведение цели по ЛПНП.'),
  accept:e('Accept this visit','Ընդունել այս այցը','Принять этот визит'),
  accepted:e('Accepted. We saved your answer.','Ընդունված է։ Ձեր պատասխանը պահված է։','Принято. Ваш ответ сохранён.'),
@@ -321,7 +321,7 @@ export const PROFILE={
  wake:c('Արթնանում եմ','I wake up at','Я просыпаюсь в'),
  sleep:c('Քնում եմ','I go to sleep at','Я ложусь спать в'),
  caregiver:c('Ավելացնել մտերիմի կոնտակտ','Add someone close to you','Добавить близкого человека'),
- caregiverHint:c('Ոչ պարտադիր։ Մարդ, ում կարող ենք զանգահարել, եթե չկարողանանք կապվել ձեզ հետ։ Zoe-ն այս տվյալները չի կարդում։','Optional. Someone we can call if we cannot reach you. Zoe does not read these details.','Необязательно. Человек, которому мы можем позвонить, если не сможем связаться с вами. Zoe не читает эти данные.'),
+ caregiverHint:c('Ոչ պարտադիր։ Մարդ, ում կարող ենք զանգահարել, եթե չկարողանանք կապվել ձեզ հետ։ Զոյան այս տվյալները չի կարդում։','Optional. Someone we can call if we cannot reach you. Zoe does not read these details.','Необязательно. Человек, которому мы можем позвонить, если не сможем связаться с вами. Зоя не читает эти данные.'),
  name:c('Անուն','Name','Имя'),
  phone:c('Հեռախոս','Phone','Телефон'),
  badContact:c('Գրեք անունն ու հեռախոսահամարը, կամ թողեք երկուսն էլ դատարկ։','Enter a name and a phone number, or leave both empty.','Введите имя и номер телефона или оставьте оба поля пустыми.'),

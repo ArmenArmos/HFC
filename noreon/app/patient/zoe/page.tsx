@@ -41,8 +41,12 @@ import type { ZoeThread } from "@/lib/zoe/app-chat-contracts";
 import { ZoeLessonOffer } from "@/components/lessons/zoe-lesson-offer";
 import { readZoeCards } from "@/lib/zoe-chat-actions/server";
 import { NO_CARDS } from "@/lib/zoe-chat-actions/registry";
+import { zoeName } from "@/lib/brand";
 
-export const metadata: Metadata = { title: "Zoe" };
+export async function generateMetadata(): Promise<Metadata> {
+  const l = parseLocale((await cookies()).get("noreon_locale")?.value, "hy");
+  return { title: zoeName(l) };
+}
 export const dynamic = "force-dynamic";
 
 const button =
@@ -79,7 +83,7 @@ export default async function ZoePage({ searchParams = Promise.resolve({}) }: { 
       const prompt = incomplete ? await readZoePrompt().catch(() => null) : null;
       return <PatientShell locale={l} memberName={state.profile?.name}>
         <div className="mx-auto max-w-2xl space-y-4" data-zoe-page data-chat-only-page>
-          <header className="border-b py-2" data-zoe-header><h1 className="text-h3">Zoe</h1><p className="text-caption text-muted-foreground">{copy(l, "AI assistant, not a doctor", "ԱԲ օգնական, ոչ բժիշկ", "ИИ-помощник, не врач")}</p></header>
+          <header className="border-b py-2" data-zoe-header><h1 className="text-h3">{zoeName(l)}</h1><p className="text-caption text-muted-foreground">{copy(l, "AI assistant, not a doctor", "ԱԲ օգնական, ոչ բժիշկ", "ИИ-помощник, не врач")}</p></header>
           <div data-member-chat-thread><section data-zoe-thread aria-label={copy(l, "Your health questions", "Ձեր առողջության հարցերը", "Ваши вопросы о здоровье")}>
             {params.card==='help'?<div className="member-chat-card" data-member-chat-card="help"><MemberHelpContent locale={l} contact={{mode:'none'}} signedIn={false} signingUp/></div>
               :params.card==='account'&&params.section==='language'&&state.assessment?<div className="member-chat-card" data-member-chat-card="language"><LanguagePreference embedded locale={l} revision={state.assessment.revision}/></div>
@@ -127,7 +131,7 @@ export default async function ZoePage({ searchParams = Promise.resolve({}) }: { 
     // One line and one action per reason (lead, 18 Oct 23:15), never the old information page.
     const [line, action] =
       access.reason === "staff_account"
-        ? [copy(l, "You are signed in with a staff account. Zoe chat is for members.", "Դուք մուտք եք գործել աշխատակցի հաշվով։ Zoe-ի զրույցը անդամների համար է։", "Вы вошли с учётной записью сотрудника. Чат с Zoe предназначен для участников."),
+        ? [copy(l, "You are signed in with a staff account. Zoe chat is for members.", "Դուք մուտք եք գործել աշխատակցի հաշվով։ Զոյայի զրույցը անդամների համար է։", "Вы вошли с учётной записью сотрудника. Чат с Зоей предназначен для участников."),
            { href: "/staff", label: copy(l, "Open the staff workspace", "Բացել աշխատակցի էջը", "Открыть рабочее пространство сотрудника"), external: false }]
         : access.reason === "read_failed"
           ? [copy(l, "Your chat did not load. Try again in a moment.", "Զրույցը չբեռնվեց։ Մի պահից նորից փորձեք։", "Ваш чат не загрузился. Попробуйте снова чуть позже."),
@@ -139,10 +143,10 @@ export default async function ZoePage({ searchParams = Promise.resolve({}) }: { 
               ? [copy(l, "Chat in the app is not on yet. Connect Telegram to write to your care team.", "Հավելվածում զրույցը դեռ միացված չէ։ Միացրեք Telegram-ը՝ ձեր խնամքի թիմին գրելու համար։", "Чат в приложении ещё не включён. Подключите Telegram, чтобы написать вашей медицинской команде."),
                  { href: doctor.href, label: copy(l, "Connect Telegram", "Միացնել Telegram-ը", "Подключить Telegram"), external: false }]
               : access.reason === "not_eligible"
-                ? [copy(l, "This account cannot chat with Zoe. Staff accounts and unconfirmed phone numbers cannot write to the care team.", "Այս հաշվից հնարավոր չէ զրուցել Zoe-ի հետ։ Աշխատակցի հաշիվները և չհաստատված հեռախոսահամարները չեն կարող գրել խնամքի թիմին։", "С этой учётной записи нельзя общаться с Zoe. С учётных записей сотрудников и с неподтверждёнными номерами телефона нельзя писать медицинской команде."),
-                   { href: "/patient/team?section=contact", label: copy(l, "Contact Noreon", "Կապվել Noreon-ի հետ", "Связаться с Noreon"), external: false }]
-              : [copy(l, "Chat with Zoe is not on for your account yet. Contact Noreon if you need help.", "Zoe-ի հետ զրույցը դեռ միացված չէ ձեր հաշվի համար։ Օգնության համար կապվեք Noreon-ի հետ։", "Чат с Zoe ещё не включён для вашей учётной записи. Свяжитесь с Noreon, если вам нужна помощь."),
-                 { href: "/patient/team?section=contact", label: copy(l, "Contact Noreon", "Կապվել Noreon-ի հետ", "Связаться с Noreon"), external: false }];
+                ? [copy(l, "This account cannot chat with Zoe. Staff accounts and unconfirmed phone numbers cannot write to the care team.", "Այս հաշվից հնարավոր չէ զրուցել Զոյայի հետ։ Աշխատակցի հաշիվները և չհաստատված հեռախոսահամարները չեն կարող գրել խնամքի թիմին։", "С этой учётной записи нельзя общаться с Зоей. С учётных записей сотрудников и с неподтверждёнными номерами телефона нельзя писать медицинской команде."),
+                   { href: "/patient/team?section=contact", label: copy(l, "Contact Noreon", "Կապվել Նորեոն Հելթի հետ", "Связаться с Нореон Хелс"), external: false }]
+              : [copy(l, "Chat with Zoe is not on for your account yet. Contact Noreon if you need help.", "Զոյայի հետ զրույցը դեռ միացված չէ ձեր հաշվի համար։ Օգնության համար կապվեք Նորեոն Հելթի հետ։", "Чат с Зоей ещё не включён для вашей учётной записи. Свяжитесь с Нореон Хелс, если вам нужна помощь."),
+                 { href: "/patient/team?section=contact", label: copy(l, "Contact Noreon", "Կապվել Նորեոն Հելթի հետ", "Связаться с Нореон Хелс"), external: false }];
     off = (
       <div className="space-y-4" data-zoe-off={access.reason}>
         <div className="flex flex-wrap items-center gap-3">
@@ -166,14 +170,14 @@ export default async function ZoePage({ searchParams = Promise.resolve({}) }: { 
         {!chatOnly && <header className="sticky z-10 -mx-1 flex items-center gap-3 border-b bg-[var(--noreon-gray-100)] px-1 py-2" data-zoe-header>
           <span className="journey-orb !size-10" aria-hidden />
           <div className="min-w-0 flex-1">
-            <h1 className="text-h3">Zoe</h1>
+            <h1 className="text-h3">{zoeName(l)}</h1>
             {/* Redesign rail 3: fixed UI text, never model output. */}
             <p className="text-caption text-muted-foreground" data-zoe-rail>
               {copy(l, "AI assistant, not a doctor", "ԱԲ օգնական, ոչ բժիշկ", "ИИ-помощник, не врач")}
             </p>
           </div>
           <Link href="/patient/help#about-zoe" className="inline-flex min-h-11 items-center px-2 text-body2 font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-            {copy(l, "About Zoe", "Zoe-ի մասին", "О Zoe")}
+            {copy(l, "About Zoe", "Զոյայի մասին", "О Зое")}
           </Link>
         </header>}
         {/* Short lessons (Armen's item 6): at most one offer a day; never blocks the chat. */}

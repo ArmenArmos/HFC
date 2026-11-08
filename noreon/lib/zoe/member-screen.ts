@@ -72,6 +72,6 @@ export const ZOE_FAQ:readonly {id:string;question:Copy;answer:Copy;source:string
   answer:{en:'Enter the reading shown on your monitor.',hy:'Մուտքագրեք ձեր սարքի ցույց տված արդյունքը։',ru:'Введите измерение, которое показывает ваш тонометр.'},
   link:{href:'/patient/measurements/new',label:{en:'Record blood pressure',hy:'Գրանցել ճնշումը',ru:'Записать давление'}}},
  {id:'contact',source:'components/patient-care/member-contact.tsx',
-  question:{en:'How do I contact Noreon?',hy:'Ինչպե՞ս կապվել Noreon-ի հետ։',ru:'Как связаться с Noreon?'},
+  question:{en:'How do I contact Noreon?',hy:'Ինչպե՞ս կապվել Նորեոն Հելթի հետ։',ru:'Как связаться с Нореон Хелс?'},
   answer:{en:'Messaging your care team in the app is not switched on yet. For urgent medical help, call 103.',hy:'Հավելվածում խնամքի թիմին գրելը դեռ միացված չէ։ Շտապ բժշկական օգնության համար զանգահարեք 103։',ru:'Переписка с вашей медицинской командой в приложении пока не включена. Для срочной медицинской помощи звоните 103.'}},
 ]);

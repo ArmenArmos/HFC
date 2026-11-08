@@ -17,7 +17,7 @@ import{clinicMemberFileAttach,clinicMemberFilesRead,clinicMemberUploadBegin,clin
 import type{ClinicBooking}from'@/lib/clinic-scheduling/schema';import{bookingTimestampText}from'@/lib/real-booking/display-time';
 
 const bookingStatus:Record<ClinicBooking['status'],[string,string,string]>={requested:['Waiting for your confirmation','Սպասում է ձեր հաստատմանը','Ожидает вашего подтверждения'],'change-requested':['Change requested','Փոփոխության հարցում','Запрошено изменение'],confirmed:['Confirmed','Հաստատված է','Подтверждено'],
- arrived:['Arrived','Ներկայացել է','Приём состоялся'],'no-show':['Did not come','Չի ներկայացել','Не явились'],completed:['Completed: results received','Ավարտված է․ արդյունքները ստացված են','Завершено: результаты получены'],declined:['Declined','Մերժված է','Отклонено'],cancelled:['Cancelled by the member','Անդամը չեղարկել է','Отменено участником'],other:['Needs Noreon','Պետք է Noreon-ի օգնությունը','Нужна помощь Noreon']};
+ arrived:['Arrived','Ներկայացել է','Приём состоялся'],'no-show':['Did not come','Չի ներկայացել','Не явились'],completed:['Completed: results received','Ավարտված է․ արդյունքները ստացված են','Завершено: результаты получены'],declined:['Declined','Մերժված է','Отклонено'],cancelled:['Cancelled by the member','Անդամը չեղարկել է','Отменено участником'],other:['Needs Noreon','Պետք է Նորեոն Հելթի օգնությունը','Нужна помощь Нореон Хелс']};
 function bookingTime(value:string,locale:Locale){if(locale!=='ru')return bookingTimestampText(value,locale);const date=new Date(Date.parse(value)+4*3600000),months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],pad=(n:number)=>String(n).padStart(2,'0');return `${date.getUTCDate()} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()} · ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;}
 // Lab reading scheduled by upload/attach actions uses the cron worker's function budget.
 export const maxDuration=300;
@@ -55,7 +55,7 @@ export default async function ClinicMemberRecordPage({params,searchParams}:{para
     <dt className="text-muted-foreground">{t('Full name','Անուն, ազգանուն','Имя и фамилия')}</dt><dd className="break-words">{m.name||none}</dd>
     <dt className="text-muted-foreground">{t('Sex','Սեռ','Пол')}</dt><dd>{m.sex==='female'?t('Female','Իգական','Женский'):m.sex==='male'?t('Male','Արական','Мужской'):none}</dd>
     <dt className="text-muted-foreground">{t('Language','Լեզու','Язык')}</dt><dd>{locale==='ru'?(m.locale==='en'?'Английский':'Армянский'):m.locale==='en'?'English':'Հայերեն'}</dd>
-    <dt className="text-muted-foreground">{t('Joined Noreon','Միացել է Noreon-ին','Дата регистрации в Noreon')}</dt><dd>{day(m.joinedAt)}</dd>
+    <dt className="text-muted-foreground">{t('Joined Noreon','Միացել է Նորեոն Հելթին','Дата регистрации в Нореон Хелс')}</dt><dd>{day(m.joinedAt)}</dd>
     <dt className="text-muted-foreground">{t('Consent','Համաձայնություն','Согласие')}</dt><dd>{r.consents.length?r.consents.map(c=>`${clinicConsentName(c.version,locale)} · ${day(c.acceptedAt)}`).join(', '):t('Not given','Տրված չէ','Не указано')}</dd>
    </dl>
    <ClinicMemberPersonalData key={`${clinicId}:${context.actorScope}:${m.memberId}`} locale={locale} name={m.name} masked={masked} reveal={clinicAdminMemberReveal.bind(null,clinicId,context.actorScope,m.memberId)} save={saveProfile}/>
@@ -70,7 +70,7 @@ export default async function ClinicMemberRecordPage({params,searchParams}:{para
     <dt className="text-muted-foreground">{t('Nurse','Բուժքույր','Медсестра')}</dt><dd className="break-words">{staffLine(team.nurse)}</dd>
    </dl>
    {!team.enrolled||team.revision===null?<p className={empty}>{t('This member has not joined the care programme yet, so there is no care team to set.','Այս անդամը դեռ չի միացել խնամքի ծրագրին, ուստի խնամքի թիմ նշանակել հնարավոր չէ։','Этот участник ещё не присоединился к программе наблюдения, поэтому назначить медицинскую команду пока нельзя.')}</p>
-   :!team.editable?<p className={empty}>{t('This member’s doctor is at another clinic, so your clinic cannot change the care team. Ask Noreon if they should move to your clinic.','Այս անդամի բժիշկը այլ կլինիկայից է, ուստի ձեր կլինիկան չի կարող փոխել խնամքի թիմը։ Եթե պետք է տեղափոխել ձեր կլինիկա, դիմեք Noreon-ին։','Врач этого участника работает в другой клинике, поэтому ваша клиника не может изменить медицинскую команду. Обратитесь в Noreon, если участника нужно перевести в вашу клинику.')}</p>
+   :!team.editable?<p className={empty}>{t('This member’s doctor is at another clinic, so your clinic cannot change the care team. Ask Noreon if they should move to your clinic.','Այս անդամի բժիշկը այլ կլինիկայից է, ուստի ձեր կլինիկան չի կարող փոխել խնամքի թիմը։ Եթե պետք է տեղափոխել ձեր կլինիկա, դիմեք Նորեոն Հելթին։','Врач этого участника работает в другой клинике, поэтому ваша клиника не может изменить медицинскую команду. Обратитесь в Нореон Хелс, если участника нужно перевести в вашу клинику.')}</p>
    :pending.some(r=>r.kind==='care_team')?null:<CareTeamForm locale={locale} revision={team.revision} doctorId={team.doctor?.id??null} nurseId={team.nurse?.id??null} doctors={team.doctors} nurses={team.nurses} save={saveTeam}/>}
   </section>
 

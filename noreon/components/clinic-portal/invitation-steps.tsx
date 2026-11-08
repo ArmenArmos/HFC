@@ -38,11 +38,11 @@ export function ClinicInvitationSteps({botUsername, locale}: {botUsername: strin
     if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search);
   }, []);
   if (invitation === undefined) return null;
-  if (!invitation) return <p role="alert" className="text-body2">{t('This invitation link is not valid. Ask your Noreon administrator for a new one.', 'Հրավերի հղումը վավեր չէ։ Նորը խնդրեք Noreon-ի ադմինիստրատորից։', 'Эта ссылка приглашения недействительна. Попросите администратора Noreon прислать новую.')}</p>;
+  if (!invitation) return <p role="alert" className="text-body2">{t('This invitation link is not valid. Ask your Noreon administrator for a new one.', 'Հրավերի հղումը վավեր չէ։ Նորը խնդրեք Նորեոն Հելթի ադմինիստրատորից։', 'Эта ссылка приглашения недействительна. Попросите администратора Нореон Хелс прислать новую.')}</p>;
   const hidden = <><input type="hidden" name="invitationId" value={invitation.invitationId}/><input type="hidden" name="generation" value={invitation.generation}/><input type="hidden" name="telegram" value={invitation.telegram}/><input type="hidden" name="locale" value={locale}/></>;
   return <div className="space-y-6">
     <section className="space-y-2" aria-label={t('Step 1', 'Քայլ 1', 'Шаг 1')}>
-      <p className="text-body2">{t('1. Open the Noreon bot in Telegram and share your phone number when it asks. Use the number your administrator has for you.', '1. Բացեք Noreon բոտը Telegram-ում և կիսվեք ձեր հեռախոսահամարով, երբ այն խնդրի։ Օգտագործեք այն համարը, որը տվել եք ադմինիստրատորին։', '1. Откройте бота Noreon в Telegram и поделитесь своим номером телефона, когда бот попросит. Используйте номер, который указан у вашего администратора.')}</p>
+      <p className="text-body2">{t('1. Open the Noreon bot in Telegram and share your phone number when it asks. Use the number your administrator has for you.', '1. Բացեք Նորեոն Հելթ բոտը Telegram-ում և կիսվեք ձեր հեռախոսահամարով, երբ այն խնդրի։ Օգտագործեք այն համարը, որը տվել եք ադմինիստրատորին։', '1. Откройте бота Нореон Хелс в Telegram и поделитесь своим номером телефона, когда бот попросит. Используйте номер, который указан у вашего администратора.')}</p>
       {botUsername ? <a href={`https://t.me/${botUsername}?start=${invitation.telegram}`} target="_blank" rel="noopener noreferrer" className={`${buttonClass} inline-flex items-center`}>{t('Open Telegram', 'Բացել Telegram-ը', 'Открыть Telegram')}</a> : <p role="alert" className="text-body2">{t('Telegram is not available right now.', 'Telegram-ն այս պահին հասանելի չէ։', 'Telegram сейчас недоступен.')}</p>}
     </section>
     <form action={send} className="space-y-2" aria-label={t('Step 2', 'Քայլ 2', 'Шаг 2')}>

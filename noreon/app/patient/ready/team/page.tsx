@@ -82,7 +82,7 @@ export default async function ReadyTeam() {
                 )}
                 {/* Gohar D-011: after "Continue without Zoe" the team is introduced without her. */}
                 {zoe?.readsMessages === true &&
-                  ` ${tx(l, "Zoe-ն բացատրում է հաջորդ քայլերը և ձեր հաղորդագրությունները փոխանցում թիմին։", "Zoe explains your next steps and passes your messages to the team.", "Zoe объясняет ваши следующие шаги и передаёт ваши сообщения медицинской команде.")}`}
+                  ` ${tx(l, "Զոյան բացատրում է հաջորդ քայլերը և ձեր հաղորդագրությունները փոխանցում թիմին։", "Zoe explains your next steps and passes your messages to the team.", "Зоя объясняет ваши следующие шаги и передаёт ваши сообщения медицинской команде.")}`}
               </p>
             </div>
           </div>

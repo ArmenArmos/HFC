@@ -65,7 +65,7 @@ export const MEDICINE_ASK_COPY: Record<AskLocale, Copy> = {
     closed: "This question has closed.",
   },
   hy: {
-    title: "Զոին կարճ հարց ունի",
+    title: "Զոյան կարճ հարց ունի",
     skipped: (name, when) => `Դուք ${name}-ի ${when} ընդունումը նշել եք որպես բաց թողնված։`,
     missed: (name, when) => `${name}-ի ${when} ընդունումը նշված չէ։`,
     why: "Կարո՞ղ եմ հարցնել, թե ինչ խանգարեց։ Ոչինչ, կյանքը զբաղված է։ Ձեր պատասխանն օգնում է ձեր խնամքի թիմին աջակցել ձեզ։",

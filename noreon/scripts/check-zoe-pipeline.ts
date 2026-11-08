@@ -67,7 +67,7 @@ const rpc=async(name:string,args:Record<string,unknown>)=>{calls.push(name);
  if(name==="zoe_run_doctor_mode")return (args.p_runs as string[]).map(id=>({runId:id,doctorMode:false}));
  if(name==="zoe_route_config")return {ok:true,tiers:DEFAULT_ROUTE_CONFIG.tiers};
  if(name==="zoe_run_reserve"){assert.ok(["low","medium","high"].includes(args.p_tier as string)&&typeof args.p_model==="string","reserve names the tier and model");return {ok:true};}
- if(name==="zoe_run_finish"){assert.equal((args.p_result as {configVersion?:string}).configVersion?.startsWith("zoe-conversation-prompt-4"),true);return {ok:true,outcome:(args.p_result as {outcome:string}).outcome};}
+ if(name==="zoe_run_finish"){assert.equal((args.p_result as {configVersion?:string}).configVersion?.startsWith("zoe-conversation-prompt-5"),true);return {ok:true,outcome:(args.p_result as {outcome:string}).outcome};}
  throw Error(`unexpected ${name}`);};
 const report=await runZoeSweep(rpc,{provider:createFakeProvider(),env:{NOREON_ZOE_TEST_LEXICON:"true"}});
 assert.deepEqual(calls,["zoe_route_config","zoe_run_claim","zoe_run_context","zoe_run_plan","zoe_run_health_context","zoe_run_urgent_window","zoe_run_doctor_mode","zoe_run_topic","zoe_run_member_record","zoe_run_reserve","zoe_run_finish","zoe_run_why_record"],"route config before the claim (C-1); the run context and plan after it, unreadable counts as off");

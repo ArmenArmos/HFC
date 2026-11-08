@@ -50,9 +50,9 @@ export default async function UrgentReview({ searchParams }: { searchParams: Pro
         <p className="text-body1">
           {tx(
             l,
-            "Եթե այս պատասխանը սխալմամբ եք ընտրել, կարող եք փոխել այն։ Noreon-ի խնամքի թիմը կտեղեկանա ցանկացած փոփոխության մասին։",
+            "Եթե այս պատասխանը սխալմամբ եք ընտրել, կարող եք փոխել այն։ Նորեոն Հելթի խնամքի թիմը կտեղեկանա ցանկացած փոփոխության մասին։",
             "If you chose this answer by mistake, you can change it. The Noreon care team is told about any change.",
-            "Если вы выбрали этот ответ по ошибке, вы можете изменить его. Медицинская команда Noreon узнает о любом изменении.",
+            "Если вы выбрали этот ответ по ошибке, вы можете изменить его. Медицинская команда Нореон Хелс узнает о любом изменении.",
           )}
         </p>
         {errorText && <p role="alert" className="text-body2 text-destructive">{errorText}</p>}

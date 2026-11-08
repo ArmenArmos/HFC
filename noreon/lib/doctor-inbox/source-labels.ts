@@ -22,7 +22,7 @@ export function sourceKindLabel(s:Source,l:Locale):string{
   case 'checkpoint':return t('Follow-up checkpoint','Ստուգման կետ','Контрольная точка');
   case 'checkin':return t('Check-in','Ինքնազգացողության նշում','Отметка о самочувствии');
   case 'case_revision':return t('Member record','Անդամի գրառում','Запись об участнике');
-  case 'zoe_run':return t('Zoe answer','Zoe-ի պատասխան','Ответ Zoe');
+  case 'zoe_run':return t('Zoe answer','Զոյայի պատասխան','Ответ Зои');
   case 'measurement':return t('Blood pressure reading','Ճնշման չափում','Измерение давления');
   default:return t('Other record','Այլ գրառում','Другая запись');
  }

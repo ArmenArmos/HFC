@@ -1,5 +1,6 @@
 "use client";
 import {useId,useRef,useState,useTransition} from 'react';
+import { zoeName } from '@/lib/brand';
 import {isTextUsableInLocale,memberInstruction} from '@/lib/text-language';
 import Link from 'next/link';
 import {NEXT_STEP} from '@/lib/zoe-chat-actions/next-step-copy';
@@ -17,7 +18,7 @@ import {DialogTurn} from './dialog-turn';
 const TABS=['medicines','targets','lifestyle','calendar']as const;
 type Tab=typeof TABS[number];
 export function ConfirmedPlanTurn({locale:l,time}:{locale:CardLocale;time:string}){
- return <DialogTurn action={say(l,PLAN.confirm)} time={time}><p data-zoe-plan-confirmed>{say(l,PLAN.saved)}</p></DialogTurn>;
+ return <DialogTurn locale={l} action={say(l,PLAN.confirm)} time={time}><p data-zoe-plan-confirmed>{say(l,PLAN.saved)}</p></DialogTurn>;
 }
 /** Read-only published content. Only the separate teach-back metadata can be changed by the button. */
 export function PlanCard({card,locale:l,onCard,onAct,onRefresh}:{card:Extract<ValidCard,{kind:'plan'}>;locale:CardLocale;onCard:(card:ZoeCard)=>void;onAct:(id:string,acting:boolean)=>void;onRefresh:()=>void}){
@@ -41,7 +42,7 @@ export function PlanCard({card,locale:l,onCard,onAct,onRefresh}:{card:Extract<Va
   });
  };
  return <article className="cv2-msg cv2-zoe" data-zoe-card="plan" data-chat-card-id={card.id} data-state={busy?'loading':!p||!d?'unavailable':d.teachBackConfirmedAt?'answered':'open'}>
-  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>Zoe</p>
+  <p className="cv2-from"><i className="cv2-orb" aria-hidden/>{zoeName(l)}</p>
   <section className="cv2-reading cv2-block cv2-plan" aria-label={say(l,PLAN.title)} aria-busy={busy}>
    <h3><Pill size={18} aria-hidden/>{say(l,PLAN.title)}</h3>
    {!p||!d?<><p role="status">{say(l,card.snapshot.available&&d===null?PLAN.empty:PLAN.unavailable)}</p><button type="button" className="cv2-link" onClick={onRefresh}>{say(l,COMMON.retry)}</button></>:<>

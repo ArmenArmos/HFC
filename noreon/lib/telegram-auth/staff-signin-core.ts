@@ -14,7 +14,7 @@ const verified=z.union([z.object({ok:z.literal(true),result:z.literal('admitted'
 const mac=(key:Buffer,parts:string[])=>createHmac('sha256',key).update(parts.join('\0')).digest('hex');
 
 /** Fixed staff code text; no clinical content. */
-export const staffCodeText=(code:string)=>`Noreon աշխատակցի մուտքի կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon staff sign-in code: ${code}. Do not share it with anyone.`;
+export const staffCodeText=(code:string)=>`Նորեոն Հելթ աշխատակցի մուտքի կոդ՝ ${code}։ Մի՛ փոխանցեք այն ոչ մեկին։\nNoreon staff sign-in code: ${code}. Do not share it with anyone.`;
 
 export type StaffCodeSendResult={ok:true;pending:z.infer<typeof staffCodePending>}|{ok:false;reason:'not_enrolled'|'busy'|'unavailable'};
 /** Same challenge and delivery for browser sign-in and the dedicated bot session. No cookies here. */

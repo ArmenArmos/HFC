@@ -68,7 +68,7 @@ function birthMessage(locale: PatientLocale, value: string, today: string): stri
   return {
     empty: tx(locale, "Մուտքագրեք ձեր ծննդյան ամսաթիվը։", "Enter your date of birth.", "Введите вашу дату рождения."),
     invalid: tx(locale, "Մուտքագրեք իրական ամսաթիվ քառանիշ տարիով, օրինակ՝ 20/09/1960։", "Enter a real date with a four-digit year, for example 20/09/1960.", "Введите существующую дату с годом из четырёх цифр, например 20/09/1960."),
-    young: tx(locale, "Noreon-ը 18 տարեկան և ավելի մեծահասակների համար է։", "Noreon is for adults aged 18 and over.", "Noreon предназначен для взрослых от 18 лет."),
+    young: tx(locale, "Նորեոն Հելթը 18 տարեկան և ավելի մեծահասակների համար է։", "Noreon is for adults aged 18 and over.", "Нореон Хелс предназначен для взрослых от 18 лет."),
     old: tx(locale, "Ստուգեք ծննդյան տարեթիվը։", "Check the year of birth.", "Проверьте год рождения."),
   }[problem];
 }
@@ -410,8 +410,8 @@ export function ProfileForm({
                   <p className="text-body2 leading-relaxed [overflow-wrap:normal]">
                     {tx(
                       clinicalLocale(locale),
-                      "Noreon-ը պահում է ձեր մուտքագրած տվյալները՝ ձեր առողջության պրոֆիլը և չափումների պատմությունը ցույց տալու համար։ Սա պիլոտային տարբերակ է․ այս փուլում չափումները ավտոմատ բժշկական գնահատում կամ բժշկին ծանուցում չեն առաջացնում։ Շտապ օգնության կարիք ունենալիս մի սպասեք այս ծառայությանը։",
-                      "Noreon stores the information you enter to show your health profile and measurement history. This is a pilot preview: measurements do not trigger automatic medical interpretation or a notification to a doctor. Do not wait for this service if you need emergency help.", "Noreon хранит введённые вами данные, чтобы показывать ваш профиль здоровья и историю измерений. Это пилотная версия: измерения не вызывают автоматической медицинской оценки или уведомления врача. Если вам нужна скорая помощь, не ждите ответа этой службы.",
+                      "Նորեոն Հելթը պահում է ձեր մուտքագրած տվյալները՝ ձեր առողջության պրոֆիլը և չափումների պատմությունը ցույց տալու համար։ Սա պիլոտային տարբերակ է․ այս փուլում չափումները ավտոմատ բժշկական գնահատում կամ բժշկին ծանուցում չեն առաջացնում։ Շտապ օգնության կարիք ունենալիս մի սպասեք այս ծառայությանը։",
+                      "Noreon stores the information you enter to show your health profile and measurement history. This is a pilot preview: measurements do not trigger automatic medical interpretation or a notification to a doctor. Do not wait for this service if you need emergency help.", "Нореон Хелс хранит введённые вами данные, чтобы показывать ваш профиль здоровья и историю измерений. Это пилотная версия: измерения не вызывают автоматической медицинской оценки или уведомления врача. Если вам нужна скорая помощь, не ждите ответа этой службы.",
                     )}
                   </p>
                   <label className="flex items-start gap-3 text-sm leading-relaxed">
@@ -452,15 +452,15 @@ export function ProfileForm({
                 // Gohar Q2 (Khikar, 19 Oct 22:51): the tick above is the data-use consent for every
                 // account; Zoe is a separate choice made with the buttons below, with no tick of its own.
                 <div className="space-y-4 rounded-xl border p-4" data-zoe-choice>
-                  <h2 className="text-h3">{tx(locale, "Zoe՝ ձեր խնամքի օգնականը", "Zoe, your care assistant", "Zoe, ваш помощник по заботе о здоровье")}</h2>
+                  <h2 className="text-h3">{tx(locale, "Զոյա՝ ձեր խնամքի օգնականը", "Zoe, your care assistant", "Зоя, ваш помощник по заботе о здоровье")}</h2>
                   <p className="text-body2 leading-relaxed [overflow-wrap:normal]" data-zoe-statement>
                     {zoeStatementText(clinicalLocale(locale), zoeDirectAnswers)}
                   </p>
                   <p className="text-sm leading-relaxed text-muted-foreground" data-zoe-buttons-explained>
                     {tx(
                       locale,
-                      "Երկու կոճակների համար էլ նախ նշեք վերևի համաձայնությունը։ «Համաձայն եմ և շարունակում եմ»՝ միացնում է նաև Zoe-ին։ «Շարունակել առանց Zoe-ի»՝ ստեղծում է ձեր հաշիվը առանց Zoe-ի։ Zoe-ի համար առանձին նշում պետք չէ։",
-                      "Tick the box above for either button. “Agree and continue” also turns Zoe on. “Continue without Zoe” creates your account without her. Zoe needs no separate tick.", "Для любой из двух кнопок сначала отметьте согласие выше. «Согласиться и продолжить» также подключает Zoe. «Продолжить без Zoe» создаёт ваш аккаунт без неё. Отдельная отметка для Zoe не нужна.",
+                      "Երկու կոճակների համար էլ նախ նշեք վերևի համաձայնությունը։ «Համաձայն եմ և շարունակում եմ»՝ միացնում է նաև Զոյային։ «Շարունակել առանց Զոյայի»՝ ստեղծում է ձեր հաշիվը առանց Զոյայի։ Զոյայի համար առանձին նշում պետք չէ։",
+                      "Tick the box above for either button. “Agree and continue” also turns Zoe on. “Continue without Zoe” creates your account without her. Zoe needs no separate tick.", "Для любой из двух кнопок сначала отметьте согласие выше. «Согласиться и продолжить» также подключает Зою. «Продолжить без Зои» создаёт ваш аккаунт без неё. Отдельная отметка для Зои не нужна.",
                     )}
                   </p>
                 </div>
@@ -491,7 +491,7 @@ export function ProfileForm({
               </Button>
               {consentStep && zoeStatement && (
                 <Button type="submit" name="zoe" value="without-zoe" variant="outline" className="h-auto min-h-12 w-full whitespace-normal" disabled={busy || conflict}>
-                  {tx(locale, "Շարունակել առանց Zoe-ի", "Continue without Zoe", "Продолжить без Zoe")}
+                  {tx(locale, "Շարունակել առանց Զոյայի", "Continue without Zoe", "Продолжить без Зои")}
                 </Button>
               )}
               {consentStep && (

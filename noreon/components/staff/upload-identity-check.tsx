@@ -15,6 +15,6 @@ export function UploadIdentityChecks({rows,locale,onOpen}:{rows:DoctorUploadOver
   {row.noValuesRead&&<p>{labEmptyReadMessage(locale)}</p>}
   {!row.noValuesRead&&row.jobState!=='done'&&<p>{t('Lab values not read yet','Լաբորատոր արժեքները դեռ չեն կարդացվել','Лабораторные показатели ещё не прочитаны')}</p>}
   {onOpen&&<><button type="button" className="dcv2-choice" onClick={()=>onOpen(row)}>{t('Check this file','Ստուգել այս ֆայլը','Проверить этот файл')}</button>
-   <p>{t('If it is not this member: Tell Noreon to move it','Եթե այս անդամինը չէ՝ ասեք Noreon-ին տեղափոխել այն','Если файл не этого участника: попросите Noreon перенести его')}</p></>}
+   <p>{t('If it is not this member: Tell Noreon to move it','Եթե այս անդամինը չէ՝ ասեք Նորեոն Հելթին տեղափոխել այն','Если файл не этого участника: попросите Нореон Хелс перенести его')}</p></>}
  </section>)}</>;
 }

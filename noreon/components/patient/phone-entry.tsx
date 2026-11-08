@@ -44,14 +44,14 @@ export function PhoneEntry({ delivery = "sms", initialLocale = "hy", siteKey: co
       "В аккаунте Telegram, из которого вы поделились контактом, указан другой номер телефона, чем тот, который вы ввели. Измените номер здесь или поделитесь контактом из аккаунта Telegram с этим номером.")
     : contactRefusal === "not_own_contact"
       ? tx(locale,
-        "Դուք կիսվել եք ուրիշի կոնտակտով կամ փոխանցված կոնտակտի քարտով։ Noreon բոտում սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։",
+        "Դուք կիսվել եք ուրիշի կոնտակտով կամ փոխանցված կոնտակտի քարտով։ Նորեոն Հելթ բոտում սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։",
         "You shared someone else’s contact or a forwarded contact card. In the Noreon bot, use the “Share my phone number” button to share your own number.",
-        "Вы отправили чужой контакт или пересланную карточку контакта. В боте Noreon нажмите «Поделиться номером телефона», чтобы отправить свой номер.")
+        "Вы отправили чужой контакт или пересланную карточку контакта. В боте Нореон Хелс нажмите «Поделиться номером телефона», чтобы отправить свой номер.")
       : contactRefusal === "stale"
         ? tx(locale,
-          "Համարով կիսվելու այս փորձն այլևս չի գործում։ Կրկին բացեք Noreon բոտը և սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։",
+          "Համարով կիսվելու այս փորձն այլևս չի գործում։ Կրկին բացեք Նորեոն Հելթ բոտը և սեղմեք «Կիսվել իմ համարով» կոճակը՝ Ձեր սեփական համարով կիսվելու համար։",
           "That contact share is out of date. Open the Noreon bot again and use the “Share my phone number” button to share your own number.",
-          "Этот контакт уже устарел. Снова откройте бота Noreon и нажмите «Поделиться номером телефона», чтобы отправить свой номер.")
+          "Этот контакт уже устарел. Снова откройте бота Нореон Хелс и нажмите «Поделиться номером телефона», чтобы отправить свой номер.")
         : "";
   const interactive = useSyncExternalStore(subscribeToHydration, clientReady, serverReady);
   // The page decides (lib/captcha.ts); "" means no widget and no token.
@@ -151,9 +151,9 @@ export function PhoneEntry({ delivery = "sms", initialLocale = "hy", siteKey: co
           returns.current = { last: Date.now(), count: 0 };
         }
         if (stage === "prove" && !result.contactRefusal) setError(tx(locale,
-          "Ձեր համարը Telegram-ից դեռ չենք ստացել։ Noreon բոտում սեղմեք Start, ապա «Կիսվել իմ համարով», հետո վերադարձեք այստեղ։",
+          "Ձեր համարը Telegram-ից դեռ չենք ստացել։ Նորեոն Հելթ բոտում սեղմեք Start, ապա «Կիսվել իմ համարով», հետո վերադարձեք այստեղ։",
           "We haven't received your number from Telegram yet. In the Noreon bot, press Start, then tap “Share my phone number”, then come back here.",
-          "Мы ещё не получили ваш номер из Telegram. В боте Noreon нажмите «Запустить» (Start), затем «Поделиться номером телефона» и вернитесь сюда."));
+          "Мы ещё не получили ваш номер из Telegram. В боте Нореон Хелс нажмите «Запустить» (Start), затем «Поделиться номером телефона» и вернитесь сюда."));
         setStage("prove");
       } else if (result && "reason" in result && result.reason === "pending")
         setError(tx(locale,
@@ -275,8 +275,8 @@ export function PhoneEntry({ delivery = "sms", initialLocale = "hy", siteKey: co
           {stage === "phone"
             ? tx(
                 locale,
-                "Բարի գալուստ Noreon",
-                "Welcome to Noreon", "Добро пожаловать в Noreon",
+                "Բարի գալուստ Նորեոն Հելթ",
+                "Welcome to Noreon", "Добро пожаловать в Нореон Хелс",
               )
             : stage === "security"
               ? tx(locale, "Հաստատեք Ձեր համարը", "Confirm your number", "Подтвердите ваш номер")
@@ -298,7 +298,7 @@ export function PhoneEntry({ delivery = "sms", initialLocale = "hy", siteKey: co
             : stage === "security"
               ? tx(locale, delivery === "whatsapp" ? `Մուտքի կոդը կուղարկենք ${shownPhone} համարի WhatsApp-ին։` : delivery === "telegram" ? `Մուտքի կոդը կուղարկենք ${shownPhone} համարի Telegram-ին։` : `Մուտքի կոդը կուղարկենք ${shownPhone} համարին։`, delivery === "whatsapp" ? `We’ll send a code to WhatsApp on ${shownPhone}.` : delivery === "telegram" ? `We’ll send a code to Telegram on ${shownPhone}.` : `We’ll text a code to ${shownPhone}.`, delivery === "whatsapp" ? `Мы отправим код в WhatsApp на номер ${shownPhone}.` : delivery === "telegram" ? `Мы отправим код в Telegram на номер ${shownPhone}.` : `Мы отправим SMS с кодом на номер ${shownPhone}.`)
             : stage === "prove"
-              ? tx(locale, `Բացեք Noreon բոտը Telegram-ում և սեղմեք «Կիսվել իմ համարով»։ Ապա վերադարձեք այստեղ։ Համարը պետք է լինի ${shownPhone}։`, `Open the Noreon bot in Telegram and tap “Share my phone number”. Then come back here. The number must be ${shownPhone}.`, `Откройте бота Noreon в Telegram и нажмите «Поделиться номером телефона». Затем вернитесь сюда. Номер должен быть ${shownPhone}.`)
+              ? tx(locale, `Բացեք Նորեոն Հելթ բոտը Telegram-ում և սեղմեք «Կիսվել իմ համարով»։ Ապա վերադարձեք այստեղ։ Համարը պետք է լինի ${shownPhone}։`, `Open the Noreon bot in Telegram and tap “Share my phone number”. Then come back here. The number must be ${shownPhone}.`, `Откройте бота Нореон Хелс в Telegram и нажмите «Поделиться номером телефона». Затем вернитесь сюда. Номер должен быть ${shownPhone}.`)
             : tx(
                 locale,
                 delivery === "whatsapp" ? `Մուտքագրեք ${shownPhone} համարի WhatsApp-ին ուղարկված կոդը։` : delivery === "telegram" ? `Մուտքագրեք Telegram-ում ուղարկված կոդը։` : `Մուտքագրեք ${shownPhone} համարին ուղարկված կոդը։`,
@@ -364,7 +364,7 @@ export function PhoneEntry({ delivery = "sms", initialLocale = "hy", siteKey: co
                     }
                     if (foreignInternationalNumber(e.target.value)) {
                       setNational("");
-                      setError(tx(locale, "Noreon-ն աշխատում է միայն հայկական (+374) համարներով։", "Noreon works with Armenian (+374) numbers only.", "Noreon работает только с армянскими номерами (+374)."));
+                      setError(tx(locale, "Նորեոն Հելթը աշխատում է միայն հայկական (+374) համարներով։", "Noreon works with Armenian (+374) numbers only.", "Нореон Хелс работает только с армянскими номерами (+374)."));
                       return;
                     }
                     setNational(armenianNationalDigits(e.target.value));

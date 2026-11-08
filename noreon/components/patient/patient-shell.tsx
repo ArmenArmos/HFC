@@ -20,6 +20,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { tx, type PatientLocale } from "@/lib/patient/copy";
 import { MainNavigationContent } from "@/components/patient/navigation-pending";
 import { sweepSignupDrafts } from "@/lib/patient/signup-draft";
+import { zoeName } from "@/lib/brand";
 type ShellProps = {
   children: ReactNode; locale?: PatientLocale; navigation?: boolean; emergency?: boolean; memberName?: string;
 };
@@ -75,7 +76,7 @@ function PatientShellView({
       "progress",
     ],
     // Founder feedback 17 Oct: Zoe sits in the middle of the menu.
-    ["/patient/zoe", "Zoe", SparklesIcon, "zoe"],
+    ["/patient/zoe", zoeName(locale), SparklesIcon, "zoe"],
     [
       "/patient/care",
       tx(locale, "Բուժման պլան", "Care plan", "План лечения"),

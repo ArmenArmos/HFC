@@ -44,7 +44,7 @@ export function TelegramRecoverySteps({locale}: {locale: Locale}) {
   const hidden = <><input type="hidden" name="recoveryId" value={recovery.recoveryId}/><input type="hidden" name="token" value={recovery.token}/><input type="hidden" name="locale" value={locale}/></>;
   return <div className="space-y-6">
     <form action={send} className="space-y-2">
-      <p className="text-body2">{t('1. Ask for a code. We send it to the Telegram account connected to your Noreon account.', '1. Խնդրեք կոդը։ Այն կուղարկենք ձեր Noreon հաշվին միացված Telegram-ին։', '1. Запросите код. Мы отправим его в Telegram, связанный с вашей учётной записью Noreon.')}</p>
+      <p className="text-body2">{t('1. Ask for a code. We send it to the Telegram account connected to your Noreon account.', '1. Խնդրեք կոդը։ Այն կուղարկենք ձեր Նորեոն Հելթ հաշվին միացված Telegram-ին։', '1. Запросите код. Мы отправим его в Telegram, связанный с вашей учётной записью Нореон Хелс.')}</p>
       {hidden}
       <button type="submit" disabled={sending} className={buttonClass}>{t('Send the code', 'Ուղարկել կոդը', 'Отправить код')}</button>
       <Feedback state={sent}/>

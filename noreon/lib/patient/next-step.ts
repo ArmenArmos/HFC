@@ -162,7 +162,7 @@ export function memberJourneyStep(input: JourneyInput): JourneyAction | null {
       return {
         ...base, id: "journey-visit-check", kind: "appointment",
         title: pair("Your visit needs checking", "Ձեր այցը պետք է ստուգել", "Ваш визит нужно проверить"),
-        detail: pair("Check the saved visit status. If it needs review, contact Noreon.", "Ստուգեք պահպանված այցի վիճակը։ Եթե այն պետք է վերանայել, կապվեք Noreon-ի հետ։", "Проверьте сохранённый статус визита. Если он требует проверки, свяжитесь с Noreon."),
+        detail: pair("Check the saved visit status. If it needs review, contact Noreon.", "Ստուգեք պահպանված այցի վիճակը։ Եթե այն պետք է վերանայել, կապվեք Նորեոն Հելթի հետ։", "Проверьте сохранённый статус визита. Если он требует проверки, свяжитесь с Нореон Хелс."),
         button: pair("View my visit", "Տեսնել իմ այցը", "Посмотреть мой визит"),
       };
     if (checkin?.outcome === "no-show")
@@ -212,7 +212,7 @@ export function memberJourneyStep(input: JourneyInput): JourneyAction | null {
     return {
       ...base, id: "journey-request", kind: "waiting",
       title: pair("Your test request is saved", "Հետազոտության ձեր հարցումը պահպանված է", "Ваша заявка на анализы сохранена"),
-      detail: pair("Your request is with the Noreon team. Your visit details will appear here.", "Ձեր հարցումը Noreon-ի թիմի մոտ է։ Այցի մանրամասները կհայտնվեն այստեղ։", "Ваша заявка у команды Noreon. Подробности вашего визита появятся здесь."),
+      detail: pair("Your request is with the Noreon team. Your visit details will appear here.", "Ձեր հարցումը Նորեոն Հելթի թիմի մոտ է։ Այցի մանրամասները կհայտնվեն այստեղ։", "Ваша заявка у команды Нореон Хелс. Подробности вашего визита появятся здесь."),
       button: pair("View my request", "Տեսնել իմ հարցումը", "Посмотреть мою заявку"),
     };
   // 3. Book tests (clinic or home).

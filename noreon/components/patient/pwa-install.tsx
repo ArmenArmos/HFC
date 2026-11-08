@@ -97,13 +97,13 @@ export function PwaInstall({ locale, dismissible = false }: { locale: PatientLoc
       <img src="/icons/icon-192.png" alt="" width={44} height={44} className="size-11 shrink-0 rounded-lg" />
       <div className="min-w-0 space-y-1">
         <h2 id="pwa-install-title" className="text-h2">{leave
-          ? tx(locale, `Բացեք Noreon-ը ${browser}-ում`, `Open Noreon in ${browser}`, `Откройте Noreon в ${browser}`)
-          : tx(locale, "Տեղադրեք Noreon հավելվածը", "Get the Noreon app", "Установите приложение Noreon")}</h2>
+          ? tx(locale, `Բացեք Նորեոն Հելթը ${browser}-ում`, `Open Noreon in ${browser}`, `Откройте Нореон Хелс в ${browser}`)
+          : tx(locale, "Տեղադրեք Նորեոն Հելթ հավելվածը", "Get the Noreon app", "Установите приложение Нореон Хелс")}</h2>
         <p className="text-caption text-muted-foreground">{leave
           ? (env.surface === "telegram"
-            ? tx(locale, `Telegram-ի դիտարկիչը չի կարող հավելվածներ ավելացնել գլխավոր էկրանին։ Բացեք այս էջը ${browser}-ում, և այնտեղ կտեսնեք, թե ինչպես ավելացնել Noreon-ը։`, `Telegram's browser can't add apps to your home screen. Open this page in ${browser} and you'll see how to add Noreon there.`, `В браузере Telegram нельзя добавлять приложения на главный экран. Откройте эту страницу в ${browser}, чтобы увидеть, как добавить Noreon.`)
-            : tx(locale, `Այս հավելվածի դիտարկիչը չի կարող հավելվածներ ավելացնել գլխավոր էկրանին։ Բացեք այս էջը ${browser}-ում, և այնտեղ կտեսնեք, թե ինչպես ավելացնել Noreon-ը։`, `This app's browser can't add apps to your home screen. Open this page in ${browser} and you'll see how to add Noreon there.`, `В браузере этого приложения нельзя добавлять приложения на главный экран. Откройте эту страницу в ${browser}, чтобы увидеть, как добавить Noreon.`))
-          : tx(locale, "Բացեք Noreon-ը գլխավոր էկրանից մեկ հպումով։ Ձեր տվյալները թարմացնելու համար դեռ անհրաժեշտ է ինտերնետ։", "Open Noreon from your home screen in one tap. Your records still need an internet connection.", "Открывайте Noreon с главного экрана одним касанием. Для доступа к вашим данным по-прежнему нужен интернет.")}</p>
+            ? tx(locale, `Telegram-ի դիտարկիչը չի կարող հավելվածներ ավելացնել գլխավոր էկրանին։ Բացեք այս էջը ${browser}-ում, և այնտեղ կտեսնեք, թե ինչպես ավելացնել Նորեոն Հելթը։`, `Telegram's browser can't add apps to your home screen. Open this page in ${browser} and you'll see how to add Noreon there.`, `В браузере Telegram нельзя добавлять приложения на главный экран. Откройте эту страницу в ${browser}, чтобы увидеть, как добавить Нореон Хелс.`)
+            : tx(locale, `Այս հավելվածի դիտարկիչը չի կարող հավելվածներ ավելացնել գլխավոր էկրանին։ Բացեք այս էջը ${browser}-ում, և այնտեղ կտեսնեք, թե ինչպես ավելացնել Նորեոն Հելթը։`, `This app's browser can't add apps to your home screen. Open this page in ${browser} and you'll see how to add Noreon there.`, `В браузере этого приложения нельзя добавлять приложения на главный экран. Откройте эту страницу в ${browser}, чтобы увидеть, как добавить Нореон Хелс.`))
+          : tx(locale, "Բացեք Նորեոն Հելթը գլխավոր էկրանից մեկ հպումով։ Ձեր տվյալները թարմացնելու համար դեռ անհրաժեշտ է ինտերնետ։", "Open Noreon from your home screen in one tap. Your records still need an internet connection.", "Открывайте Нореон Хелс с главного экрана одним касанием. Для доступа к вашим данным по-прежнему нужен интернет.")}</p>
       </div>
     </div>
 
@@ -112,12 +112,12 @@ export function PwaInstall({ locale, dismissible = false }: { locale: PatientLoc
       : canPrompt ? null
       : <p className="text-body2">{env.surface === "android"
           ? tx(locale, "Բացեք դիտարկիչի ընտրացանկը (⋮) և ընտրեք «Install app» կամ «Add to Home screen»։", "Open your browser menu (⋮) and choose Install app or Add to Home screen.", "Откройте меню браузера (⋮) и выберите «Установить приложение» или «Добавить на главный экран».")
-          : tx(locale, "Chrome-ում կամ Edge-ում օգտագործեք հասցեի տողի տեղադրման պատկերակը։ Այլ դիտարկիչներում շարունակեք օգտագործել Noreon-ը որպես կայք։", "In Chrome or Edge, use the install icon in the address bar. In other browsers, keep using Noreon as a website.", "В Chrome или Edge используйте значок установки в адресной строке. В других браузерах продолжайте пользоваться сайтом Noreon.")}</p>}
+          : tx(locale, "Chrome-ում կամ Edge-ում օգտագործեք հասցեի տողի տեղադրման պատկերակը։ Այլ դիտարկիչներում շարունակեք օգտագործել Նորեոն Հելթը որպես կայք։", "In Chrome or Edge, use the install icon in the address bar. In other browsers, keep using Noreon as a website.", "В Chrome или Edge используйте значок установки в адресной строке. В других браузерах продолжайте пользоваться сайтом Нореон Хелс.")}</p>}
 
-    {error && <p role="status" className="text-caption">{tx(locale, "Օգտագործեք դիտարկիչի ընտրացանկը՝ Noreon-ը գլխավոր էկրանին ավելացնելու համար։", "Use your browser menu to add Noreon to your home screen.", "Добавьте Noreon на главный экран через меню браузера.")}</p>}
+    {error && <p role="status" className="text-caption">{tx(locale, "Օգտագործեք դիտարկիչի ընտրացանկը՝ Նորեոն Հելթը գլխավոր էկրանին ավելացնելու համար։", "Use your browser menu to add Noreon to your home screen.", "Добавьте Нореон Хелс на главный экран через меню браузера.")}</p>}
     {(dismissible || (canPrompt && !leave && env.surface !== "ios")) && <div className="flex flex-wrap items-center gap-2">
       {canPrompt && !leave && env.surface !== "ios" && <button type="button" onClick={install} disabled={pending} className={primary}>
-        <Download className="size-4" aria-hidden />{pending ? tx(locale, "Սպասում ենք դիտարկիչին", "Waiting for your browser", "Ожидаем ответа браузера") : tx(locale, "Տեղադրել Noreon-ը", "Install Noreon", "Установить Noreon")}
+        <Download className="size-4" aria-hidden />{pending ? tx(locale, "Սպասում ենք դիտարկիչին", "Waiting for your browser", "Ожидаем ответа браузера") : tx(locale, "Տեղադրել Նորեոն Հելթը", "Install Noreon", "Установить Нореон Хелс")}
       </button>}
       {dismissible && <button type="button" onClick={notNow} className={`${quiet} ml-auto`}>{tx(locale, "Ոչ հիմա", "Not now", "Не сейчас")}</button>}
     </div>}

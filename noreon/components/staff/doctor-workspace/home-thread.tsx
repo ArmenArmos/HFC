@@ -202,7 +202,7 @@ export function DoctorHomeThread({initial,selected,locale,doctorId,decisionsEnab
  const fallback=<p className="text-body2">{t('I cannot answer that from the available records. Choose a member to ask about their saved record, or open your waiting work.','Հասանելի գրառումներից չեմ կարող պատասխանել։ Ընտրեք անդամին՝ նրա պահպանված գրառման մասին հարցնելու համար, կամ բացեք սպասող գործերը։','По доступным записям ответить не могу. Выберите участника для вопроса о его записи или откройте ожидающие задачи.')}</p>;
  const status=day&&!unavailable?dayStatus(day.day,locale):null;
  const waiting=status?.counts.total??0;
- return <section className="dw-chat dw-home-thread" aria-label={t('Your day with Zoe','Ձեր օրը Զոյայի հետ','Ваш день с Zoe')} onClickCapture={e=>{
+ return <section className="dw-chat dw-home-thread" aria-label={t('Your day with Zoe','Ձեր օրը Զոյայի հետ','Ваш день с Зоей')} onClickCapture={e=>{
   // Capture pointer and keyboard clicks before a successful refresh replaces the button.
   const button=(e.target as HTMLElement).closest('.dw-record-card button');
   if(button){const {top,left}=button.getBoundingClientRect();cardPress.current={top,left};setCard(previous=>previous?.saved?{...previous,saved:undefined}:previous);}
@@ -229,7 +229,7 @@ export function DoctorHomeThread({initial,selected,locale,doctorId,decisionsEnab
    <ZoeTurn locale={locale} at={homeTime(e.at,locale)}>
    {e.response.kind==='day'?<><p className="text-body2">{t('Overdue items in the available Today queues','Ժամկետանց գործերը «Այսօր» հասանելի ցանկերում','Просроченные элементы доступных очередей «Сегодня»')}: {overdueDayItems(e.response.day,locale).length}</p><DayItemCards items={overdueDayItems(e.response.day,locale)} locale={locale} onSelect={select} decisions={decisionsEnabled} alerts={alertsEnabled}/></>:e.response.kind==='members'||e.response.kind==='missing_bp'?<>
     {e.response.kind==='missing_bp'&&<p className="text-body2">{t('No BP readings recorded on this search page','Այս որոնման էջում ճնշման գրանցումներ չկան','На этой странице поиска нет записей давления')}: {calendarDate(e.response.from,locale)} – {calendarDate(e.response.to,locale)}. {t('Source: BP history. Unknown reads','Աղբյուր՝ ճնշման պատմություն։ Անհայտ ընթերցումներ','Источник: история давления. Недоступные записи')}: {e.response.unknown} · {yerevanStamp(e.response.asOf,locale)}</p>}
-    {queuedQuestion&&<p>{t('Choose the member for this question. Zoe will read their saved records.','Ընտրեք անդամին այս հարցի համար։ Զոյան կկարդա նրա պահպանված գրառումները։','Выберите участника для этого вопроса. Zoe прочитает его сохранённые записи.')}</p>}
+    {queuedQuestion&&<p>{t('Choose the member for this question. Zoe will read their saved records.','Ընտրեք անդամին այս հարցի համար։ Զոյան կկարդա նրա պահպանված գրառումները։','Выберите участника для этого вопроса. Зоя прочитает его сохранённые записи.')}</p>}
     <WorkspaceMemberList initialPage={e.response.page} includeIds={e.response.kind==='missing_bp'?e.response.missingIds:undefined} initialQuery={e.response.query} resetLabel={e.response.kind==='missing_bp'?t('Back to this BP list','Վերադառնալ ճնշման այս ցանկին','К этому списку давления'):undefined} locale={locale} onSelect={id=>select(id,e.targetCard)} searchAction={e.response.kind==='members'?search:async input=>{
      const r=await read({kind:'missing_bp',...input});
      if(r.kind==='refused')clear();
@@ -264,11 +264,11 @@ export function DoctorHomeThread({initial,selected,locale,doctorId,decisionsEnab
    {chart&&<Link href={`/staff/real/members/${record.conversation.member.id}` as Route} className="inline-flex min-h-11 items-center text-body2 underline">{t('Open the full record','Բացել ամբողջական գրառումը','Открыть полную запись')}</Link>}
    <StaffZoeChat key={record.conversation.id} conversation={record.conversation} role="doctor" locale={locale} workspace home initialQuestion={queuedQuestion} onInitialQuestionSent={()=>setQueuedQuestion('')} onWorkspaceAsk={command} decisions={record.decisions&&!(card?.response.kind==='ready'&&['conversation','consultation'].includes(card.response.card))?<DoctorDecisionCards single key={decisionGeneration} data={record.decisions} locale={locale} onRefresh={refreshDecisions} onReply={()=>{start(async()=>{await openCard({card:'conversation',conversationId:record.conversation.id});});}}/>:undefined}/>
   </>:<div className="dw-dock"><form onSubmit={e=>{e.preventDefault();if(!pending&&text.trim())ask(text);}} className="zk-composer" aria-busy={pending}>
-   <label htmlFor="doctor-home-ask" className="sr-only">{t('Ask Zoe','Հարցնել Զոյային','Спросить Zoe')}</label>
-   <textarea id="doctor-home-ask" rows={2} value={text} onChange={e=>setText(e.target.value)} onKeyDown={submitChatOnEnter} maxLength={1000} placeholder={t('Ask Zoe…','Հարցրեք Զոյային…','Спросите Zoe…')} className="min-h-11 min-w-0 flex-1 resize-none border-0 bg-transparent px-3 py-2 text-body2 focus:outline-none"/>
+   <label htmlFor="doctor-home-ask" className="sr-only">{t('Ask Zoe','Հարցնել Զոյային','Спросить Зою')}</label>
+   <textarea id="doctor-home-ask" rows={2} value={text} onChange={e=>setText(e.target.value)} onKeyDown={submitChatOnEnter} maxLength={1000} placeholder={t('Ask Zoe…','Հարցրեք Զոյային…','Спросите Зою…')} className="min-h-11 min-w-0 flex-1 resize-none border-0 bg-transparent px-3 py-2 text-body2 focus:outline-none"/>
    <button className="zk-send" aria-label={t('Ask','Հարցնել','Спросить')} disabled={pending||!text.trim()}><ArrowUp size={20} aria-hidden/></button>
   </form><p className="text-caption text-muted-foreground">{t('Use the arrow to send. Enter adds a line on your phone.','Ուղարկելու համար սեղմեք սլաքը։ Հեռախոսում Enter-ը նոր տող է ավելացնում։','Нажмите стрелку для отправки. Enter на телефоне добавляет строку.')}</p></div>}
-  {pending&&<p role="status" className="zk-bubble">{t('Zoe is reading…','Զոյան կարդում է…','Zoe читает…')}</p>}
+  {pending&&<p role="status" className="zk-bubble">{t('Zoe is reading…','Զոյան կարդում է…','Зоя читает…')}</p>}
   </div>
  </section>;
 }
